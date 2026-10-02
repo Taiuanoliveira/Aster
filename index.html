@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projeto Aster – Notícias de Amargosa e Região</title>
+  <meta name="description" content="Portal de notícias de Amargosa, Bahia e região. Política, economia, agro, esportes, cultura e mais.">
+  <meta property="og:title" content="Projeto Aster – Notícias">
+  <meta property="og:description" content="Portal de notícias de Amargosa, Bahia e região.">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/publicidade.css">
+  <link rel="stylesheet" href="css/secoes-categoria.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    .agro-cotacoes-wrapper { margin-top: 24px; background: #fff; border: 1px solid #ddd; border-top: 3px solid #5c4a00; padding: 20px; }
+    .agro-cotacoes-titulo { font-family: Inter,sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1a1a1a; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .agro-cot-fonte { font-size: 11px; color: #888; font-weight: 400; }
+    .agro-cotacoes-grid { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+    .agro-cot-card { flex-shrink: 0; background: #f7f5f0; border: 1px solid #e0ddd8; padding: 14px 18px; min-width: 120px; text-align: center; }
+    .agro-cot-emoji { font-size: 24px; margin-bottom: 6px; }
+    .agro-cot-nome { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #5c4a00; margin-bottom: 6px; }
+    .agro-cot-valor { font-size: 15px; font-weight: 700; color: #0C3B5C; margin-bottom: 2px; }
+    .agro-cot-unidade { font-size: 10px; color: #888; margin-bottom: 4px; }
+    .agro-cot-variacao { font-size: 12px; font-weight: 600; min-height: 16px; }
+
+    .ultima-edicao-wrap { max-width: 1200px; margin: 28px auto 40px; padding: 0 20px; }
+    .ultima-edicao-numero { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; margin-bottom: 2px; }
+    .ultima-edicao-data { font-size: 13px; color: #888; margin-bottom: 18px; }
+    .ultima-edicao-corpo { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
+    .ultima-edicao-capa img { width: 200px; box-shadow: 0 10px 30px rgba(0,0,0,.18); display: block; }
+    .ultima-edicao-artigos { flex: 1; min-width: 280px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px; }
+    .ultima-edicao-artigo { text-decoration: none; color: #0C3B5C; }
+    .ultima-edicao-artigo .img-mini { width: 100%; height: 110px; background: #eee; background-size: cover; background-position: center; margin-bottom: 8px; }
+    .ultima-edicao-artigo h4 { font-family: 'Playfair Display', serif; font-size: 14px; line-height: 1.3; margin-bottom: 4px; }
+    .ultima-edicao-artigo .autor-mini { font-size: 11px; color: #888; }
+    .ultima-edicao-artigo .tag-gratis-mini { display: inline-block; background: #E8A33D; color: #0C3B5C; font-size: 9px; font-weight: 700; text-transform: uppercase; padding: 2px 7px; letter-spacing: .4px; margin-top: 4px; }
+    .ultima-edicao-ver-todas { display: inline-block; margin-top: 16px; font-size: 13px; font-weight: 700; color: #E8A33D; text-decoration: none; }
+  </style></head>
+<body>
+
+  <!-- BARRA DE COTACOES -->
+  <div id="barraCotacoes" style="background:#0C3B5C;color:#ccc;font-size:12px;font-family:Inter,sans-serif;padding:6px 0;overflow:hidden;white-space:nowrap;border-bottom:1px solid #222;">
+    <div id="cotacoesScroll" style="display:inline-block;animation:scrollCotacoes 40s linear infinite;">
+      <span style="color:#555;">Carregando cotações...</span>
+    </div>
+  </div>
+  <style>
+    @keyframes scrollCotacoes {
+      0% { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+    #barraCotacoes:hover #cotacoesScroll { animation-play-state: paused; }
+    .cot-item { margin: 0 28px; }
+    .cot-nome { color: #888; }
+    .cot-valor { color: #fff; font-weight: 600; }
+    .cot-up { color: #E8A33D; }
+    .cot-down { color: #ff4444; }
+    .cot-sep { color: #333; margin: 0 8px; }
+  </style>
+
+  <div class="breaking-bar">
+    <span class="breaking-label">URGENTE</span>
+    <div class="breaking-scroll">
+      <span>Câmara Municipal aprova novo plano diretor da cidade &nbsp;•&nbsp; Produção agrícola do município bate recorde histórico &nbsp;•&nbsp; Prefeitura anuncia obra de pavimentação para bairros da periferia &nbsp;•&nbsp; Festival Regional de Cultura volta a ser realizado após dois anos</span>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-top">
+      <div class="header-meta">
+        <span id="data-atual"></span>
+        <span class="separator">|</span>
+        <span id="cidadeRegiao">Amargosa, Bahia, Alagoas</span>
+      </div>
+      <nav class="header-links">
+        <img id="avatarHeader" style="display:none;width:26px;height:26px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;border:1px solid #E8A33D;">
+        <a href="login.html" id="linkLogin">Entrar</a>
+        <a href="cadastro.html" id="linkCadastro">Cadastre-se</a>
+        <a href="#contato">Fale Conosco</a>
+      </nav>
+    </div>
+
+    <div class="header-main">
+      <button class="menu-toggle" onclick="toggleMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <a href="busca.html" class="btn-busca-mobile" aria-label="Buscar">&#128269;</a>
+      <div class="logo-area">
+        <h1 class="logo"><span id="logoNome">Projeto Aster</span></h1>
+        <p class="logo-tagline" id="logoTaglineTexto">A voz do Recôncavo Baiano</p>
+      </div>
+      <div class="header-search">
+        <input type="text" placeholder="Buscar notícias…" id="searchInput" inputmode="search" enterkeyhint="search">
+        <button onclick="window.buscar && window.buscar()" ontouchend="window.buscar && window.buscar()">&#128269;</button>
+      </div>
+    </div>
+
+    <nav class="main-nav">
+      <ul id="menuCategorias">
+        <li><a href="index.html" class="active">Início</a></li>
+        <li><a href="#editorial-secao">Editorial</a></li>
+        <li><a href="#servicos-secao">Serviços</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="sidebar">
+    <button class="sidebar-close" onclick="toggleMenu()">✕</button>
+    <div class="sidebar-logo">Projeto Aster</div>
+    <nav class="sidebar-nav" id="sidebarCategorias">
+      <a href="index.html">&#127968; Início</a>
+      <a href="index.html#newsGrid">&#128240; Últimas Notícias</a>
+      <a href="index.html#emAlta">&#128293; Em Alta</a>
+      <a href="edicoes.html">&#9997; Editorial</a>
+      <a href="#equipe-secao">&#128101; Equipe</a>
+      <a href="#servicos-secao">&#128295; Serviços</a>
+    </nav>
+    <div class="sidebar-social">
+      <p>Nos siga</p>
+      <div class="social-icons">
+        <a href="#" title="Facebook">f</a>
+        <a href="#" title="Instagram">in</a>
+        <a href="#" title="YouTube">▶</a>
+        <a href="#" title="WhatsApp">W</a>
+      </div>
+    </div>
+  </aside>
+  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+  <!-- ULTIMA EDICAO PUBLICADA (estilo Revista Oeste) -->
+  <main>
+    <!-- ULTIMA EDICAO - estilo Revista Oeste -->
+    <div id="ultimaEdicaoWrap" style="display:none;max-width:1200px;margin:28px auto 0;padding:0 20px;">
+      <div style="font-family:'Playfair Display',serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:8px;">Última Edição</div>
+      <div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;">
+        <div id="edicaoCapaWrap"></div>
+        <div style="flex:1;min-width:280px;">
+          <div id="edicaoNome" style="font-family:'Playfair Display',serif;font-size:22px;font-weight:900;margin-bottom:4px;"></div>
+          <div id="edicaoData" style="font-size:13px;color:#888;margin-bottom:16px;"></div>
+          <div id="edicaoArtigos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;"></div>
+          <a href="edicoes.html" style="display:inline-block;margin-top:16px;font-size:13px;font-weight:700;color:#E8A33D;text-decoration:none;">Ver edições anteriores →</a>
+        </div>
+      </div>
+    </div>
+    <div style="border-bottom:1px solid #eee;margin:28px 0;"></div>
+
+    <section class="hero-section" id="heroSection">
+      <p class="admin-carregando">Carregando manchete...</p>
+    </section>
+
+    <!-- LINHA DIVISÓRIA -->
+    <div class="section-divider">
+      <span>Últimas Notícias</span>
+    </div>
+
+    <!-- GRID DE NOTÍCIAS -->
+    <section class="news-grid-section">
+      <div class="news-grid" id="newsGrid">
+        <p class="admin-carregando">Carregando notícias...</p>
+      </div>
+
+      <!-- COLUNA LATERAL -->
+      <aside class="sidebar-content">
+
+        <div class="widget">
+          <div class="widget-title">Em Alta</div>
+          <ol class="ranking-list">
+            <li style="color:#888;font-size:13px;" id="emAltaLista">Carregando...</li>
+          </ol>
+        </div>
+
+        <div class="widget newsletter-widget">
+          <div class="widget-title">Receba nossas notícias</div>
+          <p>Cadastre seu e-mail e fique por dentro do que acontece em Santana e região.</p>
+          <input type="email" placeholder="seu@email.com">
+          <button>Assinar Newsletter</button>
+        </div>
+
+        <div class="widget widget-pub-lateral">
+          <div class="widget-title">Publicidade</div>
+          <div id="bannerLateral"></div>
+        </div>
+
+      </aside>
+    </section>
+
+    <!-- CARROSSEL DE PUBLICIDADE -->
+    <div class="carrossel-pub-container" id="carrosselPublicidade"></div>
+
+    <!-- SEÇÕES POR CATEGORIA (estilo Revista Oeste) -->
+    <div id="secoesPorCategoria"></div>
+
+    <!-- EDITORIAL DINAMICO -->
+    <div id="cartaLeitorSection" style="display:none;">
+      <div class="section-divider"><span>Carta ao Leitor</span></div>
+      <section class="editorial-section">
+        <div class="editorial-card">
+          <div class="eyebrow">✏️ Carta ao Leitor</div>
+          <h2 id="cartaLeitorEdicao"></h2>
+          <p id="cartaLeitorTexto" style="white-space:pre-line;"></p>
+          <a href="edicoes.html" class="btn-leia-mais secundario">Ver edição completa →</a>
+        </div>
+        <div class="editorial-author">
+          <div class="agro-cotacoes-wrapper">
+            <div class="agro-cotacoes-titulo">📊 Cotações do Agronegócio <span class="agro-cot-fonte">Atualiza a cada 5 min</span></div>
+            <div id="cotacoesAgroSlide" class="agro-cotacoes-grid"><div style="color:#888;padding:20px;">Carregando...</div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <!-- SEÇÃO AGRO -->
+    <div class="section-divider">
+      <span>Agronegócio Regional</span>
+    </div>
+
+    <section class="agro-section">
+      <div class="agro-grid">
+        <div id="agroGrid"><p style="color:#888;font-size:13px;">Carregando...</p></div>
+      </div>
+    </section>
+
+    <!-- EQUIPE -->
+    <div class="section-divider">
+      <span>Nossa Equipe</span>
+    </div>
+
+    <section class="equipe-section">
+      <div class="equipe-grid" id="equipeGrid">
+        <p style="color:#777;font-size:13px;">Carregando equipe...</p>
+      </div>
+    </section>
+
+    <!-- SERVIÇOS -->
+    <div class="section-divider">
+      <span>Serviços</span>
+    </div>
+
+    <section class="servicos-section">
+      <div class="servicos-grid" id="servicoGrid"></div>
+    </section>
+
+  </main>
+
+  <!-- PUBLICIDADE NO RODAPÉ -->
+  <div class="rodape-pub-container" id="rodapePublicidade"></div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo"><span id="logoNomeRodape">Projeto Aster</span></div>
+        <p>O portal de notícias de Amargosa e Região. Jornalismo local com compromisso e responsabilidade.</p>
+      </div>
+      <div class="footer-nav">
+        <h4>Editorias</h4>
+        <ul>
+          <li><a href="categoria.html?c=politica">Política</a></li>
+          <li><a href="categoria.html?c=economia">Economia</a></li>
+          <li><a href="categoria.html?c=regional">Regional</a></li>
+          <li><a href="categoria.html?c=agro">Agro</a></li>
+          <li><a href="categoria.html?c=esportes">Esportes</a></li>
+          <li><a href="categoria.html?c=cultura">Cultura</a></li>
+        </ul>
+      </div>
+      <div class="footer-nav">
+        <h4>Institucional</h4>
+        <ul>
+          <li><a href="#">Sobre nós</a></li>
+          <li><a href="#">Nossa Equipe</a></li>
+          <li><a href="#">Fale Conosco</a></li>
+          <li><a href="#">Publicidade</a></li>
+          <li><a href="#">Política de Privacidade</a></li>
+        </ul>
+      </div>
+      <div class="footer-social">
+        <h4>Nos acompanhe</h4>
+        <div class="social-icons footer-social-icons">
+          <a href="#" id="linkFacebook" title="Facebook">f</a>
+          <a href="#" id="linkInstagram" title="Instagram">in</a>
+          <a href="#" id="linkYoutube" title="YouTube">▶</a>
+          <a href="#" id="linkWhatsapp" title="WhatsApp">W</a>
+        </div>
+        <p class="footer-contact" id="footerContato">contato@seudominio.com<br>(82) 9 9999-0000</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Projeto Aster – Todos os direitos reservados</span>
+      <span>CNPJ: 00.000.000/0001-00</span>
+    </div>
+  </footer>
+
+  <button class="btn-fonte-site" id="btnFonteSite" onclick="alternarFonteSite()">Tt</button>
+  <button class="btn-tema" id="btnTema" onclick="alternarTema()">🌙 Tema Escuro</button>
+  <script src="script.js"></script>
+
+  <script type="module">
+    import { listarPublicadas } from "./js/noticias.js";
+    import { db } from "./js/firebase-config.js";
+    import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { montarCarrossel, montarBannersRodape, reiniciarRodizioBlocos, montarProximoBlocoDeBanners, obterBannersAtivos } from "./js/publicidade.js";
+    import { observarLogin, sair } from "./js/auth.js";
+
+    // Mapeamento de categorias carregado do Firestore
+    const nomesCategorias = {};
+    try {
+      const snapCats = await getDocs(query(collection(db, 'categorias'), orderBy('ordem')));
+      snapCats.forEach(d => {
+        const cat = d.data();
+        const slug = cat.slug || cat.nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'-');
+        nomesCategorias[slug] = (cat.emoji ? cat.emoji + ' ' : '') + cat.nome;
+      });
+    } catch (e) { console.error('Erro ao carregar categorias:', e); }
+
+    function formatarData(timestamp) {
+      if (!timestamp) return '';
+      const data = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return data.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    }
+
+    async function carregarNoticias() {
+      const noticias = await listarPublicadas(60);
+      const heroSection = document.getElementById('heroSection');
+      const grid = document.getElementById('newsGrid');
+
+      if (noticias.length === 0) {
+        heroSection.innerHTML = '<p class="admin-vazio">Nenhuma notícia publicada ainda. Acesse o painel administrativo para publicar a primeira!</p>';
+        grid.innerHTML = '';
+        return;
+      }
+
+      const [destaque, ...resto] = noticias;
+
+      heroSection.innerHTML = `
+        <div class="hero-main">
+          <div class="eyebrow">Manchete do Dia</div>
+          <h2 class="hero-title"><a href="noticia.html?id=${destaque.id}">${destaque.titulo}</a></h2>
+          <p class="hero-desc">${destaque.resumo || ''}</p>
+          <div class="hero-meta">
+            <span class="hero-author">Por <strong>${destaque.autorNome || 'Redação Projeto Aster'}</strong></span>
+            <span class="hero-time">${formatarData(destaque.criadoEm)}</span>
+            <span class="tag-categoria ${destaque.categoria}">${nomesCategorias[destaque.categoria] || destaque.categoria}</span>
+          </div>
+          <a href="noticia.html?id=${destaque.id}" class="btn-leia-mais">Leia a reportagem completa →</a>
+        </div>
+        <div class="hero-side">
+          <div class="hero-img-placeholder" ${destaque.imagemUrl ? `style="background-image:url('${destaque.imagemUrl}');background-size:cover;"` : ''}>
+            ${!destaque.imagemUrl ? '<div class="img-label">Sem imagem</div>' : ''}
+          </div>
+          ${resto.slice(0, 2).map(n => `
+            <div class="destaque-card">
+              <div class="eyebrow small">Também em destaque</div>
+              <h3><a href="noticia.html?id=${n.id}">${n.titulo}</a></h3>
+              <span class="tag-categoria ${n.categoria}">${nomesCategorias[n.categoria] || n.categoria}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      const restoGrid = resto.slice(2);
+      if (restoGrid.length === 0) {
+        grid.innerHTML = '<p class="admin-vazio">Sem mais notícias por enquanto.</p>';
+        return;
+      }
+
+      reiniciarRodizioBlocos();
+      const partesGrid = [];
+      for (let idx = 0; idx < restoGrid.length; idx++) {
+        const n = restoGrid[idx];
+        partesGrid.push(`
+          <article class="news-card ${idx === 0 ? 'grande' : ''}">
+            <div class="card-img-placeholder ${idx === 0 ? '' : 'small'}" ${n.imagemUrl ? `style="background-image:url('${n.imagemUrl}');background-size:cover;"` : ''}></div>
+            <div class="card-content">
+              <span class="tag-categoria ${n.categoria}">${nomesCategorias[n.categoria] || n.categoria}</span>
+              <h3><a href="noticia.html?id=${n.id}">${n.titulo}</a></h3>
+              ${idx === 0 && n.resumo ? `<p>${n.resumo}</p>` : ''}
+              <div class="card-meta"><span>${formatarData(n.criadoEm)}</span></div>
+            </div>
+          </article>
+        `);
+        partesGrid.push(await montarProximoBlocoDeBanners());
+      }
+      grid.innerHTML = partesGrid.join('');
+    }
+
+    // Busca via Enter ou botão
+    function irParaBusca() {
+      const termo = document.getElementById('searchInput').value.trim();
+      if (termo.length > 0) {
+        window.location.href = `busca.html?q=${encodeURIComponent(termo)}`;
+      }
+    }
+    window.buscar = irParaBusca;
+
+    // Estado de login no header
+    observarLogin((user, cargo) => {
+      const linkLogin = document.getElementById('linkLogin');
+      const linkCadastro = document.getElementById('linkCadastro');
+      if (!linkLogin || !linkCadastro) return;
+
+      if (user && cargo && cargo !== 'pendente') {
+        const cargosAdmin = ['administrador', 'moderador', 'colaborador'];
+        if (cargosAdmin.includes(cargo)) {
+          linkLogin.textContent = 'Painel Administrativo';
+          linkLogin.href = 'admin/dashboard.html';
+        } else {
+          linkLogin.textContent = 'Meu Perfil';
+          linkLogin.href = 'perfil.html';
+        }
+        linkCadastro.textContent = 'Sair';
+        linkCadastro.href = '#';
+        linkCadastro.addEventListener('click', async (e) => {
+          e.preventDefault();
+          await sair();
+          window.location.reload();
+        });
+
+        const avatar = document.getElementById('avatarHeader');
+        if (avatar) {
+          if (user.photoURL) {
+            avatar.src = user.photoURL;
+          } else {
+            const inicial = (user.displayName || user.email || '?').charAt(0).toUpperCase();
+            avatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(inicial) + '&background=00cc66&color=0a0a0a&size=64&bold=true';
+          }
+          avatar.style.display = 'inline-block';
+        }
+      }
+    });
+
+    
+
+
+carregarNoticias();
+
+    async function carregarAgroNoticias() {
+      const grid = document.getElementById('agroGrid');
+      if (!grid) return;
+      try {
+        const q = query(collection(db,'noticias'),where('categoria','==','agro'),where('status','==','publicada'),orderBy('criadoEm','desc'),limit(2));
+        const snap = await getDocs(q);
+        if (snap.empty){grid.innerHTML='<p style="color:#888;font-size:13px;">Nenhuma notícia de agro ainda.</p>';return;}
+        grid.innerHTML='';
+        snap.forEach((d,i)=>{
+          const n=d.data();
+          const art=document.createElement('article');
+          art.className='agro-card'+(i===0?' destaque':'');
+          art.innerHTML=`${n.imagemUrl?`<div style="width:100%;height:160px;background:url('${n.imagemUrl}') center/cover;margin-bottom:12px;"></div>`:'<div class="agro-icon">🌿</div>'}<span class="tag-categoria agro">Agro</span><h3>${n.titulo||''}</h3><p>${(n.resumo||n.conteudo||'').substring(0,100)}...</p><a href="noticia.html?id=${d.id}">Leia mais →</a>`;
+          grid.appendChild(art);
+        });
+      } catch(e){grid.innerHTML='';}
+    }
+
+    async function carregarCartaAoLeitor() {
+      try {
+        const q = query(collection(db,'edicoes'),where('status','==','publicada'),orderBy('criadoEm','desc'),limit(1));
+        const snap = await getDocs(q);
+        if(snap.empty) return;
+        const ed = snap.docs[0].data();
+        if(!ed.cartaLeitor) return;
+        document.getElementById('cartaLeitorEdicao').textContent = ed.nome||'Edição Atual';
+        document.getElementById('cartaLeitorTexto').textContent = ed.cartaLeitor.substring(0,400)+(ed.cartaLeitor.length>400?'...':'');
+        document.getElementById('cartaLeitorSection').style.display='block';
+      } catch(e){}
+    }
+
+    async function carregarServico() {
+      try {
+        const snap = await getDoc(doc(db,'config','servico'));
+        if(!snap.exists()) return;
+        const s = snap.data();
+        if(!s.titulo) return;
+        document.getElementById('servicoGrid').innerHTML=`<div class="servico-card"><div class="servico-icon">${s.icone||'📢'}</div><h3>${s.titulo}</h3><p>${s.descricao||''}</p><a href="${s.link||'#'}" class="btn-servico">${s.botaoTexto||'Saiba mais'}</a></div>`;
+      } catch(e){}
+    }
+
+    carregarAgroNoticias();
+    carregarCartaAoLeitor();
+    carregarServico();
+
+
+    montarCarrossel(document.getElementById('carrosselPublicidade'));
+    montarBannersRodape(document.getElementById('rodapePublicidade'));
+    (async function carregarBannerLateral() {
+      const banners = await obterBannersAtivos();
+      const el = document.getElementById('bannerLateral');
+      if (!el) return;
+      if (banners.length === 0) {
+        el.innerHTML = '<div class="ad-placeholder"><span>Seu anúncio aqui</span><small>Fale com nossa equipe comercial</small></div>';
+        return;
+      }
+      const escolhido = banners[Math.floor(Math.random() * banners.length)];
+      el.innerHTML = `<a href="${escolhido.link}" target="_blank" rel="noopener noreferrer" class="banner-pub"><img src="${escolhido.imagemUrl}" alt="${escolhido.nomeAnunciante}"></a>`;
+    })();
+  </script>
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    (async function carregarConfigGeral() {
+      try {
+        const snap = await getDoc(doc(db, 'configuracoes', 'geral'));
+        const c = snap.data();
+
+        if (c.logoTexto) {
+          const partes = c.logoTexto.split('.');
+          const nome = partes[0] || c.logoTexto;
+          const sufixo = partes.length > 1 ? '.' + partes.slice(1).join('.') : '';
+          ['logoNome', 'logoNomeRodape'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = nome;
+          });
+          ['logoSufixo', 'logoSufixoRodape'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = sufixo;
+          });
+        }
+
+        const elTagline = document.getElementById('logoTaglineTexto');
+        if (elTagline && c.tagline) elTagline.textContent = c.tagline;
+
+        const elCidade = document.getElementById('cidadeRegiao');
+        if (elCidade && c.enderecoContato) elCidade.textContent = c.enderecoContato;
+
+        const elContato = document.getElementById('footerContato');
+        if (elContato && (c.emailContato || c.telefoneContato)) {
+          elContato.innerHTML = (c.emailContato || '') + (c.emailContato && c.telefoneContato ? '<br>' : '') + (c.telefoneContato || '');
+        }
+
+        const mapaRedes = {
+          linkFacebook: c.facebook,
+          linkInstagram: c.instagram,
+          linkYoutube: c.youtube,
+          linkWhatsapp: c.whatsapp
+        };
+        Object.entries(mapaRedes).forEach(([id, url]) => {
+          const el = document.getElementById(id);
+          if (el && url) {
+            el.href = url;
+            el.target = '_blank';
+            el.rel = 'noopener noreferrer';
+          }
+        });
+        if (c.breakingNews) { const el = document.querySelector('.breaking-scroll span'); if (el) el.textContent = c.breakingNews; }
+      } catch (e) { console.error('Erro ao carregar configuracoes gerais:', e); }
+    })();
+  </script>
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { collection, getDocs, orderBy, query } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    (async function carregarEquipe() {
+      const grid = document.getElementById('equipeGrid');
+      try {
+        const q = query(collection(db, 'equipe'), orderBy('ordem'));
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          grid.innerHTML = '';
+          return;
+        }
+        grid.innerHTML = '';
+        snap.forEach(d => {
+          const m = d.data();
+          const card = document.createElement('div');
+          card.className = 'equipe-card';
+          card.innerHTML = `
+            <div class="equipe-avatar" style="${m.fotoUrl ? 'background-image:url(' + m.fotoUrl + ');background-size:cover;' : ''}"></div>
+            <strong>${m.nome || ''}</strong>
+            <span>${m.cargo || ''}</span>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (e) { grid.innerHTML = ''; console.error('Erro ao carregar equipe:', e); }
+    })();
+  </script>
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { collection, getDocs, orderBy, query } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    // Categorias fixas do menu (as mesmas que já existem em <nav class="main-nav">).
+    // Usamos essa lista direto, sem depender de uma coleção "categorias" cadastrada à parte.
+    const CATEGORIAS_FIXAS = [
+      { nome: 'Editorial', slug: 'editorial' },
+      { nome: 'Política', slug: 'politica' },
+      { nome: 'Economia', slug: 'economia' },
+      { nome: 'Regional', slug: 'regional' },
+      { nome: 'Agro', slug: 'agro' },
+      { nome: 'Esportes', slug: 'esportes' },
+      { nome: 'Cultura', slug: 'cultura' },
+      { nome: 'Saúde', slug: 'saude' },
+      { nome: 'Tecnologia', slug: 'tecnologia' },
+      { nome: 'Educação', slug: 'educacao' },
+      { nome: 'Entretenimento', slug: 'entretenimento' },
+      { nome: 'Brasil/Mundo', slug: 'brasil-mundo' },
+      { nome: 'Segurança', slug: 'seguranca' }
+    ];
+
+    (async function carregarMenuCategorias() {
+      try {
+        // Tenta ler categorias cadastradas no banco (caso você cadastre futuramente);
+        // se não houver nenhuma, usa a lista fixa acima — assim nunca fica vazio.
+        const q = query(collection(db, 'categorias'), orderBy('ordem'));
+        const snap = await getDocs(q);
+
+        let categoriasParaSecoes = CATEGORIAS_FIXAS;
+
+        if (!snap.empty) {
+          const menuPrincipal = document.getElementById('menuCategorias');
+          const menuLateral = document.getElementById('sidebarCategorias');
+          categoriasParaSecoes = [];
+
+          const categoriasOrdenadas = [];
+          snap.forEach(d => categoriasOrdenadas.push(d.data()));
+
+          categoriasOrdenadas.forEach(cat => {
+            const slug = cat.slug || cat.nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'-');
+            const href = 'categoria.html?c=' + slug;
+            categoriasParaSecoes.push({ nome: cat.nome, slug });
+
+            if (menuPrincipal) {
+              const li = document.createElement('li');
+              li.innerHTML = '<a href="' + href + '">' + cat.nome + '</a>';
+              menuPrincipal.appendChild(li);
+            }
+
+            if (menuLateral) {
+              const a = document.createElement('a');
+              a.href = href;
+              a.textContent = (cat.emoji || '') + ' ' + cat.nome;
+              const editorialLink = menuLateral.querySelector('a[href="edicoes.html"]');
+              if (editorialLink) menuLateral.insertBefore(a, editorialLink);
+              else menuLateral.appendChild(a);
+            }
+          });
+        }
+
+        montarSecoesPorCategoria(categoriasParaSecoes);
+      } catch (e) {
+        console.error('Erro ao carregar categorias:', e);
+        montarSecoesPorCategoria(CATEGORIAS_FIXAS);
+      }
+    })();
+
+    // Monta, na home, uma seção por categoria no estilo Revista Oeste:
+    // 1 notícia em destaque (maior, à esquerda) + lista vertical (à direita) + link "Ver todas".
+    async function montarSecoesPorCategoria(categorias) {
+      const container = document.getElementById('secoesPorCategoria');
+      if (!container) return;
+
+      const { listarPorCategoria } = await import('./js/noticias.js');
+      let html = '';
+
+      for (const cat of categorias) {
+        let noticias = [];
+        try {
+          noticias = await listarPorCategoria(cat.slug, 5);
+        } catch (e) {
+          console.error('Erro ao listar categoria ' + cat.slug + ':', e);
+          continue;
+        }
+        if (noticias.length === 0) continue; // categoria sem notícias não aparece na home
+
+        const destaque = noticias[0];
+        const resto = noticias.slice(1);
+
+        html += `
+          <section class="secao-categoria">
+            <h2 class="secao-categoria-titulo">${cat.nome}</h2>
+            <div class="secao-categoria-corpo">
+              <a href="noticia.html?id=${destaque.id}" class="secao-cat-destaque">
+                <img src="${destaque.imagemUrl || ''}" alt="${destaque.titulo || ''}">
+                <h3>${destaque.titulo || ''}</h3>
+                ${destaque.resumo ? `<p>${destaque.resumo}</p>` : ''}
+              </a>
+              <div class="secao-cat-lista">
+                ${resto.map(n => `
+                  <a href="noticia.html?id=${n.id}" class="secao-cat-item">
+                    <img src="${n.imagemUrl || ''}" alt="${n.titulo || ''}">
+                    <h4>${n.titulo || ''}</h4>
+                  </a>
+                `).join('')}
+              </div>
+            </div>
+            <a href="categoria.html?c=${cat.slug}" class="secao-cat-vertodas">Ver todas as notícias sobre ${cat.nome} →</a>
+          </section>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+  </script>
+  <script>
+    (async function carregarCotacoes() {
+      const el = document.getElementById('cotacoesScroll');
+      if (!el) return;
+
+      try {
+        const [resFiat, resCrypto] = await Promise.all([
+          fetch('https://api.exchangerate-api.com/v4/latest/USD'),
+          fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,cardano,binancecoin,ripple&vs_currencies=brl,usd&include_24hr_change=true')
+        ]);
+
+        const fiat = await resFiat.json();
+        const crypto = await resCrypto.json();
+
+        const brl = fiat.rates.BRL || 0;
+        const eur = fiat.rates.EUR || 0;
+        const gbp = fiat.rates.GBP || 0;
+        const jpy = fiat.rates.JPY || 0;
+        const ars = fiat.rates.ARS || 0;
+        const cny = fiat.rates.CNY || 0;
+        const rub = fiat.rates.RUB || 0;
+
+        function seta(val) {
+          return val >= 0 ? '<span class="cot-up">▲ ' + Math.abs(val).toFixed(1) + '%</span>' : '<span class="cot-down">▼ ' + Math.abs(val).toFixed(1) + '%</span>';
+        }
+
+        function fmt(val, casas) {
+          return parseFloat(val).toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+        }
+
+        const moedas = [
+          '💵 <span class="cot-nome">USD/BRL</span> <span class="cot-valor">R$ ' + fmt(brl, 2) + '</span>',
+          '💶 <span class="cot-nome">EUR/USD</span> <span class="cot-valor">$ ' + fmt(1/eur, 4) + '</span>',
+          '💷 <span class="cot-nome">GBP/USD</span> <span class="cot-valor">$ ' + fmt(1/gbp, 4) + '</span>',
+          '🇯🇵 <span class="cot-nome">JPY/USD</span> <span class="cot-valor">$ ' + fmt(1/jpy, 4) + '</span>',
+          '🇦🇷 <span class="cot-nome">ARS/BRL</span> <span class="cot-valor">R$ ' + fmt(brl/ars, 4) + '</span>',
+          '🇨🇳 <span class="cot-nome">CNY/USD</span> <span class="cot-valor">$ ' + fmt(1/cny, 4) + '</span>',
+          '🇷🇺 <span class="cot-nome">RUB/USD</span> <span class="cot-valor">$ ' + fmt(1/rub, 5) + '</span>',
+        ];
+
+        const criptos = [
+          ['bitcoin', '₿ BTC'],
+          ['ethereum', 'Ξ ETH'],
+          ['solana', '◎ SOL'],
+          ['binancecoin', '⬡ BNB'],
+          ['cardano', '₳ ADA'],
+          ['ripple', '✕ XRP'],
+        ];
+
+        const itensAdicional = criptos.map(([id, nome]) => {
+          const d = crypto[id];
+          if (!d) return '';
+          const chg = d.usd_24h_change;
+          return nome + ' <span class="cot-valor">$ ' + fmt(d.usd, d.usd > 100 ? 2 : 4) + '</span> ' + seta(chg);
+        }).filter(Boolean);
+
+        const todos = [...moedas, ...itensAdicional];
+        el.innerHTML = todos.map(item => '<span class="cot-item">' + item + '</span><span class="cot-sep">|</span>').join('');
+
+        // Atualiza a cada 5 minutos
+        setTimeout(carregarCotacoes, 5 * 60 * 1000);
+
+      } catch (e) {
+        el.innerHTML = '<span style="color:#555;">Cotações indisponíveis</span>';
+      }
+    })();
+  </script>
+
+  <script>
+    (async function cotAgro() {
+      const el = document.getElementById("cotacoesAgroSlide");
+      try {
+        const r = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
+        const d = await r.json();
+        const brl = d.rates.BRL || 5.20;
+        const items = [
+          {n:"Boi Gordo",e:"🐄",v:(285*brl/5.20).toFixed(2),u:"@/15kg"},
+          {n:"Café",e:"☕",v:(1850*brl/5.20).toFixed(2),u:"sc/60kg"},
+          {n:"Soja",e:"🫘",v:(130*brl/5.20).toFixed(2),u:"sc/60kg"},
+          {n:"Milho",e:"🌽",v:(68*brl/5.20).toFixed(2),u:"sc/60kg"},
+          {n:"Cacau",e:"🍫",v:(22500*brl/5.20).toFixed(2),u:"ton"},
+        ];
+        el.innerHTML = items.map(i=>"<div class=agro-cot-card><div class=agro-cot-emoji>"+i.e+"</div><div class=agro-cot-nome>"+i.n+"</div><div class=agro-cot-valor>R$ "+i.v+"</div><div class=agro-cot-unidade>"+i.u+"</div></div>").join("");
+        setTimeout(cotAgro, 5*60*1000);
+      } catch(e) { el.innerHTML="<p style=color:#888>Indisponível</p>"; }
+    })();
+  </script>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    const LABELS_CARGO_EDITORIAL = {
+      "editor-chefe": "Editor-chefe",
+      "jornalista": "Jornalista",
+      "colunista": "Colunista",
+      "revisor": "Revisor",
+      "editor-de-texto": "Editor de Texto",
+      "correspondente": "Correspondente",
+      "editor-chefe-jornalista": "Editor-chefe e Jornalista"
+    };
+
+    (async function carregarEquipe() {
+      const grid = document.getElementById('equipeGrid');
+      if (!grid) return;
+      try {
+        const snap = await getDocs(collection(db, 'usuarios'));
+        const equipe = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(u => u.cargoEditorial && u.cargoEditorial.trim() !== '');
+
+        if (equipe.length === 0) {
+          grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;">Equipe ainda nao cadastrada.</p>';
+          return;
+        }
+
+        grid.innerHTML = equipe.map(u => `
+          <a href="autor.html?uid=${u.id}" class="equipe-card" style="text-decoration:none;color:inherit;">
+            <div class="equipe-avatar" ${u.fotoUrl ? `style="background-image:url('${u.fotoUrl}');background-size:cover;background-position:center;"` : ''}></div>
+            <strong>${u.nome || 'Sem nome'}</strong>
+            <span>${LABELS_CARGO_EDITORIAL[u.cargoEditorial] || u.cargoEditorial}</span>
+          </a>
+        `).join('');
+      } catch (e) {
+        console.error('Erro ao carregar equipe:', e);
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#888;">Nao foi possivel carregar a equipe.</p>';
+      }
+    })();
+  </script>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    function formatarDataEdicao(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return d.toLocaleDateString('pt-BR');
+    }
+
+    (async function carregarUltimaEdicao() {
+      const section = document.getElementById('ultimaEdicaoSection');
+      if (!section) return;
+      try {
+        const snapEdicoes = await getDocs(collection(db, 'edicoes'));
+        const edicoesPublicadas = snapEdicoes.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(ed => ed.status === 'publicada')
+          .sort((a, b) => (b.criadoEm || '').localeCompare(a.criadoEm || ''));
+
+        if (edicoesPublicadas.length === 0) {
+          section.style.display = 'none';
+          return;
+        }
+
+        const edicao = edicoesPublicadas[0];
+
+        const snapNoticias = await getDocs(query(
+          collection(db, 'noticias'),
+          where('edicao', '==', edicao.nome),
+          where('status', '==', 'publicado')
+        ));
+        const artigos = snapNoticias.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => (a.ordemEdicao || 0) - (b.ordemEdicao || 0));
+
+        if (artigos.length === 0) {
+          section.style.display = 'none';
+          return;
+        }
+
+        const dataExibida = edicao.dataLancamento
+          ? new Date(edicao.dataLancamento + 'T00:00:00').toLocaleDateString('pt-BR')
+          : formatarDataEdicao(edicao.criadoEm);
+
+        section.style.display = 'block';
+        section.innerHTML = `
+          <div class="ultima-edicao-wrap">
+            <div class="ultima-edicao-numero">${edicao.nome}</div>
+            <div class="ultima-edicao-data">${dataExibida}</div>
+            <div class="ultima-edicao-corpo">
+              <div class="ultima-edicao-capa">
+                ${edicao.capaUrl
+                  ? `<img src="${edicao.capaUrl}" alt="Capa da ${edicao.nome}">`
+                  : `<div style="width:200px;height:266px;background:#eee;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">Sem capa</div>`
+                }
+              </div>
+              <div class="ultima-edicao-artigos">
+                ${artigos.map(a => `
+                  <a href="noticia.html?id=${a.id}" class="ultima-edicao-artigo">
+                    <div class="img-mini" style="${a.imagemUrl ? `background-image:url('${a.imagemUrl}')` : ''}"></div>
+                    <h4>${a.titulo || ''}</h4>
+                    <div class="autor-mini">${a.autorNome || 'Redacao'}</div>
+                    <span class="tag-gratis-mini">${a.gratuito ? 'Gratuito' : 'Assinante'}</span>
+                  </a>
+                `).join('')}
+              </div>
+            </div>
+            <a href="edicao.html?e=${encodeURIComponent(edicao.nome)}" class="ultima-edicao-ver-todas">Ver edicao completa &rarr;</a>
+          </div>
+        `;
+      } catch (e) {
+        console.error('Erro ao carregar ultima edicao:', e);
+        section.style.display = 'none';
+      }
+    })();
+
+    // === BLOQUEIA ANUNCIOS PARA ASSINANTES ===
+    async function verificarAssinanteEBloquearAnuncios() {
+      try {
+        const { auth } = await import("./js/firebase-config.js");
+        const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+        const { db } = await import("./js/firebase-config.js");
+        const user = auth.currentUser;
+        if (!user) return;
+        const snap = await getDoc(doc(db, "usuarios", user.uid));
+        if (!snap.exists()) return;
+        const dados = snap.data();
+        const planoAtivo = dados.planoStatus === "ativo" && dados.plano && dados.plano !== "gratuito";
+        if (!planoAtivo) return;
+        // Verifica se nao expirou
+        if (dados.planoVencimento) {
+          const vencimento = new Date(dados.planoVencimento);
+          if (vencimento < new Date()) return;
+        }
+        // Esconde todos os anuncios
+        const seletores = [
+          "#carrosselPublicidade",
+          "#rodapePublicidade", 
+          "#bannerLateral",
+          "#bannerNoticia",
+          ".banner-pub",
+          ".publicidade-bloco",
+          "ins.adsbygoogle",
+          "[id*='google_ads']",
+          "[class*='ad-']",
+          "[class*='anuncio']"
+        ];
+        seletores.forEach(s => {
+          document.querySelectorAll(s).forEach(el => {
+            el.style.display = "none";
+          });
+        });
+        // Injeta CSS global para garantir
+        const style = document.createElement("style");
+        style.textContent = "#carrosselPublicidade,#rodapePublicidade,#bannerLateral,#bannerNoticia,.banner-pub,.publicidade-bloco,ins.adsbygoogle{display:none!important;}";
+        document.head.appendChild(style);
+      } catch(e) {}
+    }
+  </script>
+</body>
+</html>

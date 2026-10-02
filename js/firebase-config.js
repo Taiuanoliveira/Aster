@@ -1,0 +1,20 @@
+// === PROJETO ASTER – Configuração do Firebase ===
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+// Cole aqui os dados do NOVO projeto Firebase do Aster (Configurações do projeto > Seus apps > Web)
+const firebaseConfig = {
+  apiKey: "COLE_AQUI",
+  authDomain: "COLE_AQUI.firebaseapp.com",
+  projectId: "COLE_AQUI",
+  storageBucket: "COLE_AQUI.firebasestorage.app",
+  messagingSenderId: "COLE_AQUI",
+  appId: "COLE_AQUI"
+};
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);

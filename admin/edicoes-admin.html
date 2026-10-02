@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edições – Painel Projeto Aster</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+  <style>.ql-editor { min-height: 180px; line-height: 1.7; }</style>
+  <style>
+    .edicao-item { border: 1px solid #eee; padding: 16px; margin-bottom: 16px; }
+    .edicao-cabecalho { display: flex; gap: 14px; align-items: flex-start; }
+    .edicao-cabecalho img { width: 56px; height: 74px; object-fit: cover; flex-shrink: 0; }
+    .edicao-cabecalho-textos { flex-grow: 1; }
+    .tag-status { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 3px 10px; letter-spacing: 0.5px; }
+    .tag-status.rascunho { background: #fff3cd; color: #8a6d1d; }
+    .tag-status.publicada { background: #d4edda; color: #1a5c2a; }
+    .edicao-acoes { display: flex; gap: 8px; margin-top: 10px; }
+    .edicao-acoes button { font-size: 12px; font-weight: 600; padding: 7px 14px; cursor: pointer; border: 1px solid #ddd; background: #fff; }
+    .edicao-acoes button.publicar { background: #E8A33D; color: #fff; border-color: #E8A33D; }
+    .edicao-acoes button.despublicar { background: #fff3cd; border-color: #d8b94a; color: #8a6d1d; }
+    .edicao-acoes button.excluir { color: #b3261e; }
+    .toggle-materias { font-size: 12px; color: #E8A33D; font-weight: 600; cursor: pointer; margin-top: 10px; display: inline-block; }
+    .lista-materias-edicao { display: none; margin-top: 14px; border-top: 1px solid #f0f0f0; padding-top: 12px; }
+    .lista-materias-edicao.aberta { display: block; }
+    .materia-ordem-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f5f5f5; }
+    .materia-ordem-item input[type="number"] { width: 56px; padding: 5px; text-align: center; }
+    .materia-ordem-item .materia-titulo { flex-grow: 1; font-size: 13px; }
+    .materia-ordem-item .materia-status-mini { font-size: 11px; color: #888; }
+    .btn-salvar-ordem { margin-top: 10px; font-size: 12px; background: #0C3B5C; color: #fff; border: none; padding: 8px 14px; cursor: pointer; }
+    .aviso-sem-materias { font-size: 13px; color: #888; padding: 10px 0; }
+  </style>
+</head>
+<body class="admin-body">
+
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-logo">Projeto Aster</div>
+      <p class="admin-cargo-label">Cargo: <strong id="cargoAtual">—</strong></p>
+      <nav class="admin-nav" id="menuAdmin"></nav>
+      <a href="../perfil.html" class="admin-btn-sair" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px;">Meu Perfil</a>
+      <button id="btnSair" class="admin-btn-sair">Sair</button>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <h1>Edições</h1>
+        <a href="../index.html" class="admin-link-site">Ver site →</a>
+      </header>
+
+      <section class="admin-bloco">
+        <div id="mensagemErro" class="auth-msg erro" style="display:none;"></div>
+        <div id="mensagemSucesso" class="auth-msg sucesso" style="display:none;"></div>
+
+        <form id="formEdicao" class="form-noticia">
+          <label>Tipo de edição</label>
+          <div style="display:flex;gap:10px;margin-top:8px;">
+            <label style="display:flex;align-items:center;gap:6px;background:#f4f4f4;padding:10px 16px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;border:1.5px solid #E8A33D;flex:1;justify-content:center;">
+              <input type="radio" name="tipoEdicao" value="numerada" checked style="width:auto;"> 📰 Numerada
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;background:#f4f4f4;padding:10px 16px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;border:1.5px solid #eee;flex:1;justify-content:center;">
+              <input type="radio" name="tipoEdicao" value="especial" style="width:auto;"> ⭐ Especial
+            </label>
+          </div>
+
+          <div id="campoNumerada" style="margin-top:14px;">
+            <label>Número da edição</label>
+            <input type="number" id="numeroEdicao" min="1" placeholder="Gerado automaticamente" readonly style="background:#f9f9f9;color:#555;">
+            <p id="previewNomeEdicao" style="font-size:13px;color:#E8A33D;font-weight:700;margin-top:6px;"></p>
+          </div>
+
+          <div id="campoEspecial" style="display:none;margin-top:14px;">
+            <label>Nome da edição especial</label>
+            <input type="text" id="nomeEspecial" placeholder="Ex: Edição Especial Eleições 2026">
+          </div>
+
+          <input type="hidden" id="nomeEdicao">
+
+          <label for="temaEdicao">Tema / categoria principal</label>
+          <select id="temaEdicao" required>
+            <option value="">Selecione...</option>
+            <option value="politica">Política</option>
+            <option value="economia">Economia</option>
+            <option value="regional">Regional</option>
+            <option value="agro">Agro</option>
+            <option value="esportes">Esportes</option>
+            <option value="cultura">Cultura</option>
+            <option value="saude">Saúde</option>
+            <option value="geral">Geral / Variados</option>
+          </select>
+
+          <label for="descricaoEdicao">Descrição resumida (aparece na lista de edições)</label>
+          <textarea id="descricaoEdicao" rows="2" placeholder="Breve descrição desta edição"></textarea>
+
+          <label for="cartaLeitor">Carta ao leitor <small style="color:#888;font-weight:400;">(sempre gratuita, aparece antes dos artigos)</small></label>
+          <div id="editorCartaLeitor" style="background:#fff;"></div>
+
+          <label style="display:flex;align-items:center;gap:8px;margin-top:16px;">
+            <input type="checkbox" id="edicaoGratuita" style="width:auto;">
+            <span>Edição inteiramente gratuita <small style="color:#888;font-weight:400;">(libera todos os artigos desta edição automaticamente)</small></span>
+          </label>
+
+          <label for="capaEdicao">Capa da edição</label>
+          <input type="file" id="capaEdicao" accept="image/*">
+          <img id="previewCapa" style="display:none;max-width:160px;margin-top:10px;border:1px solid #ddd;">
+
+          <div class="form-acoes">
+            <button type="button" class="btn-primario" onclick="criarEdicao()">Criar edição (como rascunho)</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="admin-bloco">
+        <h2 style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:6px;">Edições existentes</h2>
+        <p style="font-size:13px;color:#888;margin-bottom:16px;">
+          Uma edição em <strong>rascunho</strong> pode receber novas matérias e ter sua capa/carta editadas.
+          Depois de <strong>publicada</strong>, ela trava: ninguém mais consegue vincular novas matérias a ela
+          (use "Voltar para rascunho" se precisar corrigir algo antes do público ver).
+        </p>
+        <div id="listaEdicoes">Carregando...</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+  <script type="module">
+    import { protegerPagina, sair, CARGOS } from "../js/auth.js";
+    import { db } from "../js/firebase-config.js";
+    import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { enviarImagemCloudinary } from "../js/cloudinary.js";
+
+    // Editor rico da Carta ao Leitor: negrito, itálico, subtítulo, citação, link e imagens no meio do texto.
+    const editorCartaLeitor = new Quill('#editorCartaLeitor', {
+      theme: 'snow',
+      placeholder: 'Escreva a carta ao leitor desta edição...',
+      modules: {
+        toolbar: {
+          container: [
+            [{ 'header': [2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            ['link', 'blockquote', 'image'],
+            ['clean']
+          ],
+          handlers: {
+            image: function() {
+              const input = document.createElement('input');
+              input.setAttribute('type', 'file');
+              input.setAttribute('accept', 'image/*');
+              input.click();
+              input.onchange = async () => {
+                const arquivo = input.files[0];
+                if (!arquivo) return;
+                const range = editorCartaLeitor.getSelection(true) || { index: editorCartaLeitor.getLength() };
+                editorCartaLeitor.insertText(range.index, 'Enviando imagem...', { italic: true });
+                try {
+                  const url = await enviarImagemCloudinary(arquivo);
+                  editorCartaLeitor.deleteText(range.index, 'Enviando imagem...'.length);
+                  editorCartaLeitor.insertEmbed(range.index, 'image', url);
+                  editorCartaLeitor.setSelection(range.index + 1);
+                } catch (e) {
+                  editorCartaLeitor.deleteText(range.index, 'Enviando imagem...'.length);
+                  alert('Erro ao enviar imagem: ' + e.message);
+                }
+              };
+            }
+          }
+        }
+      }
+    });
+
+    let usuarioAtual = null;
+    let arquivoCapaSelecionado = null;
+
+    function montarMenu(cargo) {
+      const menu = document.getElementById('menuAdmin');
+      const itens = [
+        { href: 'dashboard.html', label: '📊 Dashboard', cargos: ['administrador','editor','colunista','revisor'] },
+        { href: 'publicar.html', label: '✍️ Nova Notícia', cargos: ['administrador','editor','colunista'] },
+        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Notícias', cargos: ['administrador','editor','colunista','revisor'] },
+        { href: 'categorias-admin.html', label: '🏷️ Categorias', cargos: ['administrador','editor'] },
+        { href: 'edicoes-admin.html', label: '📚 Edições', cargos: ['administrador','editor'] },
+        { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
+        { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
+        { href: 'publicidade-admin.html', label: '📢 Publicidade', cargos: ['administrador'] },
+        { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
+        { href: 'paywall-admin.html', label: '🔒 Muro Pago', cargos: ['administrador'] },
+        { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
+        { href: 'configuracoes.html', label: '⚙️ Configurações', cargos: ['administrador'] },
+      ];
+      menu.innerHTML = itens
+        .filter(item => item.cargos.includes(cargo))
+        .map(item => `<a href="${item.href}">${item.label}</a>`)
+        .join('');
+    }
+
+    protegerPagina([CARGOS.ADMIN, CARGOS.EDITOR], (user, cargo) => {
+      usuarioAtual = user;
+      document.getElementById('cargoAtual').textContent = cargo;
+      montarMenu(cargo);
+      carregarEdicoes();
+    });
+
+    document.getElementById('btnSair').addEventListener('click', async () => {
+      await sair();
+      window.location.href = '../index.html';
+    });
+
+    function mostrarErro(texto) {
+      const el = document.getElementById('mensagemErro');
+      document.getElementById('mensagemSucesso').style.display = 'none';
+      el.textContent = texto;
+      el.style.display = 'block';
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+    function mostrarSucesso(texto) {
+      const el = document.getElementById('mensagemSucesso');
+      document.getElementById('mensagemErro').style.display = 'none';
+      el.textContent = texto;
+      el.style.display = 'block';
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    document.getElementById('capaEdicao').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      arquivoCapaSelecionado = file || null;
+      const preview = document.getElementById('previewCapa');
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+      }
+    });
+
+    window.criarEdicao = async function() {
+      const nome = document.getElementById('nomeEdicao').value.trim();
+      const tema = document.getElementById('temaEdicao').value;
+      const descricao = document.getElementById('descricaoEdicao').value.trim();
+      const cartaLeitor = editorCartaLeitor.root.innerHTML.trim();
+
+      if (!nome || !tema) {
+        mostrarErro('Preencha ao menos o nome e o tema da edição.');
+        return;
+      }
+
+      try {
+        let capaUrl = null;
+        if (arquivoCapaSelecionado) {
+          capaUrl = await enviarImagemCloudinary(arquivoCapaSelecionado);
+        }
+
+        await addDoc(collection(db, 'edicoes'), {
+          nome, tema, descricao, cartaLeitor,
+          capaUrl,
+          status: 'rascunho',
+          criadoEm: new Date().toISOString(),
+          criadoPor: usuarioAtual.displayName || usuarioAtual.email
+        });
+
+        mostrarSucesso('Edição criada como rascunho! Adicione matérias a ela em "Nova Notícia" antes de publicar.');
+        document.getElementById('formEdicao').reset();
+        editorCartaLeitor.setContents([]);
+        document.getElementById('previewCapa').style.display = 'none';
+        arquivoCapaSelecionado = null;
+        carregarEdicoes();
+      } catch (err) {
+        mostrarErro('Erro ao criar edição: ' + err.message);
+      }
+    };
+
+    async function carregarEdicoes() {
+      const container = document.getElementById('listaEdicoes');
+      try {
+        const q = query(collection(db, 'edicoes'), orderBy('criadoEm', 'desc'));
+        const snap = await getDocs(q);
+        if (snap.empty) {
+          container.innerHTML = '<p style="color:#777;font-size:13px;">Nenhuma edição criada ainda.</p>';
+          return;
+        }
+        container.innerHTML = '';
+        snap.forEach(d => {
+          const ed = d.data();
+          const status = ed.status || 'rascunho';
+          const div = document.createElement('div');
+          div.className = 'edicao-item';
+          div.innerHTML = `
+            <div class="edicao-cabecalho">
+              ${ed.capaUrl ? `<img src="${ed.capaUrl}">` : ''}
+              <div class="edicao-cabecalho-textos">
+                <span class="tag-status ${status}">${status === 'publicada' ? 'Publicada' : 'Rascunho'}</span>
+                <div><strong>${ed.nome}</strong></div>
+                <div style="font-size:12px;color:#777;">${ed.tema}${ed.descricao ? ' — ' + ed.descricao : ''}</div>
+              </div>
+            </div>
+            <div class="edicao-acoes">
+              ${status === 'rascunho'
+                ? `<button class="publicar" data-id="${d.id}" data-nome="${ed.nome}">Publicar edição</button>`
+                : `<button class="despublicar" data-id="${d.id}">Voltar para rascunho</button>`
+              }
+              <button class="excluir" data-id="${d.id}" data-nome="${ed.nome}">Excluir</button>
+            </div>
+            <span class="toggle-materias" data-id="${d.id}" data-nome="${ed.nome}">▾ Ver / ordenar matérias desta edição</span>
+            <div class="lista-materias-edicao" id="materias-${d.id}"></div>
+          `;
+
+          div.querySelector('.publicar')?.addEventListener('click', async (e) => {
+            if (confirm('Publicar a edição "' + ed.nome + '"? Depois de publicada, ela trava: não será mais possível vincular novas matérias a ela diretamente na tela de Nova Notícia.')) {
+              await updateDoc(doc(db, 'edicoes', d.id), { status: 'publicada' });
+              carregarEdicoes();
+            }
+          });
+
+          div.querySelector('.despublicar')?.addEventListener('click', async () => {
+            if (confirm('Voltar a edição "' + ed.nome + '" para rascunho? Ela deixará de aparecer publicamente até ser publicada de novo.')) {
+              await updateDoc(doc(db, 'edicoes', d.id), { status: 'rascunho' });
+              carregarEdicoes();
+            }
+          });
+
+          div.querySelector('.excluir').addEventListener('click', async () => {
+            if (confirm('Excluir a edição "' + ed.nome + '"? As matérias já escritas não serão apagadas, só deixam de pertencer a esta edição.')) {
+              await deleteDoc(doc(db, 'edicoes', d.id));
+              carregarEdicoes();
+            }
+          });
+
+          div.querySelector('.toggle-materias').addEventListener('click', () => abrirOuFecharMaterias(d.id, ed.nome));
+
+          container.appendChild(div);
+        });
+      } catch (err) {
+        container.innerHTML = '<p style="color:#b3261e;font-size:13px;">Erro ao carregar edições: ' + err.message + '</p>';
+      }
+    }
+
+    async function abrirOuFecharMaterias(edicaoId, nomeEdicao) {
+      const container = document.getElementById('materias-' + edicaoId);
+      const aberta = container.classList.contains('aberta');
+      if (aberta) {
+        container.classList.remove('aberta');
+        return;
+      }
+      container.classList.add('aberta');
+      container.innerHTML = '<p class="aviso-sem-materias">Carregando matérias...</p>';
+
+      try {
+        const q = query(collection(db, 'noticias'), where('edicao', '==', nomeEdicao));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          container.innerHTML = '<p class="aviso-sem-materias">Nenhuma matéria vinculada a esta edição ainda. Crie uma em "Nova Notícia" e selecione esta edição.</p>';
+          return;
+        }
+
+        const materias = snap.docs
+          .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
+          .sort((a, b) => (a.ordemEdicao || 0) - (b.ordemEdicao || 0));
+
+        container.innerHTML = materias.map(m => `
+          <div class="materia-ordem-item" data-id="${m.id}">
+            <input type="number" class="input-ordem" value="${m.ordemEdicao || 0}" min="0">
+            <span class="materia-titulo">${m.titulo || '(sem título)'}</span>
+            <span class="materia-status-mini">${m.status || ''}</span>
+          </div>
+        `).join('') + '<button type="button" class="btn-salvar-ordem">Salvar ordem desta edição</button>';
+
+        container.querySelector('.btn-salvar-ordem').addEventListener('click', async () => {
+          const itens = container.querySelectorAll('.materia-ordem-item');
+          try {
+            for (const item of itens) {
+              const id = item.dataset.id;
+              const ordem = parseInt(item.querySelector('.input-ordem').value) || 0;
+              await updateDoc(doc(db, 'noticias', id), { ordemEdicao: ordem });
+            }
+            mostrarSucesso('Ordem das matérias atualizada com sucesso!');
+          } catch (err) {
+            mostrarErro('Erro ao salvar ordem: ' + err.message);
+          }
+        });
+      } catch (err) {
+        container.innerHTML = '<p style="color:#b3261e;font-size:13px;">Erro ao carregar matérias: ' + err.message + '</p>';
+      }
+    }
+  </script>
+</body>
+</html>

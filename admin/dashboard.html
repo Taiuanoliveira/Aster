@@ -40,7 +40,7 @@
       </section>
 
       <section class="admin-bloco">
-        <h2 id="tituloLista">Notícias recentes</h2>
+        <h2 id="tituloLista">Artigos recentes</h2>
         <div id="listaNoticias" class="admin-lista-noticias">
           <p class="admin-carregando">Carregando...</p>
         </div>
@@ -82,15 +82,15 @@
       const menu = document.getElementById('menuAdmin');
       const itens = [
         { href: 'dashboard.html', label: '📊 Dashboard', cargos: ['administrador','editor','colunista','revisor'] },
-        { href: 'publicar.html', label: '✍️ Nova Notícia', cargos: ['administrador','editor','colunista'] },
-        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Notícias', cargos: ['administrador','editor','colunista','revisor'] },
+        { href: 'publicar.html', label: '✍️ Novo Artigo', cargos: ['administrador','editor','colunista'] },
+        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Artigos', cargos: ['administrador','editor','colunista','revisor'] },
         { href: 'categorias-admin.html', label: '🏷️ Categorias', cargos: ['administrador','editor'] },
+        { href: 'tags-admin.html', label: '🔖 Tags e Destaques', cargos: ['administrador','editor'] },
         { href: 'edicoes-admin.html', label: '📚 Edições', cargos: ['administrador','editor'] },
         { href: 'conteudo-admin.html', label: '🧩 Conteúdo do site', cargos: ['administrador','editor'] },
         { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
         { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
         { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
-        { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'configuracoes.html', label: '⚙️ Configurações', cargos: ['administrador'] },
       ];
@@ -108,13 +108,13 @@
       let noticias = [];
 
       if (cargo === CARGOS.COLUNISTA) {
-        tituloLista.textContent = 'Minhas notícias';
+        tituloLista.textContent = 'Meus artigos';
         noticias = await listarPorAutor(user.uid);
       } else if (cargo === CARGOS.REVISOR) {
-        tituloLista.textContent = 'Notícias aguardando revisão';
+        tituloLista.textContent = 'Artigos aguardando revisão';
         noticias = await listarPorStatus(STATUS.EM_REVISAO);
       } else {
-        tituloLista.textContent = 'Notícias publicadas recentemente';
+        tituloLista.textContent = 'Artigos publicados recentemente';
         noticias = await listarPublicadas(10);
       }
 
@@ -131,7 +131,7 @@
 
       // Lista de notícias
       if (noticias.length === 0) {
-        listaNoticias.innerHTML = '<p class="admin-vazio">Nenhuma notícia encontrada.</p>';
+        listaNoticias.innerHTML = '<p class="admin-vazio">Nenhum artigo encontrado.</p>';
         return;
       }
 

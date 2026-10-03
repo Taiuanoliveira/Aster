@@ -226,14 +226,16 @@
   // Para mudar o que cada cargo vê, edite só esta lista.
   const ITENS_ADMIN = [
     { icone: '📊', titulo: 'Dashboard',          href: 'admin/dashboard.html',           cargos: ['colunista','revisor','editor','administrador'] },
-    { icone: '✍️', titulo: 'Nova notícia',       href: 'admin/publicar.html',            cargos: ['colunista','editor','administrador'] },
-    { icone: '📰', titulo: 'Gerenciar notícias', href: 'admin/gerenciar-noticias.html',  cargos: ['colunista','revisor','editor','administrador'] },
+    { icone: '✍️', titulo: 'Novo artigo',        href: 'admin/publicar.html',            cargos: ['colunista','editor','administrador'] },
+    { icone: '📰', titulo: 'Gerenciar artigos',  href: 'admin/gerenciar-noticias.html',  cargos: ['colunista','revisor','editor','administrador'] },
     { icone: '🏷️', titulo: 'Categorias',         href: 'admin/categorias-admin.html',    cargos: ['editor','administrador'] },
+    { icone: '🔖', titulo: 'Tags e destaques',   href: 'admin/tags-admin.html',          cargos: ['editor','administrador'] },
     { icone: '📚', titulo: 'Edições',            href: 'admin/edicoes-admin.html',       cargos: ['editor','administrador'] },
+    { icone: '🧩', titulo: 'Conteúdo do site',   href: 'admin/conteudo-admin.html',      cargos: ['editor','administrador'] },
     { icone: '📈', titulo: 'Estatísticas',       href: 'admin/estatisticas-admin.html',  cargos: ['editor','administrador'] },
-    { icone: '🔖', titulo: 'Tags',               href: 'admin/tags-admin.html',          cargos: ['administrador'] },
     { icone: '👥', titulo: 'Equipe',             href: 'admin/equipe-admin.html',        cargos: ['administrador'] },
     { icone: '👤', titulo: 'Usuários e cargos',  href: 'admin/usuarios.html',            cargos: ['administrador'] },
+    { icone: '💳', titulo: 'Planos',             href: 'admin/planos-admin.html',        cargos: ['administrador'] },
     { icone: '⚙️', titulo: 'Configurações',      href: 'admin/configuracoes.html',       cargos: ['administrador'] }
   ];
   const NOMES_CARGO = { administrador: 'Administrador', editor: 'Editor', colunista: 'Colunista', revisor: 'Revisor' };
@@ -287,5 +289,6 @@
     }
   }
 </script>
+<script type="module">import('./js/site-config.js').then(m=>m.aplicarConfigSite()).catch(()=>{});</script>
 </body>
 </html>

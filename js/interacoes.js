@@ -1,4 +1,4 @@
-// === VERITAS NOTÍCIAS – Curtidas, Salvos, Comentários e Estatísticas ===
+// === PROJETO ASTER – Curtidas, Salvos, Comentários e Estatísticas ===
 
 import { db } from "./firebase-config.js";
 import {

@@ -45,13 +45,13 @@
         <div class="stat-card azul"><div class="stat-numero" id="totalCurtidas">—</div><div class="stat-label">❤️ Curtidas</div></div>
         <div class="stat-card roxo"><div class="stat-numero" id="totalComentarios">—</div><div class="stat-label">💬 Comentários</div></div>
         <div class="stat-card laranja"><div class="stat-numero" id="totalSalvos">—</div><div class="stat-label">🔖 Salvos</div></div>
-        <div class="stat-card vermelho"><div class="stat-numero" id="totalNoticias">—</div><div class="stat-label">📰 Notícias</div></div>
+        <div class="stat-card vermelho"><div class="stat-numero" id="totalNoticias">—</div><div class="stat-label">📰 Artigos</div></div>
       </div>
       <section class="admin-bloco">
         <div class="filtro-bar">
           <select id="filtroOrdem"><option value="visualizacoes">Ordenar: Visualizações</option><option value="curtidas">Ordenar: Curtidas</option><option value="comentarios">Ordenar: Comentários</option><option value="salvos">Ordenar: Salvos</option></select>
-          <select id="filtroCategoria"><option value="">Todas categorias</option><option value="politica">Política</option><option value="economia">Economia</option><option value="regional">Regional</option><option value="agro">Agro</option><option value="esportes">Esportes</option><option value="cultura">Cultura</option><option value="saude">Saúde</option><option value="tecnologia">Tecnologia</option></select>
-          <input type="text" id="filtroBusca" placeholder="Buscar notícia...">
+          <select id="filtroCategoria"><option value="">Todas categorias</option></select>
+          <input type="text" id="filtroBusca" placeholder="Buscar artigo...">
           <button class="btn-exportar" onclick="exportarCSV()">⬇ Exportar CSV</button>
         </div>
         <div id="tabelaContainer"><p style="color:#888;padding:20px;">Carregando...</p></div>
@@ -67,15 +67,15 @@
       const menu=document.getElementById('menuAdmin');
       const itens = [
         { href: 'dashboard.html', label: '📊 Dashboard', cargos: ['administrador','editor','colunista','revisor'] },
-        { href: 'publicar.html', label: '✍️ Nova Notícia', cargos: ['administrador','editor','colunista'] },
-        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Notícias', cargos: ['administrador','editor','colunista','revisor'] },
+        { href: 'publicar.html', label: '✍️ Novo Artigo', cargos: ['administrador','editor','colunista'] },
+        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Artigos', cargos: ['administrador','editor','colunista','revisor'] },
         { href: 'categorias-admin.html', label: '🏷️ Categorias', cargos: ['administrador','editor'] },
+        { href: 'tags-admin.html', label: '🔖 Tags e Destaques', cargos: ['administrador','editor'] },
         { href: 'edicoes-admin.html', label: '📚 Edições', cargos: ['administrador','editor'] },
         { href: 'conteudo-admin.html', label: '🧩 Conteúdo do site', cargos: ['administrador','editor'] },
         { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
         { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
         { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
-        { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'configuracoes.html', label: '⚙️ Configurações', cargos: ['administrador'] },
       ];
@@ -87,9 +87,17 @@
       await carregarDados();
     });
     document.getElementById('btnSair').addEventListener('click',async()=>{await sair();window.location.href='../index.html';});
-    async function carregarDados(){
+    async function preencherCategorias(){
       try{
-        const snap1=await getDocs(query(collection(db,'noticias'),where('status','==','publicada'),orderBy('criadoEm','desc')));
+        const sc=await getDocs(query(collection(db,'categorias'),orderBy('ordem')));
+        const sel=document.getElementById('filtroCategoria');
+        sc.forEach(d=>{const c=d.data();const o=document.createElement('option');o.value=c.slug||c.nome;o.textContent=c.nome;sel.appendChild(o);});
+      }catch(e){}
+    }
+    async function carregarDados(){
+      await preencherCategorias();
+      try{
+        const snap1=await getDocs(query(collection(db,'noticias'),where('status','in',['publicado','indexado'])));
         todasNoticias=snap1.docs.map(d=>({id:d.id,...d.data()}));
         const snap2=await getDocs(collection(db,'estatisticas'));
         snap2.forEach(d=>{todasStats[d.id]=d.data();});
@@ -116,15 +124,15 @@
     window.renderTabela=function(){
       const lista=getDados();
       const c=document.getElementById('tabelaContainer');
-      if(!lista.length){c.innerHTML='<p style="color:#888;padding:20px;">Nenhuma notícia encontrada.</p>';return;}
-      c.innerHTML=`<table class="tabela-stats"><thead><tr><th>#</th><th>Notícia</th><th>Categoria</th><th>👁 Views</th><th>❤️ Curtidas</th><th>💬 Coments</th><th>🔖 Salvos</th></tr></thead><tbody>${lista.map((n,i)=>`<tr><td style="color:#888;font-size:12px;">${i+1}</td><td class="titulo-noticia"><a href="../noticia.html?id=${n.id}" target="_blank">${n.titulo||'(sem título)'}</a></td><td><span class="tag-cat">${n.categoria||'—'}</span></td><td><span class="badge-num verde">${(n.stats.visualizacoes||0).toLocaleString('pt-BR')}</span></td><td><span class="badge-num azul">${n.stats.curtidas||0}</span></td><td><span class="badge-num roxo">${n.stats.comentarios||0}</span></td><td><span class="badge-num laranja">${n.stats.salvos||0}</span></td></tr>`).join('')}</tbody></table>`;
+      if(!lista.length){c.innerHTML='<p style="color:#888;padding:20px;">Nenhum artigo encontrado.</p>';return;}
+      c.innerHTML=`<table class="tabela-stats"><thead><tr><th>#</th><th>Artigo</th><th>Categoria</th><th>👁 Views</th><th>❤️ Curtidas</th><th>💬 Coments</th><th>🔖 Salvos</th></tr></thead><tbody>${lista.map((n,i)=>`<tr><td style="color:#888;font-size:12px;">${i+1}</td><td class="titulo-noticia"><a href="../noticia.html?id=${n.id}" target="_blank">${n.titulo||'(sem título)'}</a></td><td><span class="tag-cat">${n.categoria||'—'}</span></td><td><span class="badge-num verde">${(n.stats.visualizacoes||0).toLocaleString('pt-BR')}</span></td><td><span class="badge-num azul">${n.stats.curtidas||0}</span></td><td><span class="badge-num roxo">${n.stats.comentarios||0}</span></td><td><span class="badge-num laranja">${n.stats.salvos||0}</span></td></tr>`).join('')}</tbody></table>`;
     };
     window.exportarCSV=function(){
       const lista=getDados();
       const linhas=[['Título','Categoria','Visualizações','Curtidas','Comentários','Salvos']];
       lista.forEach(n=>linhas.push([`"${(n.titulo||'').replace(/"/g,'""')}"`,n.categoria||'',n.stats.visualizacoes||0,n.stats.curtidas||0,n.stats.comentarios||0,n.stats.salvos||0]));
       const blob=new Blob([linhas.map(l=>l.join(',')).join('\n')],{type:'text/csv;charset=utf-8;'});
-      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='estatisticas-veritas.csv';a.click();
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='estatisticas-aster.csv';a.click();
     };
     document.getElementById('filtroOrdem').addEventListener('change',renderTabela);
     document.getElementById('filtroCategoria').addEventListener('change',renderTabela);

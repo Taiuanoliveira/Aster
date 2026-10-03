@@ -7,16 +7,25 @@
 <article class="artigo" id="art"><p class="vazio">Carregando…</p></article>
 <script type="module">
 import { db } from './js/firebase-config.js';
-import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { doc, getDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { montarTopoRodape, esc, sanitizar, dataBonita } from './js/leitura.js';
 import { marcarReferencias } from './js/versiculos.js';
-import { marcarReferencias } from './js/versiculos.js';
+import { registrarVisualizacao } from './js/interacoes.js';
 montarTopoRodape();
+async function artigoVisivel(s){
+  if(!s||!s.exists()) return false;
+  const d=s.data();
+  if(d.status==='publicado') return true;
+  if(d.status==='indexado'&&d.edicao){
+    try{const q=await getDocs(query(collection(db,'edicoes'),where('nome','==',d.edicao),where('status','==','publicada')));return !q.empty;}catch(e){return false;}
+  }
+  return false;
+}
 const a=document.getElementById('art');
 try{
   const id=new URLSearchParams(location.search).get('id');
   const s=id?await getDoc(doc(db,'noticias',id)):null;
-  if(!s||!s.exists()||s.data().status!=='publicado'){a.innerHTML='<p class="vazio">Este artigo não existe ou ainda não foi publicado.</p>';}
+  if(!(await artigoVisivel(s))){a.innerHTML='<p class="vazio">Este artigo não existe ou ainda não foi publicado.</p>';}
   else{
     const n=s.data();document.title=n.titulo+' – Projeto Aster';
     a.innerHTML=(n.edicao?'<a class="voltar" href="edicoes.html">← Editorial</a><br>':'')+
@@ -26,7 +35,7 @@ try{
       (n.resumo?'<p class="resumo">'+esc(n.resumo)+'</p>':'')+
       '<div class="corpo">'+sanitizar(n.conteudo)+'</div>';
     marcarReferencias(a.querySelector('.corpo'));
-    marcarReferencias(a.querySelector('.corpo'));
+    try{if(!sessionStorage.getItem('v_'+id)){sessionStorage.setItem('v_'+id,'1');registrarVisualizacao(id);}}catch(e){}
   }
 }catch(err){a.innerHTML='<p class="vazio">Não foi possível carregar agora.</p>';console.error(err);}
 </script></body></html>

@@ -1,6 +1,6 @@
-// === VERITAS NOTÍCIAS – Notícias (CRUD e Fluxo de Publicação) ===
+// === PROJETO ASTER – Artigos (CRUD e Fluxo de Publicação) ===
 
-import { db, storage } from "./firebase-config.js";
+import { db } from "./firebase-config.js";
 import {
   collection,
   addDoc,
@@ -15,11 +15,6 @@ import {
   limit,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 // Status possíveis de uma notícia no fluxo editorial
 export const STATUS = {

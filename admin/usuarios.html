@@ -58,7 +58,7 @@
       <input type="file" id="modalFoto" accept="image/*">
       <img id="modalPreviewFoto" class="preview-foto">
       <label class="campo-label-pequeno" style="margin-top:14px;">Bio / descrição curta (aparece na página da pessoa)</label>
-      <textarea id="modalBio" rows="4" placeholder="Ex: Jornalista há 10 anos, cobre política e economia regional."></textarea>
+      <textarea id="modalBio" rows="4" placeholder="Ex: Pastor, escritor e professor de teologia."></textarea>
       <div class="modal-acoes">
         <button type="button" class="btn-primario" onclick="salvarPerfilModal()">Salvar</button>
         <button type="button" class="btn-secundario" onclick="fecharModal()">Cancelar</button>
@@ -68,19 +68,19 @@
 
   <script type="module">
     import { protegerPagina, sair, CARGOS } from "../js/auth.js";
-    import { db, storage } from "../js/firebase-config.js";
+    import { db } from "../js/firebase-config.js";
     import { collection, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    import { enviarImagemCloudinary } from "../js/cloudinary.js";
 
     const CARGOS_EDITORIAIS = [
       { valor: '', label: '— Nenhum —' },
       { valor: 'editor-chefe', label: 'Editor-chefe' },
-      { valor: 'jornalista', label: 'Jornalista' },
+      { valor: 'pastor', label: 'Pastor' },
+      { valor: 'teologo', label: 'Teólogo' },
+      { valor: 'escritor', label: 'Escritor' },
       { valor: 'colunista', label: 'Colunista' },
       { valor: 'revisor', label: 'Revisor' },
-      { valor: 'editor-de-texto', label: 'Editor de Texto' },
-      { valor: 'correspondente', label: 'Correspondente' },
-      { valor: 'editor-chefe-jornalista', label: 'Editor-chefe e Jornalista' },
+      { valor: 'missionario', label: 'Missionário' },
     ];
 
     let uidEmEdicao = null;
@@ -95,15 +95,15 @@
       const menu = document.getElementById('menuAdmin');
       const itens = [
         { href: 'dashboard.html', label: '📊 Dashboard', cargos: ['administrador','editor','colunista','revisor'] },
-        { href: 'publicar.html', label: '✍️ Nova Notícia', cargos: ['administrador','editor','colunista'] },
-        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Notícias', cargos: ['administrador','editor','colunista','revisor'] },
+        { href: 'publicar.html', label: '✍️ Novo Artigo', cargos: ['administrador','editor','colunista'] },
+        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Artigos', cargos: ['administrador','editor','colunista','revisor'] },
         { href: 'categorias-admin.html', label: '🏷️ Categorias', cargos: ['administrador','editor'] },
+        { href: 'tags-admin.html', label: '🔖 Tags e Destaques', cargos: ['administrador','editor'] },
         { href: 'edicoes-admin.html', label: '📚 Edições', cargos: ['administrador','editor'] },
         { href: 'conteudo-admin.html', label: '🧩 Conteúdo do site', cargos: ['administrador','editor'] },
         { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
         { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
         { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
-        { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'configuracoes.html', label: '⚙️ Configurações', cargos: ['administrador'] },
       ];
@@ -149,7 +149,7 @@
                 ${optionsCargoEditorial(u.cargoEditorial || '')}
               </select>
               <br><br>
-              <span class="campo-label-pequeno">Assinante Veritas+ até</span><br>
+              <span class="campo-label-pequeno">Assinante até</span><br>
               <input type="date" class="input-premium" data-uid="${d.id}" value="${u.premiumAte || ''}">
               ${u.premiumAte && u.premiumAte >= new Date().toISOString().slice(0,10)
                 ? '<span style="color:#E8A33D;font-size:11px;font-weight:700;margin-left:6px;">✓ Ativo</span>'
@@ -253,9 +253,7 @@
         const dadosParaSalvar = { bio };
 
         if (arquivo) {
-          const storageRef = ref(storage, 'equipe/' + uidEmEdicao + '_' + Date.now() + '_' + arquivo.name);
-          await uploadBytes(storageRef, arquivo);
-          dadosParaSalvar.fotoUrl = await getDownloadURL(storageRef);
+          dadosParaSalvar.fotoUrl = await enviarImagemCloudinary(arquivo);
         }
 
         await updateDoc(doc(db, 'usuarios', uidEmEdicao), dadosParaSalvar);

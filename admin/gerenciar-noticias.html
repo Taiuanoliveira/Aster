@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerenciar Notícias – Painel Projeto Aster</title>
+  <title>Gerenciar Artigos – Painel Projeto Aster</title>
   <link rel="stylesheet" href="../style.css">
   <link rel="stylesheet" href="../css/admin.css">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
 
     <main class="admin-main">
       <header class="admin-topbar">
-        <h1>Gerenciar Notícias</h1>
+        <h1>Gerenciar Artigos</h1>
         <a href="../index.html" class="admin-link-site">Ver site →</a>
       </header>
 
@@ -63,15 +63,15 @@
       const menu = document.getElementById('menuAdmin');
       const itens = [
         { href: 'dashboard.html', label: '📊 Dashboard', cargos: ['administrador','editor','colunista','revisor'] },
-        { href: 'publicar.html', label: '✍️ Nova Notícia', cargos: ['administrador','editor','colunista'] },
-        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Notícias', cargos: ['administrador','editor','colunista','revisor'] },
+        { href: 'publicar.html', label: '✍️ Novo Artigo', cargos: ['administrador','editor','colunista'] },
+        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Artigos', cargos: ['administrador','editor','colunista','revisor'] },
         { href: 'categorias-admin.html', label: '🏷️ Categorias', cargos: ['administrador','editor'] },
+        { href: 'tags-admin.html', label: '🔖 Tags e Destaques', cargos: ['administrador','editor'] },
         { href: 'edicoes-admin.html', label: '📚 Edições', cargos: ['administrador','editor'] },
         { href: 'conteudo-admin.html', label: '🧩 Conteúdo do site', cargos: ['administrador','editor'] },
         { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
         { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
         { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
-        { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'configuracoes.html', label: '⚙️ Configurações', cargos: ['administrador'] },
       ];
@@ -90,7 +90,7 @@
         ];
       } else if (cargo === CARGOS.COLUNISTA) {
         opcoes = [
-          { id: 'todas', label: 'Minhas notícias' },
+          { id: 'todas', label: 'Meus artigos' },
           { id: 'rascunho', label: 'Rascunhos' },
           { id: 'em_revisao', label: 'Em revisão' },
           { id: 'devolvido', label: 'Devolvidas' },
@@ -137,7 +137,7 @@
       }
 
       if (noticias.length === 0) {
-        lista.innerHTML = '<p class="admin-vazio">Nenhuma notícia encontrada neste filtro.</p>';
+        lista.innerHTML = '<p class="admin-vazio">Nenhum artigo encontrado neste filtro.</p>';
         return;
       }
 
@@ -190,9 +190,10 @@
             } else if (acao === 'devolver') {
               await atualizarNoticia(id, { status: STATUS.DEVOLVIDO });
             } else if (acao === 'publicar') {
-              await atualizarNoticia(id, { status: STATUS.PUBLICADO });
+              const alvoPub = (typeof noticias !== 'undefined' ? noticias : []).find(x => x.id === id);
+              await atualizarNoticia(id, { status: (alvoPub && alvoPub.edicao) ? 'indexado' : STATUS.PUBLICADO });
             } else if (acao === 'excluir') {
-              if (!confirm('Tem certeza que deseja excluir esta notícia? Essa ação não pode ser desfeita.')) return;
+              if (!confirm('Tem certeza que deseja excluir este artigo? Essa ação não pode ser desfeita.')) return;
               await excluirNoticia(id);
             }
             await carregarLista();

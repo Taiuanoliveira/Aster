@@ -186,6 +186,10 @@
       </a>
     </div>
   </section>
+  <section id="em-alta-secao" style="display:none">
+    <h2>Em alta</h2>
+    <ol id="emAltaLista" style="padding-left:22px;line-height:1.9"></ol>
+  </section>
 </main>
 
 <footer>
@@ -194,5 +198,9 @@
 
 <script src="js/versiculo-do-dia.js"></script>
 <script type="module" src="js/capa-editorial.js"></script>
+<script type="module">
+import { aplicarConfigSite, montarEmAlta } from './js/site-config.js';
+aplicarConfigSite(); montarEmAlta();
+</script>
 </body>
 </html>

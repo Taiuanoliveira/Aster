@@ -1,0 +1,109 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function logado() { return request.auth != null; }
+    function perfilExiste() {
+      return logado() && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));
+    }
+    function cargoAtual() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.cargo;
+    }
+    function ehAdmin()     { return perfilExiste() && cargoAtual() == 'administrador'; }
+    function ehEditor()    { return perfilExiste() && cargoAtual() in ['administrador', 'editor']; }
+    function ehRevisor()   { return perfilExiste() && cargoAtual() == 'revisor'; }
+    function ehColunista() { return perfilExiste() && cargoAtual() == 'colunista'; }
+    function ehEquipe()    { return perfilExiste() && cargoAtual() in ['administrador', 'editor', 'colunista', 'revisor']; }
+
+    // contadores só podem subir ou descer 1 por vez
+    function passo(campo) {
+      let antes = (resource != null && campo in resource.data) ? resource.data[campo] : 0;
+      let depois = (campo in request.resource.data) ? request.resource.data[campo] : 0;
+      return (depois - antes) <= 1 && (depois - antes) >= -1;
+    }
+
+    // ---------- USUÁRIOS ----------
+    match /usuarios/{uid} {
+      allow read: if logado() && (request.auth.uid == uid || ehAdmin());
+      // toda conta nova nasce como leitor; ninguém se promove sozinho
+      allow create: if logado() && request.auth.uid == uid
+        && request.resource.data.cargo == 'leitor'
+        && request.resource.data.keys().hasOnly(['nome', 'email', 'cargo', 'criadoEm']);
+      allow update: if ehAdmin()
+        || (logado() && request.auth.uid == uid
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['nome', 'fotoUrl', 'notificacoesAtivadas']));
+      allow delete: if ehAdmin();
+    }
+
+    // ---------- ARTIGOS (coleção "noticias") ----------
+    match /noticias/{id} {
+      // público: publicados e os "indexados" em edições
+      allow read: if resource.data.status in ['publicado', 'indexado']
+        || ehEditor() || ehRevisor()
+        || (logado() && resource.data.autorUid == request.auth.uid);
+
+      allow create: if logado() && request.resource.data.autorUid == request.auth.uid
+        && (ehEditor()
+            || (ehColunista() && request.resource.data.status in ['rascunho', 'em_revisao']));
+
+      allow update: if ehEditor()
+        || (ehRevisor() && request.resource.data.status in ['aprovado', 'devolvido'])
+        || (ehColunista() && resource.data.autorUid == request.auth.uid
+            && resource.data.status != 'publicado' && resource.data.status != 'indexado'
+            && request.resource.data.autorUid == resource.data.autorUid
+            && request.resource.data.status in ['rascunho', 'em_revisao']);
+
+      allow delete: if ehAdmin()
+        || (ehColunista() && resource.data.autorUid == request.auth.uid
+            && resource.data.status != 'publicado' && resource.data.status != 'indexado');
+
+      match /comentarios/{cid} {
+        allow read: if true;
+        allow create: if logado() && request.resource.data.autorUid == request.auth.uid
+          && request.resource.data.texto is string
+          && request.resource.data.texto.size() > 0
+          && request.resource.data.texto.size() <= 2000
+          && request.resource.data.keys().hasOnly(['autorUid', 'autorNome', 'texto', 'criadoEm']);
+        allow delete: if logado() && (resource.data.autorUid == request.auth.uid || ehEditor());
+      }
+    }
+
+    // ---------- INTERAÇÕES ----------
+    match /estatisticas/{id} {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['visualizacoes', 'curtidas', 'comentarios'])
+        && passo('visualizacoes') && passo('curtidas') && passo('comentarios');
+      allow delete: if ehAdmin();
+    }
+    match /curtidas/{noticiaId}/usuarios/{uid} {
+      allow read: if true;
+      allow create, delete: if logado() && request.auth.uid == uid;
+    }
+    match /ler_mais_tarde/{uid}/noticias/{id} {
+      allow read: if logado() && (request.auth.uid == uid || ehAdmin());
+      allow write: if logado() && request.auth.uid == uid;
+    }
+    match /{colecao}/{uid}/itens/{item} {
+      allow read, write: if colecao in ['favoritos_versiculos', 'favoritos_livros', 'favoritos_editoriais']
+        && logado() && request.auth.uid == uid;
+    }
+
+    // ---------- CONTEÚDO DO SITE: todos leem; editor e administrador escrevem ----------
+    match /edicoes/{id}    { allow read: if true; allow write: if ehEditor(); }
+    match /categorias/{id} { allow read: if true; allow write: if ehEditor(); }
+    match /tags/{id}       { allow read: if true; allow write: if ehEditor(); }
+    match /destaques/{id}  { allow read: if true; allow write: if ehEditor(); }
+    match /estudos/{id}    { allow read: if true; allow write: if ehEditor(); }
+    match /devocionais/{id}{ allow read: if true; allow write: if ehEditor(); }
+    match /biblioteca/{id} { allow read: if true; allow write: if ehEditor(); }
+    match /planos/{id}     { allow read: if true; allow write: if ehEditor(); }
+    match /paginas/{id}    { allow read: if true; allow write: if ehEditor(); }
+
+    // ---------- CONFIGURAÇÕES DO SITE: todos leem; só administrador escreve ----------
+    match /configuracoes/{id} { allow read: if true; allow write: if ehAdmin(); }
+    match /equipe/{id}        { allow read: if true; allow write: if ehAdmin(); }
+    match /emAlta/{id}        { allow read: if true; allow write: if ehAdmin(); }
+    match /institucional/{id} { allow read: if true; allow write: if ehAdmin(); }
+  }
+}

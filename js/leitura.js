@@ -38,4 +38,5 @@ export function montarTopoRodape(){
   rod.className='rodape';
   rod.innerHTML='Projeto Aster · <a href="termos.html">Termos de uso</a> · <a href="privacidade.html">Privacidade</a>';
   document.body.append(rod);
+  import('./site-config.js').then(m=>m.aplicarConfigSite()).catch(()=>{});
 }

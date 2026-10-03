@@ -26,11 +26,11 @@
       <!-- TAGS -->
       <section class="admin-bloco">
         <h2 style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;">🏷️ Tags</h2>
-        <p style="font-size:13px;color:#777;margin-bottom:16px;">Tags são assuntos específicos (ex: STF, Eleições, Seca). Aparecem clicáveis nas notícias.</p>
+        <p style="font-size:13px;color:#777;margin-bottom:16px;">Tags são assuntos específicos (ex: Oração, Jejum, Família). Aparecem nos artigos.</p>
         <div id="msgTagSucesso" class="auth-msg sucesso" style="display:none;"></div>
         <div id="msgTagErro" class="auth-msg erro" style="display:none;"></div>
         <label>Nome da tag</label>
-        <input type="text" id="nomeTag" placeholder="Ex: STF, Eleições 2026, Bahia">
+        <input type="text" id="nomeTag" placeholder="Ex: Oração, Jejum, Família, Evangelismo">
         <div class="form-acoes">
           <button class="btn-primario" onclick="adicionarTag()">Adicionar tag</button>
         </div>
@@ -40,13 +40,13 @@
       <!-- DESTAQUES -->
       <section class="admin-bloco" style="margin-top:20px;">
         <h2 style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;">⚡ Destaques</h2>
-        <p style="font-size:13px;color:#777;margin-bottom:16px;">Etiquetas especiais que aparecem sobre a notícia na tela inicial.</p>
+        <p style="font-size:13px;color:#777;margin-bottom:16px;">Etiquetas especiais que aparecem sobre o artigo.</p>
         <div id="msgDestSucesso" class="auth-msg sucesso" style="display:none;"></div>
         <div id="msgDestErro" class="auth-msg erro" style="display:none;"></div>
         <label>Nome do destaque</label>
-        <input type="text" id="nomeDestaque" placeholder="Ex: URGENTE, EXCLUSIVO, AO VIVO">
+        <input type="text" id="nomeDestaque" placeholder="Ex: NOVO, REFLEXÃO, TESTEMUNHO">
         <label>Emoji</label>
-        <input type="text" id="emojiDestaque" placeholder="Ex: ⚡ 🔴 🌟 📌 🔥">
+        <input type="text" id="emojiDestaque" placeholder="Ex: ✨ 🕊️ 📖 🙌 🔥">
         <label>Cor de fundo</label>
         <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;" id="coresPaleta">
           <div onclick="selecionarCor('#e53935')" style="width:32px;height:32px;background:#e53935;border-radius:50%;cursor:pointer;border:3px solid transparent;" data-cor="#e53935"></div>
@@ -57,7 +57,7 @@
           <div onclick="selecionarCor('#9c27b0')" style="width:32px;height:32px;background:#9c27b0;border-radius:50%;cursor:pointer;border:3px solid transparent;" data-cor="#9c27b0"></div>
         </div>
         <input type="hidden" id="corDestaque" value="#e53935">
-        <div style="margin-top:10px;font-size:13px;color:#777;">Preview: <span id="previewDestaque" style="background:#e53935;color:#fff;padding:3px 10px;font-size:11px;font-weight:700;text-transform:uppercase;border-radius:3px;">URGENTE</span></div>
+        <div style="margin-top:10px;font-size:13px;color:#777;">Preview: <span id="previewDestaque" style="background:#1877F2;color:#fff;padding:3px 10px;font-size:11px;font-weight:700;text-transform:uppercase;border-radius:3px;">NOVO</span></div>
         <div class="form-acoes">
           <button class="btn-primario" onclick="adicionarDestaque()">Adicionar destaque</button>
         </div>
@@ -74,16 +74,15 @@
     function montarMenu(cargo) {
       const itens = [
         { href: 'dashboard.html', label: '📊 Dashboard', cargos: ['administrador','editor','colunista','revisor'] },
-        { href: 'publicar.html', label: '✍️ Nova Notícia', cargos: ['administrador','editor','colunista'] },
-        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Notícias', cargos: ['administrador','editor','colunista','revisor'] },
+        { href: 'publicar.html', label: '✍️ Novo Artigo', cargos: ['administrador','editor','colunista'] },
+        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Artigos', cargos: ['administrador','editor','colunista','revisor'] },
+        { href: 'categorias-admin.html', label: '🏷️ Categorias', cargos: ['administrador','editor'] },
+        { href: 'tags-admin.html', label: '🔖 Tags e Destaques', cargos: ['administrador','editor'] },
         { href: 'edicoes-admin.html', label: '📚 Edições', cargos: ['administrador','editor'] },
-        { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
         { href: 'conteudo-admin.html', label: '🧩 Conteúdo do site', cargos: ['administrador','editor'] },
         { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
-        { href: 'categorias-admin.html', label: '🏷️ Categorias', cargos: ['administrador'] },
-        { href: 'tags-admin.html', label: '🔖 Tags e Destaques', cargos: ['administrador'] },
+        { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
         { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
-        { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'configuracoes.html', label: '⚙️ Configurações', cargos: ['administrador'] },
       ];
@@ -135,13 +134,13 @@
 
     // DESTAQUES
     const destaquesFixos = [
-      { nome: 'URGENTE', emoji: '⚡', cor: '#e53935' },
-      { nome: 'AO VIVO', emoji: '🔴', cor: '#e53935' },
-      { nome: 'EXCLUSIVO', emoji: '🌟', cor: '#f9a825' },
-      { nome: 'ESPECIAL', emoji: '📌', cor: '#1877F2' },
+      { nome: 'NOVO', emoji: '✨', cor: '#1877F2' },
       { nome: 'EM ALTA', emoji: '🔥', cor: '#f9a825' },
-      { nome: 'OPINIÃO', emoji: '💬', cor: '#9c27b0' },
-      { nome: 'EDITORIAL', emoji: '📰', cor: '#0C3B5C' },
+      { nome: 'ESPECIAL', emoji: '📌', cor: '#0C3B5C' },
+      { nome: 'REFLEXÃO', emoji: '🕊️', cor: '#1F5A82' },
+      { nome: 'ESTUDO', emoji: '📖', cor: '#5c4a00' },
+      { nome: 'TESTEMUNHO', emoji: '🙌', cor: '#2e7d32' },
+      { nome: 'EDITORIAL', emoji: '✒️', cor: '#9c27b0' },
     ];
 
     async function inicializarDestaquesFixos() {
@@ -206,7 +205,7 @@
       document.getElementById('previewDestaque').textContent = (this.value + ' ' + document.getElementById('nomeDestaque').value.toUpperCase()).trim() || 'PRÉVIA';
     });
 
-    protegerPagina([CARGOS.ADMIN, 'administrador'], async (user, cargo) => {
+    protegerPagina([CARGOS.ADMIN, CARGOS.EDITOR], async (user, cargo) => {
       document.getElementById('cargoAtual').textContent = cargo;
       montarMenu(cargo);
       await inicializarDestaquesFixos();

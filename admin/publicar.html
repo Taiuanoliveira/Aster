@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nova Notícia – Painel Projeto Aster</title>
+  <title>Novo Artigo – Painel Projeto Aster</title>
   <link rel="stylesheet" href="../style.css">
   <link rel="stylesheet" href="../css/admin.css">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
     </aside>
     <main class="admin-main">
       <header class="admin-topbar">
-        <h1 id="tituloPagina">Nova Notícia</h1>
+        <h1 id="tituloPagina">Novo Artigo</h1>
         <a href="../index.html" class="admin-link-site">Ver site →</a>
       </header>
       <section class="admin-bloco">
@@ -31,7 +31,7 @@
         <div id="mensagemSucesso" class="auth-msg sucesso" style="display:none;"></div>
         <form id="formNoticia" class="form-noticia">
           <label for="titulo">Título</label>
-          <input type="text" id="titulo" required placeholder="Título da notícia">
+          <input type="text" id="titulo" required placeholder="Título do artigo">
 
           <label>Categorias <span style="font-weight:400;color:#888;">(marque uma ou mais — a primeira marcada vira a categoria principal)</span></label>
           <div id="containerCategorias" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
@@ -50,7 +50,7 @@
           </div>
 
           <label for="resumo">Resumo (aparece nos cards)</label>
-          <textarea id="resumo" rows="2" placeholder="Resumo curto da notícia"></textarea>
+          <textarea id="resumo" rows="2" placeholder="Resumo curto do artigo"></textarea>
 
           <label>Conteúdo completo</label>
           <div id="editorQuill"></div>
@@ -58,7 +58,7 @@
 
           <label for="edicao">Edição</label>
           <select id="edicao">
-            <option value="">Nenhuma (notícia avulsa)</option>
+            <option value="">Nenhum (artigo avulso)</option>
           </select>
 
           <div id="edicaoOpcoes" style="display:none;margin-top:12px;">
@@ -70,12 +70,12 @@
               Artigo gratuito (mesmo fazendo parte da edição paga)
             </label>
 
-            <label for="paywallOverride" style="margin-top:14px;">Regra de Muro Pago pra essa notícia</label>
+            <label for="paywallOverride" style="margin-top:14px;">Regra de acesso pago para este artigo</label>
             <select id="paywallOverride">
               <option value="">Usar a regra padrão do site (Configurações)</option>
               <option value="2-paragrafos">Liberar 2 parágrafos, bloquear o resto</option>
               <option value="3-paragrafos">Liberar 3 parágrafos, bloquear o resto</option>
-              <option value="50-porcento">Liberar 50% da notícia, bloquear o resto</option>
+              <option value="50-porcento">Liberar 50% do artigo, bloquear o resto</option>
               <option value="sempre-liberado">Sempre liberado (nunca bloquear, mesmo sem assinatura)</option>
             </select>
           </div>
@@ -97,7 +97,6 @@
     import { db } from "../js/firebase-config.js";
     import { enviarImagemCloudinary } from "../js/cloudinary.js";
     import { ativarAutoNegrito } from "../js/versiculos.js";
-    import { ativarAutoNegrito } from "../js/versiculos.js";
     import { collection, getDocs, orderBy, query, doc, getDoc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     let quillEditor = null;
@@ -105,7 +104,7 @@
     // Inicializa Quill imediatamente — sem await no topo do modulo
     quillEditor = new Quill('#editorQuill', {
       theme: 'snow',
-      placeholder: 'Escreva o texto completo da notícia...',
+      placeholder: 'Escreva o texto completo do artigo...',
       modules: {
         toolbar: {
           container: [
@@ -149,10 +148,9 @@
       try {
         const snap = await getDocs(query(collection(db, 'destaques'), orderBy('nome')));
         const fixos = snap.empty ? [
-          {nome:'URGENTE',emoji:'⚡'},{nome:'AO VIVO',emoji:'🔴'},
-          {nome:'EXCLUSIVO',emoji:'🌟'},{nome:'ESPECIAL',emoji:'📌'},
-          {nome:'EM ALTA',emoji:'🔥'},{nome:'OPINIÃO',emoji:'💬'},
-          {nome:'EDITORIAL',emoji:'📰'}
+          {nome:'NOVO',emoji:'✨'},{nome:'EM ALTA',emoji:'🔥'},{nome:'ESPECIAL',emoji:'📌'},
+          {nome:'REFLEXÃO',emoji:'🕊️'},{nome:'ESTUDO',emoji:'📖'},{nome:'TESTEMUNHO',emoji:'🙌'},
+          {nome:'EDITORIAL',emoji:'✒️'}
         ] : snap.docs.map(d => d.data());
         fixos.forEach(dest => {
           const opt = document.createElement('option');
@@ -188,13 +186,7 @@
       const container = document.getElementById('containerCategorias');
       try {
         const snap = await getDocs(query(collection(db, 'categorias'), orderBy('ordem')));
-        const lista = snap.empty ? [
-          {nome:'Política',slug:'politica'},{nome:'Economia',slug:'economia'},
-          {nome:'Regional',slug:'regional'},{nome:'Agro',slug:'agro'},
-          {nome:'Esportes',slug:'esportes'},{nome:'Cultura',slug:'cultura'},
-          {nome:'Saúde',slug:'saude'},{nome:'Tecnologia',slug:'tecnologia'},
-          {nome:'Opinião',slug:'opiniao'},{nome:'Editorial',slug:'editorial'}
-        ] : snap.docs.map(d => {
+        const lista = snap.empty ? [{nome:'Fé',slug:'fe',emoji:'✝️'},{nome:'Estudo Bíblico',slug:'estudo-biblico',emoji:'📖'},{nome:'Devocional',slug:'devocional',emoji:'🕊️'},{nome:'Oração',slug:'oracao',emoji:'🙏'},{nome:'Família',slug:'familia',emoji:'🏠'},{nome:'Juventude',slug:'juventude',emoji:'🌱'},{nome:'Missões',slug:'missoes',emoji:'🌍'},{nome:'Testemunhos',slug:'testemunhos',emoji:'🙌'},{nome:'Vida Cristã',slug:'vida-crista',emoji:'🌿'},{nome:'Reflexão',slug:'reflexao',emoji:'💭'}] : snap.docs.map(d => {
           const cat = d.data();
           return { nome: cat.nome, slug: cat.slug || cat.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'-'), emoji: cat.emoji || '' };
         });
@@ -260,7 +252,7 @@
 
       if (idParaEditar) {
         noticiaIdEdicao = idParaEditar;
-        document.getElementById('tituloPagina').textContent = 'Editar Notícia';
+        document.getElementById('tituloPagina').textContent = 'Editar Artigo';
         await carregarNoticia(idParaEditar);
       } else {
         await carregarCategoriasCheckboxes([]);
@@ -276,8 +268,8 @@
       const menu = document.getElementById('menuAdmin');
       const itens = [
         { href: 'dashboard.html', label: '📊 Dashboard', cargos: ['administrador','editor','colunista','revisor'] },
-        { href: 'publicar.html', label: '✍️ Nova Notícia', cargos: ['administrador','editor','colunista'] },
-        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Notícias', cargos: ['administrador','editor','colunista','revisor'] },
+        { href: 'publicar.html', label: '✍️ Novo Artigo', cargos: ['administrador','editor','colunista'] },
+        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Artigos', cargos: ['administrador','editor','colunista','revisor'] },
         { href: 'categorias-admin.html', label: '🏷️ Categorias', cargos: ['administrador','editor'] },
         { href: 'tags-admin.html', label: '🔖 Tags e Destaques', cargos: ['administrador','editor'] },
         { href: 'edicoes-admin.html', label: '📚 Edições', cargos: ['administrador','editor'] },
@@ -285,7 +277,6 @@
         { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
         { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
         { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
-        { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'configuracoes.html', label: '⚙️ Configurações', cargos: ['administrador'] },
       ];
@@ -326,6 +317,17 @@
       document.getElementById('categoria').value = noticia.categoria || '';
       document.getElementById('resumo').value = noticia.resumo || '';
       document.getElementById('paywallOverride').value = noticia.paywallOverride || '';
+      if (noticia.edicao) {
+        const selEd = document.getElementById('edicao');
+        if (!Array.from(selEd.options).some(o => o.value === noticia.edicao)) {
+          const o = document.createElement('option'); o.value = noticia.edicao; o.textContent = noticia.edicao + ' (edição já publicada)';
+          selEd.appendChild(o);
+        }
+        selEd.value = noticia.edicao;
+        selEd.dispatchEvent(new Event('change'));
+        document.getElementById('ordemEdicao').value = noticia.ordemEdicao || 1;
+        document.getElementById('gratuito').checked = !!noticia.gratuito;
+      }
       setTimeout(() => { quillEditor.root.innerHTML = noticia.conteudo || ''; }, 200);
       const catsAtuais = noticia.categorias || (noticia.categoria ? [noticia.categoria] : []);
       await carregarCategoriasCheckboxes(catsAtuais);
@@ -361,7 +363,6 @@
 
     ativarAutoNegrito(quillEditor);
 
-    ativarAutoNegrito(quillEditor);
 
     async function salvarNoticia(acao) {
       const titulo = document.getElementById('titulo').value.trim();
@@ -405,20 +406,20 @@
         let imagemUrl = imagemAtualUrl;
         if (arquivoImagem) imagemUrl = await enviarImagem(arquivoImagem, idNoticia);
 
-        await atualizarNoticia(idNoticia, { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, imagemUrl, edicao, gratuito, paywallOverride, cargoEditorialAutor });
+        await atualizarNoticia(idNoticia, { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, imagemUrl, edicao, gratuito, paywallOverride, ordemEdicao, cargoEditorialAutor });
 
         if (status === STATUS.PUBLICADO) {
         }
 
         noticiaIdEdicao = idNoticia;
-        document.getElementById('tituloPagina').textContent = 'Editar Notícia';
+        document.getElementById('tituloPagina').textContent = 'Editar Artigo';
         const urlAtual = new URL(window.location.href);
         urlAtual.searchParams.set('id', idNoticia);
         window.history.replaceState({}, '', urlAtual.toString());
-        mostrarSucesso('Notícia salva com sucesso!');
+        mostrarSucesso('Artigo salvo com sucesso!');
         setTimeout(() => window.location.href = 'gerenciar-noticias.html', 1500);
       } catch (err) {
-        mostrarErro('Erro ao salvar a notícia. Verifique sua permissão e tente novamente.');
+        mostrarErro('Erro ao salvar o artigo. Verifique sua permissão e tente novamente.');
         console.error(err);
       }
     }

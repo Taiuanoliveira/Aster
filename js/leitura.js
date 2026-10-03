@@ -32,7 +32,7 @@ export function montarTopoRodape(){
   const topo=document.createElement('header');
   topo.className='topo';
   topo.innerHTML='<a href="index.html" class="logo-aster"><span class="estrela">✦</span> Projeto Aster</a>'+
-    '<nav class="nav-topo"><a href="biblia.html">Bíblia</a><a href="edicoes.html">Editorial</a><a href="artigos.html">Artigos</a><a href="estudos.html">Estudos</a><a href="biblioteca.html">Biblioteca</a><a href="login.html">Entrar</a></nav>';
+    '<nav class="nav-topo"><a href="biblia.html">Bíblia</a><a href="edicoes.html">Editorial</a><a href="artigos.html">Artigos</a><a href="estudos.html">Estudos</a><a href="biblioteca.html">Biblioteca</a><a href="apoiar.html">Apoie</a><a href="login.html">Entrar</a></nav>';
   document.body.prepend(topo);
   const rod=document.createElement('footer');
   rod.className='rodape';

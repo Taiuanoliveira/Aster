@@ -30,6 +30,7 @@ export function montarFerramentas(titulo) {
     '<button type="button" class="btn-acao" id="btnCopiar">🔗 Copiar link</button>' +
     (navigator.share ? '<button type="button" class="btn-acao" id="btnNativo">📲 Instagram e outros</button>' : '');
   base.after(box);
+  box.insertAdjacentHTML('afterend', '<aside class="apoie-box"><strong>Gostou do que leu?</strong><span>O Projeto Aster é gratuito para você. Se quiser, apoie o trabalho.</span><a href="apoiar.html">Quero apoiar</a></aside>');
   box.querySelector('#btnCopiar').onclick = async ev => {
     try { await navigator.clipboard.writeText(url); ev.target.textContent = '✓ Link copiado'; }
     catch (e) { prompt('Copie o link:', url); }

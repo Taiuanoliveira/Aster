@@ -180,3 +180,7 @@ html[data-tema="escuro"] .ferr button{background:transparent;border-color:#555}
 html[data-tema="escuro"] .artigo .meta{border-color:#333}
 html[data-tema="escuro"] .artigo .cat{border-top-color:var(--amar)}
 @media(max-width:720px){.artigo h1{font-size:30px}.artigo .resumo{font-size:18px}}
+
+.apoie-box{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--azul);color:var(--esc);border-radius:10px;padding:16px 20px;margin:0 auto 26px}
+.apoie-box span{flex:1;min-width:200px;font-size:14px}
+.apoie-box a{background:var(--amar);color:var(--esc);font-weight:700;text-decoration:none;padding:9px 18px;border-radius:8px;font-size:14px}

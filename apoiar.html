@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apoie – Projeto Aster</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#0C3B5C">
+<meta name="description" content="Apoie o Projeto Aster de forma voluntária: assinatura mensal no cartão ou contribuição única por Pix, boleto ou cartão.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/leitura.css"><link rel="stylesheet" href="css/tema.css"><script src="js/tema.js"></script>
+<style>
+  .ap-como{background:var(--azul,#B8E8FF);color:var(--esc,#0C3B5C);border-radius:12px;padding:18px 22px;margin-bottom:22px;font-size:14px;line-height:1.6}
+  .ap-como ul{margin:8px 0 0 18px}
+  .ap-grade{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .ap-card{background:var(--card,#fff);border:1px solid var(--borda,#e6e2d8);border-radius:12px;padding:26px}
+  .ap-card h2{font-family:'Playfair Display',serif;font-size:24px;color:var(--esc);margin:10px 0 6px}
+  .ap-card p{font-size:14px;color:var(--cinza);margin-bottom:16px}
+  .ap-aviso{background:#fff3df;color:#6b4710!important;border-radius:8px;padding:10px 12px;line-height:1.5;margin-bottom:14px!important}
+  .ap-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:#fff3df;color:#8a5a12}
+  .ap-btn{display:block;text-align:center;text-decoration:none;background:var(--amar);color:var(--esc);font-weight:700;padding:13px 18px;border-radius:8px;margin-bottom:10px}
+  .ap-btn:hover{background:#d8922f}
+  .ap-btn.off{background:#e9e6dc;color:#8a8a8a;cursor:default}
+  .ap-sub{display:block;font-size:11px;font-weight:500;margin-top:3px;opacity:.85}
+  .ap-pix{margin-top:22px}
+  .ap-pix code{display:block;word-break:break-all;background:#f3f1ea;color:#222;padding:10px 12px;border-radius:8px;margin:8px 0;font-size:13px}
+  .ap-pix button{border:1px solid #ccc;background:transparent;color:inherit;border-radius:8px;padding:8px 16px;font:inherit;font-weight:600;cursor:pointer;margin-right:8px}
+  .ap-nota{text-align:center;color:var(--cinza);font-size:13px;margin-top:26px}
+  html[data-tema="escuro"] .ap-card h2{color:#fff}
+  @media(max-width:720px){.ap-grade{grid-template-columns:1fr}}
+</style>
+</head><body>
+<section class="faixa"><p class="rot">Apoie</p><h1 id="t">Apoie o Projeto Aster</h1><p class="sub" id="s">Todo o conteúdo do Projeto Aster é gratuito. Se ele te ajuda, você pode apoiar de forma voluntária.</p></section>
+<main class="pag" style="max-width:900px"><div id="c"><p class="vazio">Carregando…</p></div></main>
+<script type="module">
+import { db } from './js/firebase-config.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { montarTopoRodape, esc } from './js/leitura.js';
+montarTopoRodape();
+const okLink = u => { try { const x = new URL(u); return x.protocol === 'https:' && /(^|\.)(mercadopago\.com(\.[a-z]{2})?|mpago\.(la|li))$/i.test(x.hostname); } catch (e) { return false; } };
+let c = {};
+try { const s = await getDoc(doc(db, 'configuracoes', 'apoio')); if (s.exists()) c = s.data(); } catch (e) { console.error(e); }
+if (c.titulo) document.getElementById('t').textContent = c.titulo;
+if (c.texto) document.getElementById('s').textContent = c.texto;
+const botoes = (lista, sub) => {
+  const l = (lista || []).filter(i => okLink(i.link));
+  return l.length ? l.map(i => '<a class="ap-btn" target="_blank" rel="noopener noreferrer" href="' + esc(i.link) + '">' + esc(i.valor || 'Apoiar') + '<small class="ap-sub">' + sub + '</small></a>').join('') : '<span class="ap-btn off">Em breve</span>';
+};
+let h = '<div class="ap-como"><strong>Como funciona</strong><ul>' +
+  '<li><strong>Apoio mensal:</strong> cobrança automática todo mês no cartão de crédito, até você cancelar.</li>' +
+  '<li><strong>Contribuição única:</strong> você escolhe quando e quanto, por Pix, boleto ou cartão, quantas vezes quiser. Não renova sozinha.</li>' +
+  '<li>O apoio é voluntário: o conteúdo continua gratuito para todos.</li></ul></div>' +
+  '<div class="ap-grade">' +
+  '<div class="ap-card"><span class="ap-tag">Cartão de crédito · assinatura</span><h2>Apoio mensal</h2>' +
+  '<p class="ap-aviso"><strong>Atenção:</strong> isto é uma assinatura. O valor escolhido será <strong>cobrado todo mês</strong> no seu cartão de crédito, automaticamente, até você cancelar. Você pode cancelar quando quiser pelo Mercado Pago.</p>' +
+  botoes(c.mensal, 'Cobrado todo mês no cartão até você cancelar') + '</div>' +
+  '<div class="ap-card"><span class="ap-tag">Pix, boleto ou cartão · pagamento único</span><h2>Contribuição única</h2>' +
+  '<p>Um pagamento avulso, sem renovação. Você pode contribuir de novo quando quiser. Na tela do Mercado Pago você escolhe se paga por Pix, boleto ou cartão.</p>' +
+  botoes(c.unico, 'Pagamento único, sem renovação') + '</div></div>';
+if (c.pixChave || c.pixCopiaCola) {
+  h += '<div class="ap-card ap-pix"><span class="ap-tag">Pix direto · qualquer valor</span><h2>Pix</h2><p>Pague quanto quiser, quantas vezes quiser, direto pelo app do seu banco. Não tem renovação.</p>';
+  if (c.pixChave) h += '<strong>Chave Pix</strong><code id="pixc">' + esc(c.pixChave) + '</code>' + (c.pixNome ? '<p>Beneficiário: ' + esc(c.pixNome) + '</p>' : '') + '<button type="button" id="cp">Copiar chave</button>';
+  if (c.pixCopiaCola) h += '<div style="margin-top:14px"><strong>Pix copia e cola</strong><code id="pixcc">' + esc(c.pixCopiaCola) + '</code><button type="button" id="cc">Copiar código</button></div>';
+  h += '</div>';
+}
+h += '<p class="ap-nota">O conteúdo continua gratuito para todos. Obrigado por caminhar com a gente. ✦</p>';
+document.getElementById('c').innerHTML = h;
+const copiar = (id, texto, rot) => { const b = document.getElementById(id); if (b) b.onclick = async () => { try { await navigator.clipboard.writeText(texto); b.textContent = '✓ Copiado'; } catch (e) { prompt(rot, texto); } }; };
+copiar('cp', c.pixChave, 'Copie a chave Pix:'); copiar('cc', c.pixCopiaCola, 'Copie o código Pix:');
+</script></body></html>

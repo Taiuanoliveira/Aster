@@ -99,3 +99,6 @@ html[data-tema="escuro"] .gate{background:linear-gradient(180deg,rgba(15,23,32,0
 html[data-tema="escuro"] .tag-acesso.livre{background:#173a25;color:#8fd6a5}
 html[data-tema="escuro"] .tag-acesso.pago{background:#44201d;color:#f2b3ad}
 html[data-tema="escuro"] .gate a.sec2{color:#8cc4ea}
+
+.nav-topo a[href="apoiar.html"]{background:#E8A33D;color:#0C3B5C!important;padding:6px 14px;border-radius:999px;font-weight:700}
+.nav-topo a[href="apoiar.html"]:hover{background:#d8922f;color:#0C3B5C!important}

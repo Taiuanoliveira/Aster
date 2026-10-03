@@ -83,6 +83,8 @@
           <label for="imagem">Imagem de destaque</label>
           <input type="file" id="imagem" accept="image/*">
           <img id="previewImagem" class="preview-imagem" style="display:none;">
+          <label for="imagemLegenda">Legenda da imagem (opcional)</label>
+          <input type="text" id="imagemLegenda" maxlength="200" placeholder="Ex.: Vista do Monte Sião — Foto: Fulano">
 
           <div class="form-acoes" id="formAcoes"></div>
         </form>
@@ -333,6 +335,7 @@
       await carregarCategoriasCheckboxes(catsAtuais);
       await carregarDestaquesSelect(noticia.destaque || '');
       await carregarTagsCheckboxes(noticia.tags || []);
+      { const lg = document.getElementById('imagemLegenda'); if (lg) lg.value = noticia.imagemLegenda || ''; }
       if (noticia.imagemUrl) {
         imagemAtualUrl = noticia.imagemUrl;
         const preview = document.getElementById('previewImagem');
@@ -406,7 +409,7 @@
         let imagemUrl = imagemAtualUrl;
         if (arquivoImagem) imagemUrl = await enviarImagem(arquivoImagem, idNoticia);
 
-        await atualizarNoticia(idNoticia, { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, imagemUrl, edicao, gratuito, paywallOverride, ordemEdicao });
+        await atualizarNoticia(idNoticia, { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, imagemUrl, imagemLegenda: (document.getElementById('imagemLegenda') || {}).value || '', edicao, gratuito, paywallOverride, ordemEdicao });
 
         if (status === STATUS.PUBLICADO) {
         }

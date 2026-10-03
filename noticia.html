@@ -48,8 +48,8 @@ try {
     bloqueado = !!n.edicao && n.gratuito === false && n.paywallOverride !== 'sempre-liberado' && !(edicaoDoc && edicaoDoc.edicaoGratuita);
     a.innerHTML = (n.edicao ? '<a class="voltar" href="' + (edicaoDoc ? 'edicao.html?id=' + encodeURIComponent(edicaoDoc.id) : 'edicoes.html') + '">← ' + esc(n.edicao) + '</a><br>' : '') +
       '<span class="cat">' + esc(n.categoria || '') + '</span><h1>' + esc(n.titulo) + '</h1>' +
-      '<p class="meta">' + esc(n.autorNome || '') + (n.autorNome && n.criadoEm ? ' · ' : '') + esc(dataBonita(n.criadoEm)) + '</p>' +
-      (n.imagemUrl ? '<img class="capa-img" src="' + esc(n.imagemUrl) + '" alt="">' : '') +
+      '<p class="meta">' + esc(n.autorNome || '') + (n.autorNome && n.criadoEm ? ' · ' : '') + esc(dataBonita(n.criadoEm)) + ' · ' + Math.max(1, Math.round(String(n.conteudo || '').replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length / 200)) + ' min de leitura</p>' +
+      (n.imagemUrl ? '<figure class="capa-fig"><img class="capa-img" src="' + esc(n.imagemUrl) + '" alt="' + esc(n.imagemLegenda || '') + '">' + (n.imagemLegenda ? '<figcaption>' + esc(n.imagemLegenda) + '</figcaption>' : '') + '</figure>' : '') +
       (n.resumo ? '<p class="resumo">' + esc(n.resumo) + '</p>' : '') +
       '<div class="ferr" id="ferrArt"></div><div class="corpo" id="corpoArt">' + sanitizar(bloqueado ? cortar(n.conteudo, regra) : n.conteudo) + '</div>' + (bloqueado ? gateHTML(false) : '') +
       '<div class="acoes-art" id="acoesArt">' +

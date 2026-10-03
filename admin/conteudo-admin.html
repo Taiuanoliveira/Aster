@@ -34,6 +34,7 @@
   <script type="module">
     import { protegerPagina, sair, CARGOS } from "../js/auth.js";
     import { db } from "../js/firebase-config.js";
+    import { enviarImagemCloudinary } from "../js/cloudinary.js";
     import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     function montarMenu(cargo) {
@@ -69,7 +70,8 @@
         ['ref', 'Referência bíblica', 'text'], ['titulo', 'Título', 'text'], ['texto', 'Texto', 'area'], ['ordem', 'Ordem (o site mostra um por dia, em sequência)', 'number']],
         resumo: e => e.ref + ' · ' + e.titulo },
       biblioteca: { nome: 'Biblioteca', col: 'biblioteca', campos: [
-        ['titulo', 'Título do material', 'text'], ['resumo', 'Resumo', 'area'],
+        ['titulo', 'Título do material', 'text'], ['resumo', 'Descrição (explique o que é este material)', 'area'],
+        ['capaUrl', 'Capa do material — imagem vertical, ideal 600 × 800 px (opcional)', 'imagem'],
         ['arquivo', 'Link do PDF (Google Drive, Dropbox ou outro link público)', 'text'], ['ordem', 'Ordem', 'number']],
         resumo: e => e.titulo + (e.arquivo && e.arquivo !== '#' ? '' : '  (sem PDF ainda)') },
       planos: { nome: 'Planos de leitura', col: 'planos', campos: [
@@ -108,6 +110,13 @@
     function campo(c, valor) {
       const [id, rotulo, tipo] = c, wrap = document.createElement('div');
       const l = document.createElement('label'); l.textContent = rotulo; wrap.appendChild(l);
+      if (tipo === 'imagem') {
+        const oculto = document.createElement('input'); oculto.type = 'hidden'; oculto.id = 'f_' + id; oculto.value = valor || '';
+        const arq = document.createElement('input'); arq.type = 'file'; arq.accept = 'image/*'; arq.id = 'f_' + id + '_arq';
+        const prev = document.createElement('img'); prev.style.cssText = 'display:' + (valor ? 'block' : 'none') + ';max-width:140px;margin-top:10px;border:1px solid #ddd;'; if (valor) prev.src = valor;
+        arq.onchange = () => { const f = arq.files[0]; if (f) { prev.src = URL.createObjectURL(f); prev.style.display = 'block'; } };
+        wrap.append(oculto, arq, prev); return wrap;
+      }
       const el = document.createElement(tipo === 'area' ? 'textarea' : 'input');
       if (tipo === 'area') el.rows = 6; else el.type = tipo; el.id = 'f_' + id; el.value = valor == null ? '' : valor;
       wrap.appendChild(el); return wrap;
@@ -130,7 +139,14 @@
       const acoes = document.createElement('div'); acoes.className = 'form-acoes';
       acoes.appendChild(botao(editandoId ? 'Salvar alterações' : 'Adicionar', 'btn-primario', async () => {
         const dados = {};
-        for (const c of s.campos) { const v = $('f_' + c[0]).value.trim(); dados[c[0]] = c[2] === 'number' ? (parseInt(v) || 0) : v; }
+        for (const c of s.campos) {
+          let v = $('f_' + c[0]).value.trim();
+          if (c[2] === 'imagem') {
+            const f = $('f_' + c[0] + '_arq').files[0];
+            if (f) { try { v = await enviarImagemCloudinary(f); } catch (e) { msg('msgErro', 'Não foi possível enviar a imagem: ' + e.message); return; } }
+          }
+          dados[c[0]] = c[2] === 'number' ? (parseInt(v) || 0) : v;
+        }
         if (!dados[s.campos[0][0]] || (s.col !== 'planos' && s.col !== 'biblioteca' && !dados.titulo) || (s.col === 'planos' && !dados.dias)) { msg('msgErro', 'Preencha os campos principais.'); return; }
         if (editandoId) await updateDoc(doc(db, s.col, editandoId), dados); else await addDoc(collection(db, s.col), dados);
         msg('msgSucesso', 'Salvo! Já aparece no site.'); editandoId = null; render();

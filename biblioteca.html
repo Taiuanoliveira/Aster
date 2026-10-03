@@ -34,6 +34,7 @@
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:20px}
   .livro{background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:18px;display:flex;flex-direction:column}
   .capa{width:100%;height:150px;border-radius:6px;background:var(--esc);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;color:var(--amar);font-size:15px;text-align:center;padding:10px;margin-bottom:14px;box-shadow:0 8px 20px rgba(12,59,92,.25)}
+  .capa.img{height:auto;aspect-ratio:3/4;padding:0;overflow:hidden}.capa.img img{width:100%;height:100%;object-fit:cover;display:block}
   .livro h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--esc);margin-bottom:6px}
   
   .livro p{font-size:13px;color:var(--cinza);line-height:1.5;flex:1;margin-bottom:14px}
@@ -92,7 +93,7 @@ itens.forEach(l => {
   l = { ...l, arquivo: baixarDireto(l.arquivo) };
   const ok = l.arquivo && /^https:\/\//i.test(l.arquivo);
   const div = document.createElement('div'); div.className = 'livro';
-  div.innerHTML = `<div class="capa">${esc(l.titulo)}</div><h3>${esc(l.titulo)}</h3><p>${esc(l.resumo)}</p><a class="btn" href="${ok ? esc(l.arquivo) : '#'}"${ok ? ' target="_blank" rel="noopener"' : ''}>Baixar PDF</a>`;
+  div.innerHTML = `${l.capaUrl && /^https:\/\//i.test(l.capaUrl) ? '<div class="capa img"><img src="' + esc(l.capaUrl) + '" alt="' + esc(l.titulo) + '"></div>' : '<div class="capa">' + esc(l.titulo) + '</div>'}<h3>${esc(l.titulo)}</h3><p>${esc(l.resumo)}</p><a class="btn" href="${ok ? esc(l.arquivo) : '#'}"${ok ? ' target="_blank" rel="noopener"' : ''}>Baixar PDF</a>`;
   if (!ok) div.querySelector('a').addEventListener('click', e => { e.preventDefault(); alert('Este PDF ainda não foi adicionado. Em breve!'); });
   grid.appendChild(div);
 });

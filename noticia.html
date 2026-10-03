@@ -9,6 +9,7 @@
 import { db } from './js/firebase-config.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { montarTopoRodape, esc, sanitizar, dataBonita } from './js/leitura.js';
+import { marcarReferencias } from './js/versiculos.js';
 montarTopoRodape();
 const a=document.getElementById('art');
 try{
@@ -23,6 +24,7 @@ try{
       (n.imagemUrl?'<img class="capa-img" src="'+esc(n.imagemUrl)+'" alt="">':'')+
       (n.resumo?'<p class="resumo">'+esc(n.resumo)+'</p>':'')+
       '<div class="corpo">'+sanitizar(n.conteudo)+'</div>';
+    marcarReferencias(a.querySelector('.corpo'));
   }
 }catch(err){a.innerHTML='<p class="vazio">Não foi possível carregar agora.</p>';console.error(err);}
 </script></body></html>

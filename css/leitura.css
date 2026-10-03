@@ -49,3 +49,16 @@ h2.sec{font-family:'Playfair Display',serif;color:var(--esc);font-size:24px;marg
 .ql-align-center{text-align:center}.ql-align-right{text-align:right}.ql-align-justify{text-align:justify}
 .voltar{display:inline-block;margin-bottom:18px;color:var(--med);font-size:14px;text-decoration:none}
 @media(max-width:720px){header.topo{padding:16px 20px}.faixa h1,.artigo h1{font-size:27px}}
+.ref-biblica{color:var(--med);border-bottom:1px dashed var(--amar);cursor:pointer}
+.ref-biblica:hover{color:var(--esc);background:#fff3df}
+.ref-caixa{display:none;position:fixed;inset:0;z-index:100}
+.ref-caixa.aberta{display:block}
+.ref-fundo{position:absolute;inset:0;background:rgba(12,59,92,.55)}
+.ref-painel{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(560px,100%);max-height:70vh;overflow:auto;background:#fff;border-radius:16px 16px 0 0;padding:22px 22px 26px}
+.ref-titulo{font-family:'Playfair Display',serif;color:var(--esc);font-size:20px;margin-bottom:10px;padding-right:30px}
+.ref-texto{font-family:'Playfair Display',serif;font-size:17px;line-height:1.7;color:#222}
+.ref-texto sup{font-family:Inter,sans-serif;font-size:11px;color:var(--amar);font-weight:700}
+.ref-fechar{position:absolute;right:14px;top:10px;border:0;background:none;font-size:28px;line-height:1;cursor:pointer;color:var(--cinza)}
+.ref-abrir{display:inline-block;margin-top:14px;color:var(--med);font-size:14px;font-weight:600;text-decoration:none}
+.mat.capa-mat{background:#fff8ec;border:1px solid #f0d9ae;border-radius:10px;padding:16px;margin-bottom:6px}
+.selo{display:block;color:var(--amar);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}

@@ -7,7 +7,7 @@ try {
   if (l[0]) {
     const e = l[0], $ = id => document.getElementById(id);
     $('edNome').textContent = e.nome || '';
-    $('edTema').textContent = e.tema ? 'Edição atual · ' + e.tema : 'Edição atual';
+    $('edTema').textContent = 'Edição' + (e.numero ? ' nº ' + e.numero : ' atual') + (e.especial ? ' · Especial' : '') + (e.tema ? ' · ' + e.tema : '');
     if (e.descricao) $('edDesc').textContent = e.descricao;
     if (e.capaUrl) {
       const c = $('edCapa');

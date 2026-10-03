@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planos – Projeto Aster</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    .pl-form label{display:block;font-size:13px;font-weight:600;margin:14px 0 4px}
+    .pl-form input[type=number]{width:160px;padding:9px 10px;border:1px solid #ccc;border-radius:8px;font:inherit}
+    .pl-form input[type=text]{width:100%;padding:9px 10px;border:1px solid #ccc;border-radius:8px;font:inherit}
+    .pl-linha{display:flex;gap:18px;flex-wrap:wrap}
+    .pl-aviso{font-size:12px;color:#777;margin-top:4px}
+    .pl-tab{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px}
+    .pl-tab th,.pl-tab td{text-align:left;padding:10px 8px;border-bottom:1px solid #e5e5e5}
+    .pl-tab s{color:#999}
+    .pl-ok{color:#1a7f37;font-weight:600}
+    .pl-btn{margin-top:20px;padding:12px 24px;border:0;border-radius:8px;background:#E8A33D;color:#2b1a00;font-weight:700;cursor:pointer;font-size:15px}
+    #msg{margin-top:12px;font-size:14px}
+  </style>
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-logo">Projeto Aster</div>
+      <p class="admin-cargo-label">Cargo: <strong id="cargoAtual">—</strong></p>
+      <nav class="admin-nav" id="menuAdmin"></nav>
+      <a href="../conta.html" class="admin-btn-sair" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px;">Meu Perfil</a>
+      <button id="btnSair" class="admin-btn-sair">Sair</button>
+    </aside>
+    <main class="admin-main">
+      <header class="admin-topbar"><h1>Planos e preços</h1><a href="../index.html" class="admin-link-site">Ver site →</a></header>
+      <section class="admin-bloco pl-form">
+        <h2>Preço base</h2>
+        <label for="precoMensal">Preço do plano mensal (R$)</label>
+        <input type="number" id="precoMensal" step="0.01" min="0" value="19.90">
+
+        <h2 style="margin-top:26px">Descontos por período</h2>
+        <label for="desc-trimestral">Desconto do plano trimestral (%)</label>
+        <input type="number" id="desc-trimestral" step="0.5" min="0" max="90" value="10">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:500;margin-top:14px">
+          <input type="checkbox" id="auto" checked style="width:auto"> Calcular os outros descontos automaticamente
+        </label>
+        <p class="pl-aviso">O desconto cresce na mesma proporção dos meses: trimestral X%, semestral 2×X%, anual 4×X% (limite de 60%). Desmarque para digitar cada um.</p>
+        <div class="pl-linha">
+          <div><label for="desc-semestral">Semestral (%)</label><input type="number" id="desc-semestral" step="0.5" min="0" max="90"></div>
+          <div><label for="desc-anual">Anual (%)</label><input type="number" id="desc-anual" step="0.5" min="0" max="90"></div>
+        </div>
+
+        <table class="pl-tab" id="tabela"></table>
+
+        <label for="bannerPromo">Faixa de promoção (opcional)</label>
+        <input type="text" id="bannerPromo" placeholder="Ex: 20% de desconto até o fim do mês">
+
+        <button class="pl-btn" id="btnSalvar">Salvar planos</button>
+        <p id="msg"></p>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { protegerPagina, sair, CARGOS } from "../js/auth.js";
+    import { db } from "../js/firebase-config.js";
+    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const PERIODOS = [
+      { id: 'mensal',     nome: 'Mensal',     meses: 1,  periodo: 'Cobrança mensal' },
+      { id: 'trimestral', nome: 'Trimestral', meses: 3,  periodo: 'Cobrança a cada 3 meses' },
+      { id: 'semestral',  nome: 'Semestral',  meses: 6,  periodo: 'Cobrança a cada 6 meses' },
+      { id: 'anual',      nome: 'Anual',      meses: 12, periodo: 'Cobrança anual' }
+    ];
+    const $ = id => document.getElementById(id);
+    const num = id => Math.max(0, parseFloat($(id).value) || 0);
+    const r2 = v => Math.round(v * 100) / 100;
+    const brl = v => 'R$ ' + v.toFixed(2).replace('.', ',');
+
+    // Calcula todos os planos a partir do preço mensal e dos descontos
+    function calcular(mensal, d3, d6, d12) {
+      const desc = { mensal: 0, trimestral: d3, semestral: d6, anual: d12 };
+      return PERIODOS.map(p => {
+        const cheio = r2(mensal * p.meses), d = desc[p.id];
+        const preco = r2(cheio * (1 - d / 100));
+        return { id: p.id, nome: p.nome, meses: p.meses, periodo: p.periodo, preco,
+                 precoOriginal: d > 0 ? cheio : null, desconto: d,
+                 precoPorMes: r2(preco / p.meses), economia: r2(cheio - preco) };
+      });
+    }
+    window.calcularPlanos = calcular;
+
+    function atualizar() {
+      const d3 = Math.min(num('desc-trimestral'), 90);
+      if ($('auto').checked) {
+        $('desc-semestral').value = Math.min(d3 * 2, 60);
+        $('desc-anual').value = Math.min(d3 * 4, 60);
+      }
+      $('desc-semestral').disabled = $('desc-anual').disabled = $('auto').checked;
+      const lista = calcular(num('precoMensal'), d3, num('desc-semestral'), num('desc-anual'));
+      $('tabela').innerHTML = '<tr><th>Plano</th><th>Você cobra</th><th>Por mês</th><th>Desconto</th><th>Economia do cliente</th></tr>' +
+        lista.map(p => `<tr><td>${p.nome}</td><td><strong>${brl(p.preco)}</strong> ${p.precoOriginal ? '<s>' + brl(p.precoOriginal) + '</s>' : ''}</td><td>${brl(p.precoPorMes)}</td><td>${p.desconto ? p.desconto + '%' : '—'}</td><td class="pl-ok">${p.economia ? brl(p.economia) : '—'}</td></tr>`).join('');
+      return lista;
+    }
+
+    protegerPagina([CARGOS.ADMIN], async (user, cargo) => {
+      $('cargoAtual').textContent = 'Administrador';
+      const itens = [
+        ['dashboard.html','📊 Dashboard'],['publicar.html','✍️ Nova Notícia'],['gerenciar-noticias.html','📰 Gerenciar Notícias'],
+        ['categorias-admin.html','🏷️ Categorias'],['edicoes-admin.html','📚 Edições'],['estatisticas-admin.html','📈 Estatísticas'],
+        ['equipe-admin.html','👥 Equipe'],['usuarios.html','👤 Usuários'],['planos-admin.html','💳 Planos'],['configuracoes.html','⚙️ Configurações']
+      ];
+      $('menuAdmin').innerHTML = itens.map(i => `<a href="${i[0]}">${i[1]}</a>`).join('');
+      try {
+        const s = await getDoc(doc(db, 'configuracoes', 'planos'));
+        if (s.exists() && s.data().precoMensal != null) {
+          const d = s.data();
+          $('precoMensal').value = d.precoMensal;
+          $('desc-trimestral').value = (d.descontos || {}).trimestral ?? 10;
+          $('auto').checked = d.automatico !== false;
+          $('desc-semestral').value = (d.descontos || {}).semestral ?? 0;
+          $('desc-anual').value = (d.descontos || {}).anual ?? 0;
+          $('bannerPromo').value = d.bannerPromo || '';
+        }
+      } catch (e) { console.error(e); }
+      atualizar();
+    });
+
+    ['precoMensal', 'desc-trimestral', 'desc-semestral', 'desc-anual', 'auto'].forEach(id => $(id).addEventListener('input', atualizar));
+    $('btnSair').addEventListener('click', sair);
+    $('btnSalvar').addEventListener('click', async () => {
+      const lista = atualizar();
+      if (num('precoMensal') <= 0) { $('msg').textContent = 'Informe um preço mensal maior que zero.'; return; }
+      try {
+        await setDoc(doc(db, 'configuracoes', 'planos'), {
+          precoMensal: num('precoMensal'), automatico: $('auto').checked,
+          descontos: { trimestral: num('desc-trimestral'), semestral: num('desc-semestral'), anual: num('desc-anual') },
+          planos: lista, bannerPromo: $('bannerPromo').value.trim(), atualizadoEm: new Date().toISOString()
+        });
+        $('msg').style.color = '#1a7f37'; $('msg').textContent = 'Planos salvos.';
+      } catch (e) { $('msg').style.color = '#c00'; $('msg').textContent = 'Não foi possível salvar. Verifique as regras do Firebase.'; console.error(e); }
+    });
+  </script>
+</body>
+</html>

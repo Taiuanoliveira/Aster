@@ -96,6 +96,7 @@
     import { criarNoticia, atualizarNoticia, obterNoticia, enviarImagem, STATUS } from "../js/noticias.js";
     import { db } from "../js/firebase-config.js";
     import { enviarImagemCloudinary } from "../js/cloudinary.js";
+    import { ativarAutoNegrito } from "../js/versiculos.js";
     import { collection, getDocs, orderBy, query, doc, getDoc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     let quillEditor = null;
@@ -282,6 +283,7 @@
         { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
         { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
         { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
+        { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'configuracoes.html', label: '⚙️ Configurações', cargos: ['administrador'] },
       ];
       menu.innerHTML = itens.filter(i => i.cargos.includes(cargo)).map(i => `<a href="${i.href}">${i.label}</a>`).join('');
@@ -353,6 +355,8 @@
       document.getElementById('mensagemErro').style.display = 'none';
       el.textContent = texto; el.style.display = 'block';
     }
+
+    ativarAutoNegrito(quillEditor);
 
     async function salvarNoticia(acao) {
       const titulo = document.getElementById('titulo').value.trim();

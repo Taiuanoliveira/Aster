@@ -10,6 +10,7 @@
 import { db } from './js/firebase-config.js';
 import { doc, getDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { montarTopoRodape, esc, sanitizar } from './js/leitura.js';
+import { marcarReferencias } from './js/versiculos.js';
 montarTopoRodape();
 const $=id=>document.getElementById(id), c=$('conteudo');
 try{
@@ -18,14 +19,15 @@ try{
   if(!s||!s.exists()||s.data().status!=='publicada'){$('nome').textContent='Edição não encontrada';c.innerHTML='<p class="vazio">Esta edição não existe ou ainda não foi publicada.</p>';}
   else{
     const e=s.data();document.title=e.nome+' – Projeto Aster';
-    $('tema').textContent=e.tema||'Edição';$('nome').textContent=e.nome;$('desc').textContent=e.descricao||'';
+    $('tema').textContent=(e.numero?'Edição nº '+e.numero:'Edição')+(e.especial?' · Especial':'')+(e.tema?' · '+e.tema:'');$('nome').textContent=e.nome;$('desc').textContent=e.descricao||'';
     let h='';
     if(e.cartaLeitor&&e.cartaLeitor.replace(/<[^>]*>/g,'').trim())h+='<div class="carta"><h2>Carta do editor</h2><div class="corpo">'+sanitizar(e.cartaLeitor)+'</div></div>';
     const q=await getDocs(query(collection(db,'noticias'),where('edicao','==',e.nome)));
     const m=q.docs.map(d=>({id:d.id,...d.data()})).filter(n=>n.status==='publicado').sort((a,b)=>(a.ordemEdicao||99)-(b.ordemEdicao||99));
     h+='<h2 class="sec">Nesta edição</h2>';
-    h+=m.length?m.map((n,i)=>'<a class="mat" href="noticia.html?id='+encodeURIComponent(n.id)+'"><span class="n">'+String(i+1).padStart(2,'0')+'</span><div style="flex:1"><h3>'+esc(n.titulo)+'</h3><p>'+esc(n.resumo||'')+'</p></div>'+(n.imagemUrl?'<img src="'+esc(n.imagemUrl)+'" alt="">':'')+'</a>').join(''):'<p class="vazio">Os artigos desta edição serão publicados em breve.</p>';
+    h+=m.length?m.map((n,i)=>'<a class="mat'+(i===0?' capa-mat':'')+'" href="noticia.html?id='+encodeURIComponent(n.id)+'"><span class="n">'+String(i+1).padStart(2,'0')+'</span><div style="flex:1">'+(i===0?'<small class="selo">Matéria de capa</small>':'')+'<h3>'+esc(n.titulo)+'</h3><p>'+esc(n.resumo||'')+'</p></div>'+(n.imagemUrl?'<img src="'+esc(n.imagemUrl)+'" alt="">':'')+'</a>').join(''):'<p class="vazio">Os artigos desta edição serão publicados em breve.</p>';
     c.innerHTML=h;
+    c.querySelectorAll('.corpo').forEach(marcarReferencias);
   }
 }catch(err){$('nome').textContent='Erro ao carregar';c.innerHTML='<p class="vazio">Não foi possível carregar agora.</p>';console.error(err);}
 </script></body></html>

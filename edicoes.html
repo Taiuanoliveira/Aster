@@ -20,7 +20,7 @@ try{
   l.forEach(e=>{
     const a=document.createElement('a');a.className='ed-card';a.href='edicao.html?id='+encodeURIComponent(e.id);
     const capa=e.capaUrl?' style="background-image:url(\''+esc(e.capaUrl)+'\')"':'';
-    a.innerHTML='<div class="ed-capa"'+capa+'>'+(e.capaUrl?'':esc(e.nome))+'</div><div class="ed-corpo"><small>'+esc(e.tema||'')+'</small><h3>'+esc(e.nome)+'</h3><p>'+esc(e.descricao||'')+'</p></div>';
+    a.innerHTML='<div class="ed-capa"'+capa+'>'+(e.capaUrl?'':esc(e.nome))+'</div><div class="ed-corpo"><small>'+esc((e.numero?'Nº '+e.numero+' · ':'')+(e.especial?'Especial · ':'')+(e.tema||''))+'</small><h3>'+esc(e.nome)+'</h3><p>'+esc(e.descricao||'')+'</p></div>';
     el.append(a);
   });
 }catch(err){el.innerHTML='<p class="vazio">Não foi possível carregar as edições agora.</p>';console.error(err);}

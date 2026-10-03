@@ -91,6 +91,13 @@
             <option value="geral">Geral / Variados</option>
           </select>
 
+          <label for="numeroEdicao">Número da edição <small style="color:#888;font-weight:400;">(opcional, ex.: 12)</small></label>
+          <input type="number" id="numeroEdicao" min="1" style="width:120px;">
+          <label style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+            <input type="checkbox" id="edicaoEspecial" style="width:auto;">
+            <span>Edição especial <small style="color:#888;font-weight:400;">(aparece como "Edição nº X · Especial")</small></span>
+          </label>
+
           <label for="descricaoEdicao">Descrição resumida (aparece na lista de edições)</label>
           <textarea id="descricaoEdicao" rows="2" placeholder="Breve descrição desta edição"></textarea>
 
@@ -130,6 +137,7 @@
     import { db } from "../js/firebase-config.js";
     import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { enviarImagemCloudinary } from "../js/cloudinary.js";
+    import { ativarAutoNegrito } from "../js/versiculos.js";
 
     // Editor rico da Carta ao Leitor: negrito, itálico, subtítulo, citação, link e imagens no meio do texto.
     const editorCartaLeitor = new Quill('#editorCartaLeitor', {
@@ -173,6 +181,8 @@
     let usuarioAtual = null;
     let arquivoCapaSelecionado = null;
 
+    ativarAutoNegrito(editorCartaLeitor);
+
     function montarMenu(cargo) {
       const menu = document.getElementById('menuAdmin');
       const itens = [
@@ -184,6 +194,7 @@
         { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
         { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
         { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
+        { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'configuracoes.html', label: '⚙️ Configurações', cargos: ['administrador'] },
       ];
       menu.innerHTML = itens
@@ -249,6 +260,9 @@
         await addDoc(collection(db, 'edicoes'), {
           nome, tema, descricao, cartaLeitor,
           capaUrl,
+          edicaoGratuita: document.getElementById('edicaoGratuita').checked,
+          numero: parseInt(document.getElementById('numeroEdicao').value) || null,
+          especial: document.getElementById('edicaoEspecial').checked,
           status: 'rascunho',
           criadoEm: new Date().toISOString(),
           criadoPor: usuarioAtual.displayName || usuarioAtual.email
@@ -285,7 +299,7 @@
               ${ed.capaUrl ? `<img src="${ed.capaUrl}">` : ''}
               <div class="edicao-cabecalho-textos">
                 <span class="tag-status ${status}">${status === 'publicada' ? 'Publicada' : 'Rascunho'}</span>
-                <div><strong>${ed.nome}</strong></div>
+                <div><strong>${ed.nome}</strong>${ed.numero ? ' · nº ' + ed.numero : ''}${ed.especial ? ' · ESPECIAL' : ''}${ed.edicaoGratuita ? ' · grátis' : ''}</div>
                 <div style="font-size:12px;color:#777;">${ed.tema}${ed.descricao ? ' — ' + ed.descricao : ''}</div>
               </div>
             </div>

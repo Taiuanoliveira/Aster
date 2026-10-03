@@ -22,6 +22,8 @@ function padraoNome(n) {
 const NOMES = LIVROS.map(b => b[0]).sort((a, b) => b.length - a.length).map(padraoNome).join('|');
 export const REGEX_REF = () => new RegExp('(?<![\\p{L}\\d])(' + NOMES + ')\\s+(\\d{1,3})(?:\\s*[:.]\\s*(\\d{1,3})(?:\\s*[-–]\\s*(\\d{1,3}))?)?(?![\\p{L}\\d])', 'giu');
 
+export const REGEX_EDICAO = () => new RegExp('(?<![\\p{L}\\d])edi[cç][aã]o\\s+(?:n[ºo°.]?\\s*)?(\\d{1,3})(?:\\.0)?(?![\\d]|\\.\\d)', 'giu');
+
 export function interpretar(m) {
   const chave = sem(m[1]).replace(/^([123])\s?[ºo°]?\s?/, '$1 ').replace(/\s+/g, ' ');
   const livro = POR_NOME[chave];
@@ -48,6 +50,11 @@ export function ativarAutoNegrito(quill) {
       if (fim >= desloc || !interpretar(m)) continue;
       const f = quill.getFormat(ini + m.index, m[0].length);
       if (!f.bold) quill.formatText(ini + m.index, m[0].length, 'bold', true, 'silent');
+    }
+    const re2 = REGEX_EDICAO(); let m2;
+    while ((m2 = re2.exec(texto))) {
+      if (m2.index + m2[0].length >= desloc) continue;
+      if (!quill.getFormat(ini + m2.index, m2[0].length).bold) quill.formatText(ini + m2.index, m2[0].length, 'bold', true, 'silent');
     }
   });
 }
@@ -85,7 +92,33 @@ async function abrir(ref) {
     if (!t.firstChild) throw 0;
   } catch (e) { t.textContent = 'Não foi possível carregar este texto agora.'; }
 }
+async function abrirEdicao(numero) {
+  try {
+    const { db } = await import('./firebase-config.js');
+    const fs = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    const q = await fs.getDocs(fs.query(fs.collection(db, 'edicoes'), fs.where('numero', '==', numero), fs.where('status', '==', 'publicada')));
+    if (q.empty) { alert('Esta edição ainda não está disponível.'); return; }
+    location.href = 'edicao.html?id=' + encodeURIComponent(q.docs[0].id);
+  } catch (e) { alert('Não foi possível abrir a edição agora.'); }
+}
+function marcarEdicoes(raiz) {
+  const nos = [], w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT);
+  while (w.nextNode()) { if (!w.currentNode.parentElement.closest('a,.ref-biblica,.ref-edicao')) nos.push(w.currentNode); }
+  nos.forEach(no => {
+    const texto = no.nodeValue, re = REGEX_EDICAO(); let m, ult = 0, frag = null;
+    while ((m = re.exec(texto))) {
+      frag = frag || document.createDocumentFragment();
+      frag.append(texto.slice(ult, m.index));
+      const b = document.createElement('strong'); b.className = 'ref-biblica ref-edicao'; b.tabIndex = 0; b.title = 'Abrir esta edição';
+      const num = +m[1]; b.textContent = m[0]; b.onclick = () => abrirEdicao(num);
+      b.onkeydown = ev => { if (ev.key === 'Enter') abrirEdicao(num); };
+      frag.append(b); ult = m.index + m[0].length;
+    }
+    if (frag) { frag.append(texto.slice(ult)); no.replaceWith(frag); }
+  });
+}
 export function marcarReferencias(raiz) {
+  marcarEdicoes(raiz);
   const nos = [], w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT);
   while (w.nextNode()) { if (!w.currentNode.parentElement.closest('a,.ref-biblica')) nos.push(w.currentNode); }
   nos.forEach(no => {

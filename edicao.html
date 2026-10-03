@@ -21,7 +21,7 @@ try{
     const e=s.data();document.title=e.nome+' – Projeto Aster';
     $('tema').textContent=(e.numero?'Edição nº '+e.numero:'Edição')+(e.especial?' · Especial':'')+(e.tema?' · '+e.tema:'');$('nome').textContent=e.nome;$('desc').textContent=e.descricao||'';
     let h='';
-    if(e.cartaLeitor&&e.cartaLeitor.replace(/<[^>]*>/g,'').trim())h+='<div class="carta"><h2>Carta do editor</h2><div class="corpo">'+sanitizar(e.cartaLeitor)+'</div></div>';
+    if(e.cartaLeitor&&e.cartaLeitor.replace(/<[^>]*>/g,'').trim())h+='<div class="carta"><h2>Carta ao leitor</h2><div class="corpo">'+sanitizar(e.cartaLeitor)+'</div></div>';
     const porStatus=st=>getDocs(query(collection(db,'noticias'),where('edicao','==',e.nome),where('status','==',st)));
     const [qa,qb]=await Promise.all([porStatus('publicado'),porStatus('indexado')]);
     const q={docs:[...qa.docs,...qb.docs]};

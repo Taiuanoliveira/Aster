@@ -70,7 +70,7 @@ const itens = doBanco.length ? doBanco : LIVROS;
 if (doBanco.length) { const av = document.querySelector('.aviso'); if (av) av.remove(); }
 const grid = document.getElementById('grid');
 itens.forEach(l => {
-  const ok = l.arquivo && l.arquivo !== '#';
+  const ok = l.arquivo && /^https:\/\//i.test(l.arquivo);
   const div = document.createElement('div'); div.className = 'livro';
   div.innerHTML = `<div class="capa">${esc(l.titulo)}</div><h3>${esc(l.titulo)}</h3><p>${esc(l.resumo)}</p><a class="btn" href="${ok ? esc(l.arquivo) : '#'}"${ok ? ' target="_blank" rel="noopener"' : ''}>Baixar PDF</a>`;
   if (!ok) div.querySelector('a').addEventListener('click', e => { e.preventDefault(); alert('Este PDF ainda não foi adicionado. Em breve!'); });

@@ -1,0 +1,78 @@
+/* Projeto Aster – botão do tema e cores do modo escuro (ativado por <html data-tema="escuro">) */
+
+html .tema-toggle{
+  background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;
+  width:34px;height:34px;padding:0;margin:0 0 0 14px;border-radius:50%;
+  font-size:16px;line-height:1;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+html .tema-toggle:hover{background:rgba(255,255,255,.14)}
+html .tema-toggle.flutuante{position:fixed;right:16px;bottom:16px;z-index:60;background:#0C3B5C;margin:0}
+
+html[data-tema="escuro"]{
+  color-scheme:dark;
+  --bg:#0f1720;--texto:#e7edf3;--cinza:#9fb0bd;--card:#1b2430;--borda:#2a3442;--azul:#163049;
+}
+html[data-tema="escuro"] body{background:var(--bg);color:var(--texto)}
+
+/* títulos que usavam o azul-escuro como cor de texto */
+html[data-tema="escuro"] section h2,
+html[data-tema="escuro"] .livro h3,
+html[data-tema="escuro"] .card-dia h1,
+html[data-tema="escuro"] .tema-card h3,
+html[data-tema="escuro"] .estudo h3,
+html[data-tema="escuro"] .editorial-info h3,
+html[data-tema="escuro"] .explore-item h4,
+html[data-tema="escuro"] .mat h3,
+html[data-tema="escuro"] .ed-info h1,
+html[data-tema="escuro"] .carta h2,
+html[data-tema="escuro"] .carta h3,
+html[data-tema="escuro"] .ant strong,
+html[data-tema="escuro"] .col strong{color:#fff}
+html[data-tema="escuro"] h2.sec{border-bottom-color:#2f4a60}
+html[data-tema="escuro"] .mat:hover h3{color:var(--amar)}
+
+/* textos em azul médio */
+html[data-tema="escuro"] .editorial-info .tag,
+html[data-tema="escuro"] .tr,
+html[data-tema="escuro"] .nota,
+html[data-tema="escuro"] .card-dia .ref,
+html[data-tema="escuro"] .voltar,
+html[data-tema="escuro"] .salvo-msg,
+html[data-tema="escuro"] .esqueci a,
+html[data-tema="escuro"] .carta a{color:#8cc4ea}
+html[data-tema="escuro"] .editorial-info p,
+html[data-tema="escuro"] .ed-info .desc,
+html[data-tema="escuro"] .carta blockquote{color:#b9cfdd}
+html[data-tema="escuro"] .carta{color:var(--texto)}
+
+/* cartões e áreas que eram brancas */
+html[data-tema="escuro"] .biblia-card,
+html[data-tema="escuro"] .explore-item,
+html[data-tema="escuro"] .bar{background:var(--card);border-color:var(--borda)}
+html[data-tema="escuro"] .biblia-card p{color:var(--texto)}
+html[data-tema="escuro"] .pill:not(.ativa){background:var(--card);border-color:var(--borda)}
+html[data-tema="escuro"] .divisor::before,
+html[data-tema="escuro"] .divisor::after{background:var(--borda)}
+
+/* campos de texto e botões comuns */
+html[data-tema="escuro"] input[type=text],
+html[data-tema="escuro"] input[type=email],
+html[data-tema="escuro"] input[type=password],
+html[data-tema="escuro"] select{background:#0f1720;color:var(--texto);border-color:var(--borda)}
+html[data-tema="escuro"] input::placeholder{color:#6f8394}
+html[data-tema="escuro"] body.biblia-pag button:not(.tema-toggle){background:var(--card);color:var(--texto);border-color:#3b5368}
+html[data-tema="escuro"] .switch:not(.on){background:#3b4a5a}
+
+/* avisos */
+html[data-tema="escuro"] .aviso{background:#3a2d10;border-color:#8a6a1f;color:#f0d9a0}
+
+/* Bíblia: leitura e versículos marcados */
+html[data-tema="escuro"] body.biblia-pag{color:var(--texto)}
+html[data-tema="escuro"] .ver sup{color:#f0a64a}
+html[data-tema="escuro"] .ver.sel{outline-color:var(--amar)}
+html[data-tema="escuro"] .ver[style*="background"]{color:#1a1a1a}
+
+/* Editorial: avatares e fotos com fundo claro */
+html[data-tema="escuro"] .av,
+html[data-tema="escuro"] .col .foto{background:#163049;color:#cfe6f3}

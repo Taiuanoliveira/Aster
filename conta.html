@@ -7,9 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{--esc:#0C3B5C;--med:#1F5A82;--azul:#B8E8FF;--amar:#E8A33D;--bg:#FBFAF6;--texto:#1a1a1a;--cinza:#666;--card:#fff;--borda:#e3ddd0}
-  @media (prefers-color-scheme: dark){
-    :root{--bg:#0f1720;--texto:#e7edf3;--cinza:#9fb0bd;--card:#1b2430;--borda:#2a3442;--azul:#163049}
-  }
+  
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:Inter,sans-serif;background:var(--bg);color:var(--texto);padding-bottom:60px}
   a{color:inherit}
@@ -29,7 +27,7 @@
 
   section{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:24px;margin-bottom:20px}
   section h2{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;color:var(--esc)}
-  @media (prefers-color-scheme: dark){ section h2{color:#fff} }
+  
 
   label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
   input[type=text]{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font:inherit;font-size:14px;background:#fff;color:#1a1a1a;margin-bottom:14px}
@@ -55,6 +53,8 @@
 
   .salvo-msg{font-size:12px;color:var(--med);margin-top:-8px;margin-bottom:10px;display:none}
 </style>
+<link rel="stylesheet" href="css/tema.css">
+<script src="js/tema.js"></script>
 </head>
 <body>
 

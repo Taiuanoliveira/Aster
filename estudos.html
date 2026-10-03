@@ -7,9 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{--esc:#0C3B5C;--med:#1F5A82;--azul:#B8E8FF;--amar:#E8A33D;--bg:#FBFAF6;--texto:#1a1a1a;--cinza:#666;--card:#fff;--borda:#e3ddd0}
-  @media (prefers-color-scheme: dark){
-    :root{--bg:#0f1720;--texto:#e7edf3;--cinza:#9fb0bd;--card:#1b2430;--borda:#2a3442;--azul:#163049}
-  }
+  
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:Inter,sans-serif;background:var(--bg);color:var(--texto);padding-bottom:60px}
   a{color:inherit}
@@ -33,13 +31,13 @@
   .tema-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
   .tema-card{background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:18px;cursor:pointer}
   .tema-card h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--esc);margin-bottom:6px}
-  @media (prefers-color-scheme: dark){ .tema-card h3{color:#fff} }
+  
   .tema-card p{font-size:13px;color:var(--cinza)}
 
   .estudo{background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:22px;margin-bottom:16px}
   .estudo .ref{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--amar);margin-bottom:6px}
   .estudo h3{font-family:'Playfair Display',serif;font-size:19px;margin-bottom:10px;color:var(--esc)}
-  @media (prefers-color-scheme: dark){ .estudo h3{color:#fff} }
+  
   .estudo p{font-size:14px;line-height:1.7;color:var(--texto);margin-bottom:10px}
   .estudo a{color:var(--amar);font-weight:700;font-size:13px;text-decoration:none}
   .voltar{display:inline-block;margin-bottom:16px;font-size:13px;color:var(--med);text-decoration:none;cursor:pointer}
@@ -48,6 +46,8 @@
   .livro-item{background:var(--card);border:1px solid var(--borda);border-radius:8px;padding:12px 14px;font-size:14px;text-decoration:none;color:var(--texto);text-align:center}
   .livro-item:hover{border-color:var(--amar)}
 </style>
+<link rel="stylesheet" href="css/tema.css">
+<script src="js/tema.js"></script>
 </head>
 <body>
 

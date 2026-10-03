@@ -6,6 +6,7 @@
 </head><body>
 <article class="artigo" id="art"><p class="vazio">Carregando…</p></article>
 <script type="module">
+import { montarFerramentas } from './js/ferramentas-artigo.js';
 import { db } from './js/firebase-config.js';
 import { doc, getDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { montarTopoRodape, esc, sanitizar, dataBonita } from './js/leitura.js';
@@ -50,7 +51,7 @@ try {
       '<p class="meta">' + esc(n.autorNome || '') + (n.autorNome && n.criadoEm ? ' · ' : '') + esc(dataBonita(n.criadoEm)) + '</p>' +
       (n.imagemUrl ? '<img class="capa-img" src="' + esc(n.imagemUrl) + '" alt="">' : '') +
       (n.resumo ? '<p class="resumo">' + esc(n.resumo) + '</p>' : '') +
-      '<div class="corpo" id="corpoArt">' + sanitizar(bloqueado ? cortar(n.conteudo, regra) : n.conteudo) + '</div>' + (bloqueado ? gateHTML(false) : '') +
+      '<div class="ferr" id="ferrArt"></div><div class="corpo" id="corpoArt">' + sanitizar(bloqueado ? cortar(n.conteudo, regra) : n.conteudo) + '</div>' + (bloqueado ? gateHTML(false) : '') +
       '<div class="acoes-art" id="acoesArt">' +
         '<button class="btn-acao" id="btnCurtir">🤍 Curtir <span class="n" id="numCurtidas">0</span></button>' +
         '<button class="btn-acao" id="btnSalvar">🔖 Salvar</button>' +
@@ -62,6 +63,7 @@ try {
       '</section>';
     marcarReferencias(a.querySelector('.corpo'));
     registrarVisualizacao(noticiaId);
+    montarFerramentas(n.titulo);
     iniciarAcoes();
   }
 } catch (err) {

@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="css/leitura.css"><link rel="stylesheet" href="css/tema.css"><script src="js/tema.js"></script>
 </head><body>
 <section class="faixa"><p class="rot" id="tema">Edição</p><h1 id="nome">Carregando…</h1><p class="sub" id="desc"></p></section>
-<main class="pag"><a class="voltar" href="edicoes.html">← Todas as edições</a><div id="conteudo"></div></main>
+<main class="pag" style="max-width:1040px"><a class="voltar" href="edicoes.html">← Todas as edições</a><div id="conteudo"></div></main>
 <script type="module">
 import { db } from './js/firebase-config.js';
 import { doc, getDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -28,7 +28,8 @@ try{
     const acesso=n=>e.edicaoGratuita?'':(n.gratuito===false?'<span class="tag-acesso pago">🔒 Assinantes</span>':'<span class="tag-acesso livre">Gratuito</span>');
     const m=q.docs.map(d=>({id:d.id,...d.data()})).filter(n=>n.status==='publicado'||n.status==='indexado').sort((a,b)=>(a.ordemEdicao||99)-(b.ordemEdicao||99));
     h+='<h2 class="sec">Nesta edição</h2>';
-    h+=m.length?m.map((n,i)=>'<a class="mat'+(i===0?' capa-mat':'')+'" href="noticia.html?id='+encodeURIComponent(n.id)+'"><span class="n">'+String(i+1).padStart(2,'0')+'</span><div style="flex:1">'+(i===0?'<small class="selo">Matéria de capa</small>':'')+'<h3>'+esc(n.titulo)+acesso(n)+'</h3><p>'+esc(n.resumo||'')+'</p></div>'+(n.imagemUrl?'<img src="'+esc(n.imagemUrl)+'" alt="">':'')+'</a>').join(''):'<p class="vazio">Os artigos desta edição serão publicados em breve.</p>';
+    const cartao=(n,i)=>'<a class="of-card'+(i===0?' of-capa':'')+'" href="noticia.html?id='+encodeURIComponent(n.id)+'"><div class="of-img">'+(n.imagemUrl?'<img src="'+esc(n.imagemUrl)+'" alt="">':'<div class="sem-img">✦</div>')+'</div><div class="of-txt"><small class="selo">'+(i===0?'Matéria de capa':esc(n.categoria||''))+'</small><h3>'+esc(n.titulo)+acesso(n)+'</h3><p>'+esc(n.resumo||'')+'</p><span class="of-aut">'+esc(n.autorNome||'')+'</span></div></a>';
+    h+=m.length?'<div class="of-grade">'+m.map(cartao).join('')+'</div>':'<p class="vazio">Os artigos desta edição serão publicados em breve.</p>';
     c.innerHTML=h;
     c.querySelectorAll('.corpo').forEach(marcarReferencias);
   }

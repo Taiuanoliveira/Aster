@@ -10,8 +10,23 @@ import { db } from './js/firebase-config.js';
 import { doc, getDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { montarTopoRodape, esc, sanitizar, dataBonita, tituloPublico } from './js/leitura.js';
 import { marcarReferencias } from './js/versiculos.js';
+import { carregarTaxonomia, injetarEstilos } from './js/artigos-lista.js';
 import { registrarVisualizacao } from './js/interacoes.js';
 montarTopoRodape();
+async function completarTaxonomia(n, a){
+  try{
+    injetarEstilos();
+    const tx=await carregarTaxonomia();
+    const slugs=((n.categorias&&n.categorias.length)?n.categorias:[n.categoria]).filter(Boolean);
+    const linha=a.querySelector('#catLinha');
+    if(linha&&slugs.length) linha.innerHTML=slugs.map(s=>{const c=tx.cats[s];return '<a href="artigos.html?cat='+encodeURIComponent(s)+'" style="color:inherit;text-decoration:none">'+esc((c&&c.emoji?c.emoji+' ':'')+(c?c.nome:s))+'</a>';}).join(' · ');
+    const d=n.destaque&&tx.dest[n.destaque];
+    if(d&&linha) linha.insertAdjacentHTML('afterend','<div style="margin:6px 0"><span class="aa-badge" style="background:'+d.cor+'">'+esc((d.emoji?d.emoji+' ':'')+n.destaque)+'</span></div>');
+    const tg=(n.tags||[]).filter(t=>tx.tags[t]);
+    if(tg.length) a.insertAdjacentHTML('beforeend','<div class="aa-tags">'+tg.map(t=>'<a href="artigos.html?tag='+encodeURIComponent(t)+'">#'+esc(tx.tags[t].nome)+'</a>').join('')+'</div>');
+  }catch(e){}
+}
+
 async function artigoVisivel(s){
   if(!s||!s.exists()) return false;
   const d=s.data();
@@ -29,12 +44,13 @@ try{
   else{
     const n=s.data();document.title=n.titulo+' – Projeto Aster';
     a.innerHTML=(n.edicao?'<a class="voltar" href="edicoes.html">← Editorial</a><br>':'')+
-      '<span class="cat">'+esc(n.categoria||'')+'</span><h1>'+esc(n.titulo)+'</h1>'+
+      '<span class="cat" id="catLinha">'+esc(n.categoria||'')+'</span><h1>'+esc(n.titulo)+'</h1>'+
       '<p class="meta">'+esc(n.autorNome||'')+(tituloPublico(n.cargoEditorialAutor)?' ('+esc(tituloPublico(n.cargoEditorialAutor))+')':'')+(n.autorNome&&n.criadoEm?' · ':'')+esc(dataBonita(n.criadoEm))+'</p>'+
       (n.imagemUrl?'<img class="capa-img" src="'+esc(n.imagemUrl)+'" alt="">':'')+
       (n.resumo?'<p class="resumo">'+esc(n.resumo)+'</p>':'')+
       '<div class="corpo">'+sanitizar(n.conteudo)+'</div>';
     marcarReferencias(a.querySelector('.corpo'));
+    completarTaxonomia(n, a);
     try{if(!sessionStorage.getItem('v_'+id)){sessionStorage.setItem('v_'+id,'1');registrarVisualizacao(id);}}catch(e){}
   }
 }catch(err){a.innerHTML='<p class="vazio">Não foi possível carregar agora.</p>';console.error(err);}

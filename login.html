@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrar – Projeto Aster</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--esc:#0C3B5C;--med:#1F5A82;--amar:#E8A33D;--bg:#FBFAF6;--texto:#1a1a1a;--cinza:#666}
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#0f1720;--texto:#e7edf3;--cinza:#9fb0bd}
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,sans-serif;background:var(--bg);color:var(--texto);min-height:100vh;display:flex;flex-direction:column}
+  a{color:inherit}
+  header.topo{background:var(--esc);padding:18px 40px;display:flex;align-items:center}
+  .logo-aster{display:flex;align-items:center;gap:8px;font-family:'Playfair Display',serif;font-weight:700;font-size:20px;color:#fff;text-decoration:none}
+  .logo-aster .estrela{color:var(--amar)}
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+  .card{width:100%;max-width:380px;background:transparent}
+  .card h1{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:6px;text-align:center}
+  .card .sub{color:var(--cinza);font-size:14px;text-align:center;margin-bottom:28px}
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;margin-top:16px}
+  input{width:100%;padding:11px 12px;border-radius:8px;border:1px solid #ccc;font:inherit;font-size:14px;background:#fff;color:#1a1a1a}
+  .erro{color:#c0392b;font-size:13px;margin-top:12px;display:none}
+  .btn{display:block;width:100%;padding:13px;border-radius:8px;font-size:14px;font-weight:700;text-align:center;text-decoration:none;cursor:pointer;border:none;margin-top:20px}
+  .btn-amar{background:var(--amar);color:var(--esc)}
+  .btn-amar:hover{background:#d8922f}
+  .btn-google{background:#fff;color:#333;border:1px solid #ccc;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px}
+  .btn-google:hover{background:#f5f5f5}
+  .divisor{display:flex;align-items:center;gap:10px;margin:22px 0;color:var(--cinza);font-size:12px}
+  .divisor::before,.divisor::after{content:"";flex:1;height:1px;background:#ddd}
+  .rodape-link{text-align:center;font-size:13px;margin-top:20px;color:var(--cinza)}
+  .rodape-link a{color:var(--amar);font-weight:600;text-decoration:none}
+  .esqueci{text-align:right;font-size:12px;margin-top:8px}
+  .esqueci a{color:var(--med);text-decoration:none}
+</style>
+</head>
+<body>
+<header class="topo"><a href="index.html" class="logo-aster"><span class="estrela">✦</span> Projeto Aster</a></header>
+<main>
+  <div class="card">
+    <h1>Entrar</h1>
+    <p class="sub">Acesse sua conta para favoritar versículos, livros e editoriais.</p>
+
+    <button class="btn btn-google" id="btnGoogle">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.4C29.7 35.3 27 36 24 36c-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.6 5.4C41.9 35.9 44 30.3 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+      Entrar com Google
+    </button>
+
+    <div class="divisor">ou com e-mail</div>
+
+    <form id="formLogin">
+      <label for="email">E-mail</label>
+      <input type="email" id="email" required>
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" required>
+      <p class="esqueci"><a href="#" id="linkEsqueci">Esqueci minha senha</a></p>
+      <button type="submit" class="btn btn-amar">Entrar</button>
+      <p class="erro" id="erro"></p>
+    </form>
+
+    <p class="rodape-link">Ainda não tem conta? <a href="cadastro.html">Cadastre-se</a></p>
+  </div>
+</main>
+
+<script type="module">
+  import { entrarComEmail, entrarComGoogle, recuperarSenha, observarLogin } from "./js/auth.js";
+
+  observarLogin((user) => { if (user) window.location.href = "conta.html"; });
+
+  const erro = document.getElementById('erro');
+  function mostrarErro(msg){ erro.textContent = msg; erro.style.display = 'block'; }
+
+  document.getElementById('formLogin').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    erro.style.display = 'none';
+    try {
+      await entrarComEmail(document.getElementById('email').value, document.getElementById('senha').value);
+      window.location.href = "conta.html";
+    } catch (err) {
+      mostrarErro("Não foi possível entrar. Confira seu e-mail e senha.");
+    }
+  });
+
+  document.getElementById('btnGoogle').addEventListener('click', async () => {
+    erro.style.display = 'none';
+    try {
+      await entrarComGoogle();
+      window.location.href = "conta.html";
+    } catch (err) {
+      mostrarErro("Não foi possível entrar com o Google agora.");
+    }
+  });
+
+  document.getElementById('linkEsqueci').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    if (!email) { mostrarErro("Digite seu e-mail acima primeiro."); return; }
+    try {
+      await recuperarSenha(email);
+      mostrarErro("Enviamos um link de redefinição para " + email + ".");
+      erro.style.color = "#1F5A82";
+    } catch (err) {
+      mostrarErro("Não foi possível enviar o e-mail de redefinição.");
+    }
+  });
+</script>
+</body>
+</html>

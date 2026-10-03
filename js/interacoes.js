@@ -71,6 +71,32 @@ export async function listarSalvosParaDepois(uid) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
+// --- FAVORITOS (versículos, livros, editoriais) ---
+// tipo: "versiculos" | "livros" | "editoriais"
+export async function estaFavoritado(tipo, itemId, uid) {
+  if (!uid) return false;
+  const snap = await getDoc(doc(db, "favoritos_" + tipo, uid, "itens", itemId));
+  return snap.exists();
+}
+
+export async function alternarFavorito(tipo, itemId, uid, dados = {}) {
+  const ref = doc(db, "favoritos_" + tipo, uid, "itens", itemId);
+  const jaFavoritado = await estaFavoritado(tipo, itemId, uid);
+
+  if (jaFavoritado) {
+    await deleteDoc(ref);
+    return false;
+  } else {
+    await setDoc(ref, { ...dados, salvoEm: serverTimestamp() });
+    return true;
+  }
+}
+
+export async function listarFavoritos(tipo, uid) {
+  const snap = await getDocs(query(collection(db, "favoritos_" + tipo, uid, "itens"), orderBy("salvoEm", "desc")));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
 // --- COMENTÁRIOS (sem moderação — aparecem na hora) ---
 export async function criarComentario(noticiaId, uid, nomeAutor, texto) {
   await addDoc(collection(db, "noticias", noticiaId, "comentarios"), {

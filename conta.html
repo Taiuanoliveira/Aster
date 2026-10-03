@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minha conta – Projeto Aster</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--esc:#0C3B5C;--med:#1F5A82;--azul:#B8E8FF;--amar:#E8A33D;--bg:#FBFAF6;--texto:#1a1a1a;--cinza:#666;--card:#fff;--borda:#e3ddd0}
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#0f1720;--texto:#e7edf3;--cinza:#9fb0bd;--card:#1b2430;--borda:#2a3442;--azul:#163049}
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,sans-serif;background:var(--bg);color:var(--texto);padding-bottom:60px}
+  a{color:inherit}
+  header.topo{background:var(--esc);display:flex;align-items:center;justify-content:space-between;padding:18px 40px;flex-wrap:wrap;gap:12px}
+  .logo-aster{display:flex;align-items:center;gap:8px;font-family:'Playfair Display',serif;font-weight:700;font-size:20px;color:#fff;text-decoration:none}
+  .logo-aster .estrela{color:var(--amar)}
+  nav.nav-topo a{color:#dfeaf2;text-decoration:none;font-size:14px;font-weight:500;margin-left:20px}
+  nav.nav-topo a:hover{color:var(--amar)}
+
+  main{max-width:720px;margin:0 auto;padding:40px 20px}
+  .perfil-topo{display:flex;align-items:center;gap:20px;margin-bottom:36px;flex-wrap:wrap}
+  .avatar-wrap{position:relative}
+  .avatar{width:84px;height:84px;border-radius:50%;object-fit:cover;background:var(--azul);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:30px;color:var(--esc)}
+  .avatar-editar{position:absolute;bottom:0;right:0;background:var(--amar);color:var(--esc);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;border:2px solid var(--bg)}
+  .perfil-nome{font-family:'Playfair Display',serif;font-size:22px}
+  .perfil-email{color:var(--cinza);font-size:13px;margin-top:2px}
+
+  section{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:24px;margin-bottom:20px}
+  section h2{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;color:var(--esc)}
+  @media (prefers-color-scheme: dark){ section h2{color:#fff} }
+
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+  input[type=text]{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #ccc;font:inherit;font-size:14px;background:#fff;color:#1a1a1a;margin-bottom:14px}
+
+  .btn{display:inline-block;padding:11px 22px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;border:none}
+  .btn-amar{background:var(--amar);color:var(--esc)}
+  .btn-sair{background:transparent;border:1px solid #c0392b;color:#c0392b}
+
+  .toggle-linha{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+  .toggle-linha p{font-size:14px}
+  .toggle-linha span{font-size:12px;color:var(--cinza)}
+  .switch{position:relative;width:44px;height:24px;background:#ccc;border-radius:999px;cursor:pointer;flex-shrink:0;transition:background .2s}
+  .switch.on{background:var(--amar)}
+  .switch i{position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:left .2s}
+  .switch.on i{left:22px}
+
+  .tabs{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid var(--borda);background:transparent;cursor:pointer;color:var(--texto)}
+  .tab.ativa{background:var(--amar);color:var(--esc);border-color:var(--amar)}
+  .fav-lista{display:flex;flex-direction:column;gap:8px}
+  .fav-item{font-size:14px;padding:10px 12px;border:1px solid var(--borda);border-radius:8px}
+  .fav-vazio{color:var(--cinza);font-size:13px;padding:10px 0}
+
+  .salvo-msg{font-size:12px;color:var(--med);margin-top:-8px;margin-bottom:10px;display:none}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <a href="index.html" class="logo-aster"><span class="estrela">✦</span> Projeto Aster</a>
+  <nav class="nav-topo">
+    <a href="biblia.html">Bíblia</a>
+    <a href="edicoes.html">Editorial</a>
+  </nav>
+</header>
+
+<main id="main" style="display:none">
+  <div class="perfil-topo">
+    <div class="avatar-wrap">
+      <img class="avatar" id="avatarImg" style="display:none">
+      <div class="avatar" id="avatarInicial"></div>
+      <label class="avatar-editar" for="inputFoto">✎</label>
+      <input type="file" id="inputFoto" accept="image/*" style="display:none">
+    </div>
+    <div>
+      <div class="perfil-nome" id="perfilNome"></div>
+      <div class="perfil-email" id="perfilEmail"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Perfil</h2>
+    <label for="campoNome">Nome</label>
+    <input type="text" id="campoNome">
+    <p class="salvo-msg" id="salvoMsg">Salvo!</p>
+    <button class="btn btn-amar" id="btnSalvarNome">Salvar alterações</button>
+  </section>
+
+  <section>
+    <h2>Notificações</h2>
+    <div class="toggle-linha">
+      <div>
+        <p>Notificações do Projeto Aster</p>
+        <span>Novas edições, versículo do dia e avisos importantes</span>
+      </div>
+      <div class="switch" id="switchNotif"><i></i></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Favoritos</h2>
+    <div class="tabs">
+      <button class="tab ativa" data-tipo="versiculos">Versículos</button>
+      <button class="tab" data-tipo="livros">Livros</button>
+      <button class="tab" data-tipo="editoriais">Editoriais</button>
+    </div>
+    <div class="fav-lista" id="favLista"></div>
+  </section>
+
+  <button class="btn btn-sair" id="btnSair">Sair da conta</button>
+</main>
+
+<script type="module">
+  import { observarLogin, sair } from "./js/auth.js";
+  import { db } from "./js/firebase-config.js";
+  import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { enviarImagemCloudinary } from "./js/cloudinary.js";
+  import { listarFavoritos } from "./js/interacoes.js";
+
+  let usuarioAtual = null;
+
+  observarLogin(async (user) => {
+    if (!user) { window.location.href = "login.html"; return; }
+    usuarioAtual = user;
+    document.getElementById('main').style.display = 'block';
+
+    document.getElementById('perfilNome').textContent = user.displayName || "Sem nome";
+    document.getElementById('perfilEmail').textContent = user.email;
+    document.getElementById('campoNome').value = user.displayName || "";
+
+    if (user.photoURL) {
+      document.getElementById('avatarImg').src = user.photoURL;
+      document.getElementById('avatarImg').style.display = 'block';
+      document.getElementById('avatarInicial').style.display = 'none';
+    } else {
+      document.getElementById('avatarInicial').textContent = (user.displayName || user.email || '?').charAt(0).toUpperCase();
+    }
+
+    carregarFavoritos('versiculos');
+  });
+
+  document.getElementById('btnSalvarNome').addEventListener('click', async () => {
+    const novoNome = document.getElementById('campoNome').value.trim();
+    if (!novoNome) return;
+    await updateDoc(doc(db, "usuarios", usuarioAtual.uid), { nome: novoNome });
+    document.getElementById('perfilNome').textContent = novoNome;
+    const msg = document.getElementById('salvoMsg');
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 2000);
+  });
+
+  document.getElementById('inputFoto').addEventListener('change', async (e) => {
+    const arquivo = e.target.files[0];
+    if (!arquivo) return;
+    try {
+      const url = await enviarImagemCloudinary(arquivo);
+      await updateDoc(doc(db, "usuarios", usuarioAtual.uid), { fotoUrl: url });
+      document.getElementById('avatarImg').src = url;
+      document.getElementById('avatarImg').style.display = 'block';
+      document.getElementById('avatarInicial').style.display = 'none';
+    } catch (err) {
+      alert("Não foi possível enviar a foto agora.");
+    }
+  });
+
+  const switchNotif = document.getElementById('switchNotif');
+  switchNotif.addEventListener('click', async () => {
+    const ligado = !switchNotif.classList.contains('on');
+    switchNotif.classList.toggle('on', ligado);
+    await updateDoc(doc(db, "usuarios", usuarioAtual.uid), { notificacoesAtivadas: ligado });
+  });
+
+  document.getElementById('btnSair').addEventListener('click', async () => {
+    await sair();
+    window.location.href = "index.html";
+  });
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativa'));
+      tab.classList.add('ativa');
+      carregarFavoritos(tab.dataset.tipo);
+    });
+  });
+
+  async function carregarFavoritos(tipo) {
+    const lista = document.getElementById('favLista');
+    lista.innerHTML = '<p class="fav-vazio">Carregando…</p>';
+    try {
+      const itens = await listarFavoritos(tipo, usuarioAtual.uid);
+      if (!itens.length) {
+        lista.innerHTML = '<p class="fav-vazio">Nenhum item favoritado ainda.</p>';
+        return;
+      }
+      lista.innerHTML = '';
+      itens.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'fav-item';
+        div.textContent = item.titulo || item.referencia || item.id;
+        lista.appendChild(div);
+      });
+    } catch (e) {
+      lista.innerHTML = '<p class="fav-vazio">Não foi possível carregar os favoritos agora.</p>';
+    }
+  }
+</script>
+</body>
+</html>

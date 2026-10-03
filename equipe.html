@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nossa Equipe – Projeto Aster</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--esc:#0C3B5C;--med:#1F5A82;--azul:#B8E8FF;--amar:#E8A33D;--bg:#FBFAF6;--texto:#1a1a1a;--cinza:#666;--card:#fff;--borda:#e3ddd0}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,sans-serif;background:var(--bg);color:var(--texto);padding-bottom:60px}
+  a{color:inherit}
+  header.topo{background:var(--esc);display:flex;align-items:center;justify-content:space-between;padding:18px 40px;flex-wrap:wrap;gap:12px}
+  .logo-aster{display:flex;align-items:center;gap:8px;font-family:'Playfair Display',serif;font-weight:700;font-size:20px;color:#fff;text-decoration:none}
+  .logo-aster .estrela{color:var(--amar)}
+  nav.nav-topo{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  nav.nav-topo a{color:#dfeaf2;text-decoration:none;font-size:14px;font-weight:500}
+  nav.nav-topo a:hover{color:var(--amar)}
+
+  .faixa{background:var(--esc);color:#fff;text-align:center;padding:50px 20px}
+  .faixa p.rot{color:var(--amar);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+  .faixa h1{font-family:'Playfair Display',serif;font-size:34px;line-height:1.25;max-width:700px;margin:0 auto 10px}
+  .faixa p.sub{color:#9fc3dc;font-size:15px;max-width:600px;margin:0 auto}
+
+  main{max-width:1000px;margin:0 auto;padding:46px 20px}
+  .grid-equipe{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:24px}
+  .membro{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:26px 18px;text-align:center}
+  .avatar{width:84px;height:84px;border-radius:50%;object-fit:cover;background:var(--azul);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:28px;color:var(--esc);margin:0 auto 16px}
+  .membro h3{font-family:'Playfair Display',serif;font-size:17px;color:var(--esc);margin-bottom:4px}
+  .membro span{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--amar)}
+  .vazio{color:var(--cinza);text-align:center;padding:40px 0}
+
+  footer{background:var(--esc);color:#cfe0ea;text-align:center;padding:22px 20px;font-size:13px}
+  footer a{color:#cfe0ea;text-decoration:underline}
+
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#0f1720;--texto:#e7edf3;--cinza:#9fb0bd;--card:#1b2430;--borda:#2a3442;--azul:#163049}
+    .membro h3{color:#fff}
+  }
+</style>
+<link rel="stylesheet" href="css/tema.css">
+<script src="js/tema.js"></script>
+</head>
+<body>
+
+<header class="topo">
+  <a href="index.html" class="logo-aster"><span class="estrela">✦</span> Projeto Aster</a>
+  <nav class="nav-topo">
+    <a href="biblia.html">Bíblia</a>
+    <a href="edicoes.html">Editorial</a>
+    <a href="estudos.html">Estudos</a>
+    <a href="biblioteca.html">Biblioteca</a>
+    <a href="login.html">Entrar</a>
+  </nav>
+</header>
+
+<section class="faixa">
+  <p class="rot">Quem somos</p>
+  <h1>Nossa Equipe</h1>
+  <p class="sub">As pessoas por trás do Projeto Aster — escrevendo, editando e cuidando do conteúdo todos os dias.</p>
+</section>
+
+<main>
+  <div class="grid-equipe" id="gridEquipe"><p class="vazio">Carregando…</p></div>
+</main>
+
+<footer>
+  Projeto Aster · <a href="equipe.html">Nossa Equipe</a> · <a href="termos.html">Termos de uso</a> · <a href="privacidade.html">Privacidade</a>
+</footer>
+
+<script type="module">
+  import { db } from "./js/firebase-config.js";
+  import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const grid = document.getElementById('gridEquipe');
+  try {
+    const snap = await getDocs(query(collection(db, 'equipe'), orderBy('ordem')));
+    if (snap.empty) {
+      grid.innerHTML = '<p class="vazio">A equipe ainda não foi cadastrada.</p>';
+    } else {
+      grid.innerHTML = '';
+      snap.forEach(d => {
+        const m = d.data();
+        const div = document.createElement('div');
+        div.className = 'membro';
+        const avatar = m.fotoUrl
+          ? `<img class="avatar" src="${m.fotoUrl}" alt="${m.nome}">`
+          : `<div class="avatar">${(m.nome || '?').charAt(0).toUpperCase()}</div>`;
+        div.innerHTML = `${avatar}<h3>${m.nome}</h3><span>${m.cargo || ''}</span>`;
+        grid.appendChild(div);
+      });
+    }
+  } catch (e) {
+    grid.innerHTML = '<p class="vazio">Não foi possível carregar a equipe agora.</p>';
+  }
+</script>
+</body>
+</html>

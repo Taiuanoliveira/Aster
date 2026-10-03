@@ -36,7 +36,7 @@ export function montarTopoRodape(){
   document.body.prepend(topo);
   const rod=document.createElement('footer');
   rod.className='rodape';
-  rod.innerHTML='Projeto Aster · <a href="termos.html">Termos de uso</a> · <a href="privacidade.html">Privacidade</a>';
+  rod.innerHTML='Projeto Aster · <a href="equipe.html">Nossa Equipe</a> · <a href="termos.html">Termos de uso</a> · <a href="privacidade.html">Privacidade</a>';
   document.body.append(rod);
   import('./site-config.js').then(m=>m.aplicarConfigSite()).catch(()=>{});
 }

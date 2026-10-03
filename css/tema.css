@@ -76,3 +76,12 @@ html[data-tema="escuro"] .ver[style*="background"]{color:#1a1a1a}
 /* Editorial: avatares e fotos com fundo claro */
 html[data-tema="escuro"] .av,
 html[data-tema="escuro"] .col .foto{background:#163049;color:#cfe6f3}
+
+/* Ações do artigo e comentários */
+html[data-tema="escuro"] .acoes-art{border-color:var(--borda)}
+html[data-tema="escuro"] .btn-acao{background:var(--card);border-color:var(--borda);color:var(--texto)}
+html[data-tema="escuro"] .comentarios h2{color:#fff}
+html[data-tema="escuro"] .form-comentario textarea{background:#0f1720;color:var(--texto);border-color:var(--borda)}
+html[data-tema="escuro"] .comentario-login{background:var(--card);border-color:var(--borda)}
+html[data-tema="escuro"] .comentario{border-color:var(--borda)}
+html[data-tema="escuro"] .comentario .autor{color:#fff}

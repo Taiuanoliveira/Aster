@@ -7,51 +7,159 @@
 <article class="artigo" id="art"><p class="vazio">Carregando…</p></article>
 <script type="module">
 import { db } from './js/firebase-config.js';
-import { doc, getDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { montarTopoRodape, esc, sanitizar, dataBonita, tituloPublico } from './js/leitura.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { montarTopoRodape, esc, sanitizar, dataBonita } from './js/leitura.js';
 import { marcarReferencias } from './js/versiculos.js';
-import { carregarTaxonomia, injetarEstilos } from './js/artigos-lista.js';
-import { registrarVisualizacao } from './js/interacoes.js';
+import { observarLogin } from './js/auth.js';
+import {
+  registrarVisualizacao, curtidaDoUsuario, contarCurtidas, alternarCurtida,
+  estaSalvoParaDepois, alternarSalvarParaDepois,
+  criarComentario, listarComentarios, excluirComentario
+} from './js/interacoes.js';
+
 montarTopoRodape();
-async function completarTaxonomia(n, a){
-  try{
-    injetarEstilos();
-    const tx=await carregarTaxonomia();
-    const slugs=((n.categorias&&n.categorias.length)?n.categorias:[n.categoria]).filter(Boolean);
-    const linha=a.querySelector('#catLinha');
-    if(linha&&slugs.length) linha.innerHTML=slugs.map(s=>{const c=tx.cats[s];return '<a href="artigos.html?cat='+encodeURIComponent(s)+'" style="color:inherit;text-decoration:none">'+esc((c&&c.emoji?c.emoji+' ':'')+(c?c.nome:s))+'</a>';}).join(' · ');
-    const d=n.destaque&&tx.dest[n.destaque];
-    if(d&&linha) linha.insertAdjacentHTML('afterend','<div style="margin:6px 0"><span class="aa-badge" style="background:'+d.cor+'">'+esc((d.emoji?d.emoji+' ':'')+n.destaque)+'</span></div>');
-    const tg=(n.tags||[]).filter(t=>tx.tags[t]);
-    if(tg.length) a.insertAdjacentHTML('beforeend','<div class="aa-tags">'+tg.map(t=>'<a href="artigos.html?tag='+encodeURIComponent(t)+'">#'+esc(tx.tags[t].nome)+'</a>').join('')+'</div>');
-  }catch(e){}
+const a = document.getElementById('art');
+let noticiaId = null;
+let noticiaDados = null;
+let usuarioAtual = null;
+
+try {
+  const id = new URLSearchParams(location.search).get('id');
+  const s = id ? await getDoc(doc(db, 'noticias', id)) : null;
+  if (!s || !s.exists() || s.data().status !== 'publicado') {
+    a.innerHTML = '<p class="vazio">Este artigo não existe ou ainda não foi publicado.</p>';
+  } else {
+    noticiaId = id;
+    noticiaDados = s.data();
+    const n = noticiaDados;
+    document.title = n.titulo + ' – Projeto Aster';
+    a.innerHTML = (n.edicao ? '<a class="voltar" href="edicoes.html">← Editorial</a><br>' : '') +
+      '<span class="cat">' + esc(n.categoria || '') + '</span><h1>' + esc(n.titulo) + '</h1>' +
+      '<p class="meta">' + esc(n.autorNome || '') + (n.autorNome && n.criadoEm ? ' · ' : '') + esc(dataBonita(n.criadoEm)) + '</p>' +
+      (n.imagemUrl ? '<img class="capa-img" src="' + esc(n.imagemUrl) + '" alt="">' : '') +
+      (n.resumo ? '<p class="resumo">' + esc(n.resumo) + '</p>' : '') +
+      '<div class="corpo">' + sanitizar(n.conteudo) + '</div>' +
+      '<div class="acoes-art" id="acoesArt">' +
+        '<button class="btn-acao" id="btnCurtir">🤍 Curtir <span class="n" id="numCurtidas">0</span></button>' +
+        '<button class="btn-acao" id="btnSalvar">🔖 Salvar</button>' +
+      '</div>' +
+      '<section class="comentarios" id="secComentarios">' +
+        '<h2>Comentários</h2>' +
+        '<div id="areaFormComentario"></div>' +
+        '<div id="listaComentarios">Carregando comentários…</div>' +
+      '</section>';
+    marcarReferencias(a.querySelector('.corpo'));
+    registrarVisualizacao(noticiaId);
+    iniciarAcoes();
+  }
+} catch (err) {
+  a.innerHTML = '<p class="vazio">Não foi possível carregar agora.</p>';
+  console.error(err);
 }
 
-async function artigoVisivel(s){
-  if(!s||!s.exists()) return false;
-  const d=s.data();
-  if(d.status==='publicado') return true;
-  if(d.status==='indexado'&&d.edicao){
-    try{const q=await getDocs(query(collection(db,'edicoes'),where('nome','==',d.edicao),where('status','==','publicada')));return !q.empty;}catch(e){return false;}
-  }
-  return false;
+function iniciarAcoes() {
+  observarLogin(async (user) => {
+    usuarioAtual = user;
+    await atualizarCurtida();
+    await atualizarSalvo();
+    montarFormComentario();
+    carregarComentarios();
+  });
+
+  document.getElementById('btnCurtir').addEventListener('click', async () => {
+    if (!usuarioAtual) { avisarLogin(); return; }
+    await alternarCurtida(noticiaId, usuarioAtual.uid);
+    atualizarCurtida();
+  });
+
+  document.getElementById('btnSalvar').addEventListener('click', async () => {
+    if (!usuarioAtual) { avisarLogin(); return; }
+    const salvo = await alternarSalvarParaDepois(noticiaId, usuarioAtual.uid, {
+      titulo: noticiaDados.titulo, imagemUrl: noticiaDados.imagemUrl || '', categoria: noticiaDados.categoria || ''
+    });
+    marcarBotaoSalvar(salvo);
+  });
 }
-const a=document.getElementById('art');
-try{
-  const id=new URLSearchParams(location.search).get('id');
-  const s=id?await getDoc(doc(db,'noticias',id)):null;
-  if(!(await artigoVisivel(s))){a.innerHTML='<p class="vazio">Este artigo não existe ou ainda não foi publicado.</p>';}
-  else{
-    const n=s.data();document.title=n.titulo+' – Projeto Aster';
-    a.innerHTML=(n.edicao?'<a class="voltar" href="edicoes.html">← Editorial</a><br>':'')+
-      '<span class="cat" id="catLinha">'+esc(n.categoria||'')+'</span><h1>'+esc(n.titulo)+'</h1>'+
-      '<p class="meta">'+esc(n.autorNome||'')+(tituloPublico(n.cargoEditorialAutor)?' ('+esc(tituloPublico(n.cargoEditorialAutor))+')':'')+(n.autorNome&&n.criadoEm?' · ':'')+esc(dataBonita(n.criadoEm))+'</p>'+
-      (n.imagemUrl?'<img class="capa-img" src="'+esc(n.imagemUrl)+'" alt="">':'')+
-      (n.resumo?'<p class="resumo">'+esc(n.resumo)+'</p>':'')+
-      '<div class="corpo">'+sanitizar(n.conteudo)+'</div>';
-    marcarReferencias(a.querySelector('.corpo'));
-    completarTaxonomia(n, a);
-    try{if(!sessionStorage.getItem('v_'+id)){sessionStorage.setItem('v_'+id,'1');registrarVisualizacao(id);}}catch(e){}
+
+function avisarLogin() {
+  if (confirm('Você precisa entrar na sua conta para fazer isso. Ir para a tela de login?')) {
+    location.href = 'login.html';
   }
-}catch(err){a.innerHTML='<p class="vazio">Não foi possível carregar agora.</p>';console.error(err);}
+}
+
+async function atualizarCurtida() {
+  const total = await contarCurtidas(noticiaId);
+  document.getElementById('numCurtidas').textContent = total;
+  if (usuarioAtual) {
+    const curtiu = await curtidaDoUsuario(noticiaId, usuarioAtual.uid);
+    marcarBotaoCurtir(curtiu);
+  }
+}
+
+function marcarBotaoCurtir(curtiu) {
+  const btn = document.getElementById('btnCurtir');
+  btn.classList.toggle('ativo', curtiu);
+  btn.innerHTML = (curtiu ? '❤️' : '🤍') + ' Curtir <span class="n" id="numCurtidas">' + document.getElementById('numCurtidas').textContent + '</span>';
+}
+
+async function atualizarSalvo() {
+  if (!usuarioAtual) return;
+  const salvo = await estaSalvoParaDepois(noticiaId, usuarioAtual.uid);
+  marcarBotaoSalvar(salvo);
+}
+
+function marcarBotaoSalvar(salvo) {
+  const btn = document.getElementById('btnSalvar');
+  btn.classList.toggle('ativo', salvo);
+  btn.innerHTML = (salvo ? '✅ Salvo' : '🔖 Salvar');
+}
+
+function montarFormComentario() {
+  const area = document.getElementById('areaFormComentario');
+  if (!usuarioAtual) {
+    area.innerHTML = '<p class="comentario-login">Para comentar, <a href="login.html">entre na sua conta</a>.</p>';
+    return;
+  }
+  area.innerHTML =
+    '<div class="form-comentario">' +
+      '<textarea id="campoComentario" placeholder="Escreva um comentário..."></textarea>' +
+      '<div class="acoes-form"><button id="btnEnviarComentario">Comentar</button></div>' +
+    '</div>';
+  document.getElementById('btnEnviarComentario').addEventListener('click', async () => {
+    const texto = document.getElementById('campoComentario').value.trim();
+    if (!texto) return;
+    await criarComentario(noticiaId, usuarioAtual.uid, usuarioAtual.displayName || 'Leitor', texto);
+    document.getElementById('campoComentario').value = '';
+    carregarComentarios();
+  });
+}
+
+async function carregarComentarios() {
+  const lista = document.getElementById('listaComentarios');
+  try {
+    const comentarios = await listarComentarios(noticiaId);
+    if (!comentarios.length) {
+      lista.innerHTML = '<p class="sem-comentarios">Nenhum comentário ainda. Seja o primeiro a comentar.</p>';
+      return;
+    }
+    lista.innerHTML = comentarios.map(c => {
+      const podeExcluir = usuarioAtual && (usuarioAtual.uid === c.autorUid);
+      return '<div class="comentario">' +
+        '<div class="cab"><span class="autor">' + esc(c.autorNome || 'Leitor') + '</span><span class="data">' + esc(dataBonita(c.criadoEm)) + '</span></div>' +
+        '<p>' + esc(c.texto) + '</p>' +
+        (podeExcluir ? '<button class="excluir" data-id="' + c.id + '">Excluir</button>' : '') +
+      '</div>';
+    }).join('');
+    lista.querySelectorAll('.excluir').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (confirm('Excluir este comentário?')) {
+          await excluirComentario(noticiaId, btn.dataset.id);
+          carregarComentarios();
+        }
+      });
+    });
+  } catch (e) {
+    lista.innerHTML = '<p class="sem-comentarios">Não foi possível carregar os comentários agora.</p>';
+  }
+}
 </script></body></html>

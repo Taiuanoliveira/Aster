@@ -62,6 +62,29 @@ h2.sec{font-family:'Playfair Display',serif;color:var(--esc);font-size:24px;marg
 .ref-abrir{display:inline-block;margin-top:14px;color:var(--med);font-size:14px;font-weight:600;text-decoration:none}
 .mat.capa-mat{background:#fff8ec;border:1px solid #f0d9ae;border-radius:10px;padding:16px;margin-bottom:6px}
 .selo{display:block;color:var(--amar);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+
+/* Ações do artigo: curtir, salvar, comentar */
+.acoes-art{display:flex;gap:10px;align-items:center;padding:18px 0;margin:26px 0;border-top:1px solid #e6e2d8;border-bottom:1px solid #e6e2d8;flex-wrap:wrap}
+.btn-acao{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:999px;border:1px solid #ddd;background:#fff;color:var(--texto);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.btn-acao:hover{border-color:var(--amar)}
+.btn-acao.ativo{background:var(--amar);border-color:var(--amar);color:var(--esc)}
+.btn-acao .n{font-weight:700}
+
+.comentarios{margin-top:6px}
+.comentarios h2{font-family:'Playfair Display',serif;color:var(--esc);font-size:20px;margin-bottom:16px}
+.form-comentario{margin-bottom:24px}
+.form-comentario textarea{width:100%;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:inherit;font-size:14px;resize:vertical;min-height:70px}
+.form-comentario .acoes-form{display:flex;justify-content:flex-end;margin-top:8px}
+.form-comentario button{padding:9px 20px;border-radius:8px;border:none;background:var(--amar);color:var(--esc);font-weight:700;font-size:13px;cursor:pointer}
+.comentario-login{background:#f7f5f0;border:1px solid #e6e2d8;border-radius:10px;padding:14px 16px;font-size:14px;margin-bottom:24px}
+.comentario-login a{color:var(--med);font-weight:700;text-decoration:none}
+.comentario{padding:14px 0;border-top:1px solid #eee}
+.comentario .cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:4px}
+.comentario .autor{font-weight:700;font-size:13px;color:var(--esc)}
+.comentario .data{font-size:11px;color:var(--cinza)}
+.comentario p{font-size:14px;color:var(--texto)}
+.comentario .excluir{font-size:11px;color:#b3261e;background:none;border:none;cursor:pointer;font-weight:600;text-transform:uppercase;margin-top:4px}
+.sem-comentarios{color:var(--cinza);font-size:13px;padding:10px 0}
 .ref-biblica{color:var(--med);border-bottom:1px dashed var(--amar);cursor:pointer}
 .ref-biblica:hover{color:var(--esc);background:#fff3df}
 .ref-caixa{display:none;position:fixed;inset:0;z-index:100}
@@ -75,3 +98,26 @@ h2.sec{font-family:'Playfair Display',serif;color:var(--esc);font-size:24px;marg
 .ref-abrir{display:inline-block;margin-top:14px;color:var(--med);font-size:14px;font-weight:600;text-decoration:none}
 .mat.capa-mat{background:#fff8ec;border:1px solid #f0d9ae;border-radius:10px;padding:16px;margin-bottom:6px}
 .selo{display:block;color:var(--amar);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+
+/* Ações do artigo: curtir, salvar, comentar */
+.acoes-art{display:flex;gap:10px;align-items:center;padding:18px 0;margin:26px 0;border-top:1px solid #e6e2d8;border-bottom:1px solid #e6e2d8;flex-wrap:wrap}
+.btn-acao{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:999px;border:1px solid #ddd;background:#fff;color:var(--texto);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.btn-acao:hover{border-color:var(--amar)}
+.btn-acao.ativo{background:var(--amar);border-color:var(--amar);color:var(--esc)}
+.btn-acao .n{font-weight:700}
+
+.comentarios{margin-top:6px}
+.comentarios h2{font-family:'Playfair Display',serif;color:var(--esc);font-size:20px;margin-bottom:16px}
+.form-comentario{margin-bottom:24px}
+.form-comentario textarea{width:100%;padding:12px 14px;border:1px solid #ccc;border-radius:10px;font:inherit;font-size:14px;resize:vertical;min-height:70px}
+.form-comentario .acoes-form{display:flex;justify-content:flex-end;margin-top:8px}
+.form-comentario button{padding:9px 20px;border-radius:8px;border:none;background:var(--amar);color:var(--esc);font-weight:700;font-size:13px;cursor:pointer}
+.comentario-login{background:#f7f5f0;border:1px solid #e6e2d8;border-radius:10px;padding:14px 16px;font-size:14px;margin-bottom:24px}
+.comentario-login a{color:var(--med);font-weight:700;text-decoration:none}
+.comentario{padding:14px 0;border-top:1px solid #eee}
+.comentario .cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:4px}
+.comentario .autor{font-weight:700;font-size:13px;color:var(--esc)}
+.comentario .data{font-size:11px;color:var(--cinza)}
+.comentario p{font-size:14px;color:var(--texto)}
+.comentario .excluir{font-size:11px;color:#b3261e;background:none;border:none;cursor:pointer;font-weight:600;text-transform:uppercase;margin-top:4px}
+.sem-comentarios{color:var(--cinza);font-size:13px;padding:10px 0}

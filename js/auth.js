@@ -25,13 +25,15 @@ export const CARGOS = {
   PENDENTE: "pendente"
 };
 
+function caminhoLogin() { return location.pathname.indexOf("/admin/") !== -1 ? "../login.html" : "login.html"; }
+
 // Mostra uma tela de erro visível no lugar da tela branca
 function mostrarErroFatal(titulo, detalhe) {
   document.body.innerHTML = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 60px auto; padding: 30px; background: #fff3f3; border-left: 5px solid #c0392b;">
       <h2 style="color:#c0392b; margin-bottom: 10px;">⚠️ ${titulo}</h2>
       <p style="color:#333; line-height:1.6;">${detalhe}</p>
-      <p style="margin-top:20px;"><a href="/login.html" style="color:#E8A33D; font-weight:bold;">← Voltar para o login</a></p>
+      <p style="margin-top:20px;"><a href="${caminhoLogin()}" style="color:#E8A33D; font-weight:bold;">← Voltar para o login</a></p>
     </div>
   `;
 }
@@ -113,7 +115,7 @@ export function observarLogin(callback) {
 export function protegerPagina(cargosPermitidos, aoAutorizar) {
   observarLogin((user, cargo) => {
     if (!user) {
-      window.location.href = "/login.html";
+      window.location.href = caminhoLogin();
       return;
     }
     if (cargo === CARGOS.PENDENTE || !cargo) {

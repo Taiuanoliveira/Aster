@@ -137,12 +137,12 @@
     <h2>Editorial do mês</h2>
     <p class="sub">Um tema bíblico por edição, estudado a fundo.</p>
     <div class="editorial-card">
-      <div class="editorial-capa">Aster</div>
+      <div class="editorial-capa" id="edCapa">Aster</div>
       <div class="editorial-info">
-        <p class="tag">Edição atual</p>
-        <h3>Em breve, a primeira edição</h3>
-        <p>Cada mês, um tema específico: carta do editor, estudo bíblico, reflexão prática e leituras recomendadas.</p>
-        <a href="edicoes.html" class="btn btn-amar">Ver edições</a>
+        <p class="tag" id="edTema">Edição atual</p>
+        <h3 id="edNome">Em breve, a primeira edição</h3>
+        <p id="edDesc">Cada mês, um tema específico: carta do editor, estudo bíblico, reflexão prática e leituras recomendadas.</p>
+        <a href="edicoes.html" class="btn btn-amar" id="edLink">Ver edições</a>
       </div>
     </div>
   </section>
@@ -193,5 +193,6 @@
 </footer>
 
 <script src="js/versiculo-do-dia.js"></script>
+<script type="module" src="js/capa-editorial.js"></script>
 </body>
 </html>

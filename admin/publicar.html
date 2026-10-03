@@ -108,9 +108,11 @@
         toolbar: {
           container: [
             [{ 'header': [2, 3, false] }],
-            ['bold', 'italic', 'underline'],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'align': [] }],
             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            ['link', 'blockquote', 'image'],
+            ['link', 'blockquote', 'image', 'video'],
             ['clean']
           ],
           handlers: {
@@ -397,7 +399,6 @@
         await atualizarNoticia(idNoticia, { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, imagemUrl, edicao, gratuito, paywallOverride, cargoEditorialAutor });
 
         if (status === STATUS.PUBLICADO) {
-          fetch('/api/notificar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ noticiaId: idNoticia }) }).catch(() => {});
         }
 
         noticiaIdEdicao = idNoticia;

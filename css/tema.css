@@ -85,3 +85,17 @@ html[data-tema="escuro"] .form-comentario textarea{background:#0f1720;color:var(
 html[data-tema="escuro"] .comentario-login{background:var(--card);border-color:var(--borda)}
 html[data-tema="escuro"] .comentario{border-color:var(--borda)}
 html[data-tema="escuro"] .comentario .autor{color:#fff}
+
+/* editorial-v2 (modo escuro das páginas de leitura) */
+html[data-tema="escuro"] .ed-card{background:var(--card);border-color:var(--borda)}
+html[data-tema="escuro"] .ed-corpo h3,html[data-tema="escuro"] .artigo h1,html[data-tema="escuro"] .corpo h2,
+html[data-tema="escuro"] .corpo h3,html[data-tema="escuro"] .ref-titulo,html[data-tema="escuro"] .gate h3{color:#fff}
+html[data-tema="escuro"] .artigo .resumo,html[data-tema="escuro"] .corpo blockquote,html[data-tema="escuro"] .ref-texto{color:#b9cfdd}
+html[data-tema="escuro"] .corpo,html[data-tema="escuro"] .ref-texto{color:var(--texto)}
+html[data-tema="escuro"] .mat{border-color:var(--borda)}
+html[data-tema="escuro"] .mat.capa-mat{background:#2a2412;border-color:#5c4a1a}
+html[data-tema="escuro"] .ref-painel{background:var(--card)}
+html[data-tema="escuro"] .gate{background:linear-gradient(180deg,rgba(15,23,32,0),#2a2412 38%);border-color:#5c4a1a}
+html[data-tema="escuro"] .tag-acesso.livre{background:#173a25;color:#8fd6a5}
+html[data-tema="escuro"] .tag-acesso.pago{background:#44201d;color:#f2b3ad}
+html[data-tema="escuro"] .gate a.sec2{color:#8cc4ea}

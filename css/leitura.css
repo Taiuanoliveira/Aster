@@ -121,3 +121,17 @@ h2.sec{font-family:'Playfair Display',serif;color:var(--esc);font-size:24px;marg
 .comentario p{font-size:14px;color:var(--texto)}
 .comentario .excluir{font-size:11px;color:#b3261e;background:none;border:none;cursor:pointer;font-weight:600;text-transform:uppercase;margin-top:4px}
 .sem-comentarios{color:var(--cinza);font-size:13px;padding:10px 0}
+
+/* editorial-v2 */
+.ed-capa.sem-capa{flex-direction:column;gap:6px;background:linear-gradient(160deg,#0C3B5C,#1F5A82)}
+.ed-capa.sem-capa .est{font-size:30px;color:var(--amar)}
+.ed-capa.sem-capa .num{font-family:Inter,sans-serif;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--amar);font-weight:700}
+.ed-capa.sem-capa strong{font-size:18px;color:#fff;font-weight:600;line-height:1.2}
+.ed-capa.sem-capa em{font-family:Inter,sans-serif;font-style:normal;font-size:11px;color:#9fc3dc}
+.tag-acesso{display:inline-block;font-family:Inter,sans-serif;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:middle}
+.tag-acesso.livre{background:#e4f4e8;color:#1b6b34}.tag-acesso.pago{background:#fde8e6;color:#9a2b22}
+.gate{margin:10px 0 26px;padding:26px 24px;text-align:center;background:linear-gradient(180deg,rgba(251,250,246,0),#fff8ec 38%);border:1px solid #f0d9ae;border-radius:12px}
+.gate h3{font-family:'Playfair Display',serif;color:var(--esc);font-size:21px;margin-bottom:6px}
+.gate p{color:var(--cinza);font-size:14px;margin-bottom:14px}
+.gate a{display:inline-block;margin:4px 5px;padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;background:var(--amar);color:var(--esc)}
+.gate a.sec2{background:none;border:1px solid var(--amar);color:var(--med)}

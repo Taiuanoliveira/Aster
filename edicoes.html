@@ -4,24 +4,76 @@
 <meta name="description" content="Todas as edições do editorial mensal do Projeto Aster.">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/leitura.css"><link rel="stylesheet" href="css/tema.css"><script src="js/tema.js"></script>
+<style>
+  main.larga{max-width:1000px;margin:0 auto;padding:40px 20px}
+  .hero-ed{display:grid;grid-template-columns:290px 1fr;gap:44px;align-items:center;padding:10px 0 40px}
+  .hero-ed a.capa-link{display:block;text-decoration:none}
+  .hero-ed .ed-capa{width:100%;box-shadow:0 18px 40px rgba(12,59,92,.32);border-radius:6px}
+  .hero-info .rot{color:var(--amar);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+  .hero-info h2{font-family:'Playfair Display',serif;font-size:42px;line-height:1.1;color:var(--esc);margin:8px 0 6px}
+  .hero-info .meta{color:var(--cinza);font-size:14px;margin-bottom:14px}
+  .hero-info .desc{font-size:16px;line-height:1.65;max-width:520px;margin-bottom:16px}
+  .acesso{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:18px}
+  .acesso.livre{background:#e4f4e8;color:#1b6b34}.acesso.misto{background:#fff3df;color:#8a5a12}
+  .btn-ler{display:inline-block;background:var(--amar);color:var(--esc);font-weight:700;font-size:14px;padding:13px 26px;border-radius:8px;text-decoration:none}
+  .btn-ler:hover{background:#d8922f}
+  .grade-cap{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:26px}
+  .cap-item{display:block;text-decoration:none}
+  .cap-item .ed-capa{width:100%;border-radius:4px;box-shadow:0 8px 18px rgba(12,59,92,.25);transition:transform .2s}
+  .cap-item:hover .ed-capa{transform:translateY(-4px)}
+  .cap-item strong{display:block;margin-top:10px;font-size:14px;color:var(--esc)}
+  .cap-item span{font-size:12px;color:var(--cinza)}
+  html[data-tema="escuro"] .hero-info h2,html[data-tema="escuro"] .cap-item strong{color:#fff}
+  html[data-tema="escuro"] .acesso.livre{background:#173a25;color:#8fd6a5}
+  html[data-tema="escuro"] .acesso.misto{background:#3a2d10;color:#f0d9a0}
+  @media(max-width:720px){.hero-ed{grid-template-columns:1fr;text-align:center;gap:24px}.hero-ed .ed-capa{max-width:240px;margin:0 auto}.hero-info h2{font-size:32px}.hero-info .desc{margin-left:auto;margin-right:auto}}
+</style>
 </head><body>
 <section class="faixa"><p class="rot">Editorial do mês</p><h1>Edições</h1><p class="sub">Um tema bíblico por edição, estudado a fundo.</p></section>
-<main class="pag"><div class="grade" id="lista"><p class="vazio">Carregando…</p></div></main>
+<main class="larga" id="conteudo"><p class="vazio">Carregando…</p></main>
 <script type="module">
 import { db } from './js/firebase-config.js';
 import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { montarTopoRodape, esc } from './js/leitura.js';
+import { montarTopoRodape, esc, dataBonita } from './js/leitura.js';
 montarTopoRodape();
-const el=document.getElementById('lista');
-try{
-  const s=await getDocs(collection(db,'edicoes'));
-  const l=s.docs.map(d=>({id:d.id,...d.data()})).filter(e=>e.status==='publicada').sort((a,b)=>String(b.criadoEm||'').localeCompare(String(a.criadoEm||'')));
-  el.innerHTML=l.length?'':'<p class="vazio">A primeira edição sairá em breve.</p>';
-  l.forEach(e=>{
-    const a=document.createElement('a');a.className='ed-card';a.href='edicao.html?id='+encodeURIComponent(e.id);
-    const capa=e.capaUrl?' style="background-image:url(\''+esc(e.capaUrl)+'\')"':'';
-    a.innerHTML='<div class="ed-capa"'+capa+'>'+(e.capaUrl?'':esc(e.nome))+'</div><div class="ed-corpo"><small>'+esc((e.numero?'Nº '+e.numero+' · ':'')+(e.especial?'Especial · ':'')+(e.tema||''))+'</small><h3>'+esc(e.nome)+'</h3><p>'+esc(e.descricao||'')+'</p></div>';
-    el.append(a);
-  });
-}catch(err){el.innerHTML='<p class="vazio">Não foi possível carregar as edições agora.</p>';console.error(err);}
+const box = document.getElementById('conteudo');
+function capa(e) {
+  const d = document.createElement('div'); d.className = 'ed-capa';
+  if (e.capaUrl) d.style.backgroundImage = "url('" + String(e.capaUrl).replace(/['"\\()]/g, '') + "')";
+  else {
+    d.classList.add('sem-capa');
+    d.innerHTML = '<span class="est">✦</span><span class="num">' + esc(e.especial ? 'Especial' : (e.numero ? 'Nº ' + e.numero : 'Edição')) + '</span><strong>' + esc(e.nome) + '</strong>' + (e.tema ? '<em>' + esc(e.tema) + '</em>' : '');
+  }
+  return d;
+}
+try {
+  const s = await getDocs(collection(db, 'edicoes'));
+  const l = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => e.status === 'publicada')
+    .sort((a, b) => String(b.criadoEm || '').localeCompare(String(a.criadoEm || '')));
+  if (!l.length) { box.innerHTML = '<p class="vazio">A primeira edição sairá em breve.</p>'; }
+  else {
+    box.innerHTML = '';
+    const e = l[0], link = 'edicao.html?id=' + encodeURIComponent(e.id);
+    const hero = document.createElement('section'); hero.className = 'hero-ed';
+    const a = document.createElement('a'); a.className = 'capa-link'; a.href = link; a.appendChild(capa(e)); hero.appendChild(a);
+    const info = document.createElement('div'); info.className = 'hero-info';
+    info.innerHTML = '<p class="rot">Edição atual</p><h2>' + esc(e.nome) + '</h2><p class="meta">' +
+      esc([e.numero ? 'Nº ' + e.numero : '', e.especial ? 'Especial' : '', e.tema || '', dataBonita(e.criadoEm)].filter(Boolean).join(' · ')) + '</p>' +
+      (e.descricao ? '<p class="desc">' + esc(e.descricao) + '</p>' : '') +
+      '<span class="acesso ' + (e.edicaoGratuita ? 'livre' : 'misto') + '">' + (e.edicaoGratuita ? 'Edição gratuita' : 'Parte do conteúdo é para assinantes') + '</span><br>' +
+      '<a class="btn-ler" href="' + link + '">Ler a edição</a>';
+    hero.appendChild(info); box.appendChild(hero);
+    if (l.length > 1) {
+      const h = document.createElement('h2'); h.className = 'sec'; h.textContent = 'Edições anteriores'; box.appendChild(h);
+      const g = document.createElement('div'); g.className = 'grade-cap';
+      l.slice(1).forEach(x => {
+        const it = document.createElement('a'); it.className = 'cap-item'; it.href = 'edicao.html?id=' + encodeURIComponent(x.id);
+        it.appendChild(capa(x));
+        it.insertAdjacentHTML('beforeend', '<strong>' + esc(x.nome) + '</strong><span>' + esc(dataBonita(x.criadoEm)) + (x.edicaoGratuita ? ' · gratuita' : '') + '</span>');
+        g.appendChild(it);
+      });
+      box.appendChild(g);
+    }
+  }
+} catch (err) { box.innerHTML = '<p class="vazio">Não foi possível carregar as edições agora.</p>'; console.error(err); }
 </script></body></html>

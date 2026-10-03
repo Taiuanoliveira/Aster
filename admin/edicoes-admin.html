@@ -92,19 +92,9 @@
             <option value="Geral">Geral / Variados</option>
           </select>
 
-          <label for="numeroEdicao">Número da edição <small style="color:#888;font-weight:400;">(opcional, ex.: 12)</small></label>
-          <input type="number" id="numeroEdicao" min="1" style="width:120px;">
-          <label style="display:flex;align-items:center;gap:8px;margin-top:10px;">
-            <input type="checkbox" id="edicaoEspecial" style="width:auto;">
-            <span>Edição especial <small style="color:#888;font-weight:400;">(aparece como "Edição nº X · Especial")</small></span>
-          </label>
+          
 
-          <label for="numeroEdicao">Número da edição <small style="color:#888;font-weight:400;">(opcional, ex.: 12)</small></label>
-          <input type="number" id="numeroEdicao" min="1" style="width:120px;">
-          <label style="display:flex;align-items:center;gap:8px;margin-top:10px;">
-            <input type="checkbox" id="edicaoEspecial" style="width:auto;">
-            <span>Edição especial <small style="color:#888;font-weight:400;">(aparece como "Edição nº X · Especial")</small></span>
-          </label>
+          
 
           <label for="descricaoEdicao">Descrição resumida (aparece na lista de edições)</label>
           <textarea id="descricaoEdicao" rows="2" placeholder="Breve descrição desta edição"></textarea>
@@ -122,7 +112,8 @@
           <img id="previewCapa" style="display:none;max-width:160px;margin-top:10px;border:1px solid #ddd;">
 
           <div class="form-acoes">
-            <button type="button" class="btn-primario" onclick="criarEdicao()">Criar edição (como rascunho)</button>
+            <button type="button" class="btn-primario" id="btnSalvarEdicao" onclick="criarEdicao()">Criar edição (como rascunho)</button>
+            <button type="button" id="btnCancelarEdicao" onclick="cancelarEdicao()" style="display:none;margin-left:10px;padding:10px 18px;background:none;border:1px solid #ccc;cursor:pointer;">Cancelar edição</button>
           </div>
         </form>
       </section>
@@ -251,42 +242,103 @@
       }
     });
 
+    // ---------- Criar e editar edições ----------
+    const el = id => document.getElementById(id);
+    let edicoesCache = [];
+    let editandoId = null;
+    const tipoAtual = () => document.querySelector('input[name="tipoEdicao"]:checked').value;
+    function proximoNumero() {
+      const nums = edicoesCache.filter(e => e.numero && !e.especial).map(e => e.numero);
+      return (nums.length ? Math.max(...nums) : 0) + 1;
+    }
+    function montarNome() {
+      const especial = tipoAtual() === 'especial';
+      let nome = '';
+      if (especial) nome = el('nomeEspecial').value.trim();
+      else { if (!el('numeroEdicao').value) el('numeroEdicao').value = proximoNumero(); nome = 'Edição ' + el('numeroEdicao').value; }
+      el('nomeEdicao').value = nome;
+      el('previewNomeEdicao').textContent = especial ? '' : 'Nome da edição: ' + nome;
+    }
+    function atualizarTipo() {
+      const especial = tipoAtual() === 'especial';
+      el('campoNumerada').style.display = especial ? 'none' : 'block';
+      el('campoEspecial').style.display = especial ? 'block' : 'none';
+      montarNome();
+    }
+    document.querySelectorAll('input[name="tipoEdicao"]').forEach(r => r.addEventListener('change', atualizarTipo));
+    el('nomeEspecial').addEventListener('input', montarNome);
+
+    function limparForm() {
+      el('formEdicao').reset();
+      editorCartaLeitor.setContents([]);
+      el('previewCapa').style.display = 'none';
+      arquivoCapaSelecionado = null; editandoId = null;
+      el('numeroEdicao').value = '';
+      el('btnSalvarEdicao').textContent = 'Criar edição (como rascunho)';
+      el('btnCancelarEdicao').style.display = 'none';
+      atualizarTipo();
+    }
+    window.cancelarEdicao = limparForm;
+
+    window.editarEdicao = function(id) {
+      const ed = edicoesCache.find(e => e.id === id); if (!ed) return;
+      editandoId = id;
+      const comoEspecial = ed.especial || !ed.numero;   // edição antiga sem número: o nome fica editável
+      document.querySelector('input[name="tipoEdicao"][value="' + (comoEspecial ? 'especial' : 'numerada') + '"]').checked = true;
+      el('numeroEdicao').value = comoEspecial ? '' : ed.numero;
+      el('nomeEspecial').value = comoEspecial ? ed.nome : '';
+      const sel = el('temaEdicao');
+      if (ed.tema && !Array.from(sel.options).some(o => o.value === ed.tema)) sel.add(new Option(ed.tema, ed.tema));
+      sel.value = ed.tema || '';
+      el('descricaoEdicao').value = ed.descricao || '';
+      editorCartaLeitor.root.innerHTML = ed.cartaLeitor || '';
+      el('edicaoGratuita').checked = !!ed.edicaoGratuita;
+      arquivoCapaSelecionado = null;
+      const prev = el('previewCapa');
+      if (ed.capaUrl) { prev.src = ed.capaUrl; prev.style.display = 'block'; } else prev.style.display = 'none';
+      el('btnSalvarEdicao').textContent = 'Salvar alterações';
+      el('btnCancelarEdicao').style.display = 'inline-block';
+      atualizarTipo();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     window.criarEdicao = async function() {
-      const nome = document.getElementById('nomeEdicao').value.trim();
-      const tema = document.getElementById('temaEdicao').value;
-      const descricao = document.getElementById('descricaoEdicao').value.trim();
+      montarNome();
+      const especial = tipoAtual() === 'especial';
+      const nome = el('nomeEdicao').value.trim();
+      const tema = el('temaEdicao').value;
+      const descricao = el('descricaoEdicao').value.trim();
       const cartaLeitor = editorCartaLeitor.root.innerHTML.trim();
-
-      if (!nome || !tema) {
-        mostrarErro('Preencha ao menos o nome e o tema da edição.');
-        return;
-      }
-
+      if (!nome || !tema) { mostrarErro('Preencha o nome (edição especial) e o tema da edição.'); return; }
+      if (edicoesCache.some(e => e.nome === nome && e.id !== editandoId)) { mostrarErro('Já existe uma edição chamada "' + nome + '".'); return; }
       try {
-        let capaUrl = null;
-        if (arquivoCapaSelecionado) {
-          capaUrl = await enviarImagemCloudinary(arquivoCapaSelecionado);
+        const antiga = editandoId ? edicoesCache.find(e => e.id === editandoId) : null;
+        let capaUrl = antiga ? (antiga.capaUrl || null) : null;
+        if (arquivoCapaSelecionado) capaUrl = await enviarImagemCloudinary(arquivoCapaSelecionado);
+        const dados = {
+          nome, tema, descricao, cartaLeitor, capaUrl,
+          edicaoGratuita: el('edicaoGratuita').checked,
+          numero: especial ? null : (parseInt(el('numeroEdicao').value) || null),
+          especial
+        };
+        if (antiga) {
+          await updateDoc(doc(db, 'edicoes', editandoId), dados);
+          if (antiga.nome !== nome) {   // os artigos se ligam à edição pelo nome: acompanha a mudança
+            const vinc = await getDocs(query(collection(db, 'noticias'), where('edicao', '==', antiga.nome)));
+            for (const m of vinc.docs) await updateDoc(doc(db, 'noticias', m.id), { edicao: nome });
+          }
+          mostrarSucesso('Edição atualizada!');
+        } else {
+          await addDoc(collection(db, 'edicoes'), {
+            ...dados, status: 'rascunho', criadoEm: new Date().toISOString(),
+            criadoPor: usuarioAtual.displayName || usuarioAtual.email
+          });
+          mostrarSucesso('Edição criada como rascunho! Adicione artigos a ela em "Novo Artigo" antes de publicar.');
         }
-
-        await addDoc(collection(db, 'edicoes'), {
-          nome, tema, descricao, cartaLeitor,
-          capaUrl,
-          edicaoGratuita: document.getElementById('edicaoGratuita').checked,
-          numero: parseInt(document.getElementById('numeroEdicao').value) || null,
-          especial: document.getElementById('edicaoEspecial').checked,
-          status: 'rascunho',
-          criadoEm: new Date().toISOString(),
-          criadoPor: usuarioAtual.displayName || usuarioAtual.email
-        });
-
-        mostrarSucesso('Edição criada como rascunho! Adicione matérias a ela em "Novo Artigo" antes de publicar.');
-        document.getElementById('formEdicao').reset();
-        editorCartaLeitor.setContents([]);
-        document.getElementById('previewCapa').style.display = 'none';
-        arquivoCapaSelecionado = null;
+        limparForm();
         carregarEdicoes();
       } catch (err) {
-        mostrarErro('Erro ao criar edição: ' + err.message);
+        mostrarErro('Erro ao salvar edição: ' + err.message);
       }
     };
 
@@ -296,10 +348,13 @@
         const q = query(collection(db, 'edicoes'), orderBy('criadoEm', 'desc'));
         const snap = await getDocs(q);
         if (snap.empty) {
+          edicoesCache = [];
+          if (!editandoId) atualizarTipo();
           container.innerHTML = '<p style="color:#777;font-size:13px;">Nenhuma edição criada ainda.</p>';
           return;
         }
         container.innerHTML = '';
+        edicoesCache = snap.docs.map(x => ({ id: x.id, ...x.data() }));
         snap.forEach(d => {
           const ed = d.data();
           const status = ed.status || 'rascunho';
@@ -319,6 +374,7 @@
                 ? `<button class="publicar" data-id="${d.id}" data-nome="${ed.nome}">Publicar edição</button>`
                 : `<button class="despublicar" data-id="${d.id}">Voltar para rascunho</button>`
               }
+              <button class="editar" data-id="${d.id}">Editar</button>
               <button class="excluir" data-id="${d.id}" data-nome="${ed.nome}">Excluir</button>
             </div>
             <span class="toggle-materias" data-id="${d.id}" data-nome="${ed.nome}">▾ Ver / ordenar matérias desta edição</span>
@@ -339,17 +395,24 @@
             }
           });
 
+          div.querySelector('.editar').addEventListener('click', () => editarEdicao(d.id));
+
           div.querySelector('.excluir').addEventListener('click', async () => {
-            if (confirm('Excluir a edição "' + ed.nome + '"? As matérias já escritas não serão apagadas, só deixam de pertencer a esta edição.')) {
+            if (!confirm('Excluir a edição "' + ed.nome + '"? Os artigos não serão apagados: eles apenas deixam de pertencer a esta edição.')) return;
+            try {
+              const vinc = await getDocs(query(collection(db, 'noticias'), where('edicao', '==', ed.nome)));
+              for (const m of vinc.docs) await updateDoc(doc(db, 'noticias', m.id), { edicao: '', ordemEdicao: 1 });
               await deleteDoc(doc(db, 'edicoes', d.id));
+              if (editandoId === d.id) limparForm();
               carregarEdicoes();
-            }
+            } catch (err) { mostrarErro('Erro ao excluir: ' + err.message); }
           });
 
           div.querySelector('.toggle-materias').addEventListener('click', () => abrirOuFecharMaterias(d.id, ed.nome));
 
           container.appendChild(div);
         });
+        if (!editandoId) atualizarTipo();
       } catch (err) {
         container.innerHTML = '<p style="color:#b3261e;font-size:13px;">Erro ao carregar edições: ' + err.message + '</p>';
       }

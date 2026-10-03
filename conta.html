@@ -52,6 +52,14 @@
   .fav-vazio{color:var(--cinza);font-size:13px;padding:10px 0}
 
   .salvo-msg{font-size:12px;color:var(--med);margin-top:-8px;margin-bottom:10px;display:none}
+
+  .cargo-badge{display:none;margin-top:8px;font-size:12px;font-weight:600;padding:3px 12px;border-radius:999px;background:var(--azul);color:var(--esc)}
+  html[data-tema="escuro"] .cargo-badge{color:#cfe6f3}
+  .admin-dica{color:var(--cinza);font-size:13px;margin:-8px 0 14px}
+  .admin-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+  .admin-tile{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--borda);border-radius:10px;font-size:14px;font-weight:600;text-decoration:none}
+  .admin-tile:hover{border-color:var(--amar)}
+  .admin-tile span{font-size:18px}
 </style>
 <link rel="stylesheet" href="css/tema.css">
 <script src="js/tema.js"></script>
@@ -77,6 +85,7 @@
     <div>
       <div class="perfil-nome" id="perfilNome"></div>
       <div class="perfil-email" id="perfilEmail"></div>
+      <span class="cargo-badge" id="cargoBadge"></span>
     </div>
   </div>
 
@@ -109,19 +118,25 @@
     <div class="fav-lista" id="favLista"></div>
   </section>
 
+  <section id="areaAdmin" style="display:none">
+    <h2>Área administrativa</h2>
+    <p class="admin-dica" id="adminDica"></p>
+    <div class="admin-grade" id="adminGrade"></div>
+  </section>
+
   <button class="btn btn-sair" id="btnSair">Sair da conta</button>
 </main>
 
 <script type="module">
   import { observarLogin, sair } from "./js/auth.js";
   import { db } from "./js/firebase-config.js";
-  import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import { enviarImagemCloudinary } from "./js/cloudinary.js";
   import { listarFavoritos } from "./js/interacoes.js";
 
   let usuarioAtual = null;
 
-  observarLogin(async (user) => {
+  observarLogin(async (user, cargo) => {
     if (!user) { window.location.href = "login.html"; return; }
     usuarioAtual = user;
     document.getElementById('main').style.display = 'block';
@@ -138,6 +153,8 @@
       document.getElementById('avatarInicial').textContent = (user.displayName || user.email || '?').charAt(0).toUpperCase();
     }
 
+    await carregarDadosPerfil(user);
+    montarAreaAdmin(cargo);
     carregarFavoritos('versiculos');
   });
 
@@ -184,6 +201,70 @@
       carregarFavoritos(tab.dataset.tipo);
     });
   });
+
+  async function carregarDadosPerfil(user) {
+    try {
+      const snap = await getDoc(doc(db, "usuarios", user.uid));
+      if (!snap.exists()) return;
+      const d = snap.data();
+      const nome = d.nome || user.displayName || "";
+      if (nome) {
+        document.getElementById('perfilNome').textContent = nome;
+        document.getElementById('campoNome').value = nome;
+        document.getElementById('avatarInicial').textContent = nome.charAt(0).toUpperCase();
+      }
+      if (d.fotoUrl) {
+        document.getElementById('avatarImg').src = d.fotoUrl;
+        document.getElementById('avatarImg').style.display = 'block';
+        document.getElementById('avatarInicial').style.display = 'none';
+      }
+    } catch (e) {
+      console.error("Não foi possível carregar o perfil:", e);
+    }
+  }
+
+  // Para mudar o que cada cargo vê, edite só esta lista.
+  const ITENS_ADMIN = [
+    { icone: '📊', titulo: 'Dashboard',          href: 'admin/dashboard.html',           cargos: ['colunista','revisor','editor','administrador'] },
+    { icone: '✍️', titulo: 'Nova notícia',       href: 'admin/publicar.html',            cargos: ['colunista','editor','administrador'] },
+    { icone: '📰', titulo: 'Gerenciar notícias', href: 'admin/gerenciar-noticias.html',  cargos: ['colunista','revisor','editor','administrador'] },
+    { icone: '🏷️', titulo: 'Categorias',         href: 'admin/categorias-admin.html',    cargos: ['editor','administrador'] },
+    { icone: '📚', titulo: 'Edições',            href: 'admin/edicoes-admin.html',       cargos: ['editor','administrador'] },
+    { icone: '📈', titulo: 'Estatísticas',       href: 'admin/estatisticas-admin.html',  cargos: ['editor','administrador'] },
+    { icone: '🔖', titulo: 'Tags',               href: 'admin/tags-admin.html',          cargos: ['administrador'] },
+    { icone: '👥', titulo: 'Equipe',             href: 'admin/equipe-admin.html',        cargos: ['administrador'] },
+    { icone: '👤', titulo: 'Usuários e cargos',  href: 'admin/usuarios.html',            cargos: ['administrador'] },
+    { icone: '⚙️', titulo: 'Configurações',      href: 'admin/configuracoes.html',       cargos: ['administrador'] }
+  ];
+  const NOMES_CARGO = { administrador: 'Administrador', editor: 'Editor', colunista: 'Colunista', revisor: 'Revisor' };
+  const DICAS_CARGO = {
+    administrador: 'Acesso total ao painel.',
+    editor: 'Publica e organiza o conteúdo.',
+    colunista: 'Escreve e acompanha os próprios textos.',
+    revisor: 'Revisa os textos enviados.'
+  };
+
+  function montarAreaAdmin(cargo) {
+    const itens = ITENS_ADMIN.filter(i => i.cargos.includes(cargo));
+    if (!itens.length) return;
+    const badge = document.getElementById('cargoBadge');
+    badge.textContent = NOMES_CARGO[cargo] || cargo;
+    badge.style.display = 'inline-block';
+    document.getElementById('adminDica').textContent = DICAS_CARGO[cargo] || '';
+    const grade = document.getElementById('adminGrade');
+    grade.innerHTML = '';
+    itens.forEach(i => {
+      const a = document.createElement('a');
+      a.className = 'admin-tile';
+      a.href = i.href;
+      const ic = document.createElement('span');
+      ic.textContent = i.icone;
+      a.appendChild(ic);
+      a.appendChild(document.createTextNode(i.titulo));
+      grade.appendChild(a);
+    });
+    document.getElementById('areaAdmin').style.display = 'block';
+  }
 
   async function carregarFavoritos(tipo) {
     const lista = document.getElementById('favLista');

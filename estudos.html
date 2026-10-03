@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estudos bíblicos – Projeto Aster</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--esc:#0C3B5C;--med:#1F5A82;--azul:#B8E8FF;--amar:#E8A33D;--bg:#FBFAF6;--texto:#1a1a1a;--cinza:#666;--card:#fff;--borda:#e3ddd0}
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#0f1720;--texto:#e7edf3;--cinza:#9fb0bd;--card:#1b2430;--borda:#2a3442;--azul:#163049}
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,sans-serif;background:var(--bg);color:var(--texto);padding-bottom:60px}
+  a{color:inherit}
+  header.topo{background:var(--esc);display:flex;align-items:center;justify-content:space-between;padding:18px 40px;flex-wrap:wrap;gap:12px}
+  .logo-aster{display:flex;align-items:center;gap:8px;font-family:'Playfair Display',serif;font-weight:700;font-size:20px;color:#fff;text-decoration:none}
+  .logo-aster .estrela{color:var(--amar)}
+  nav.nav-topo a{color:#dfeaf2;text-decoration:none;font-size:14px;font-weight:500;margin-left:20px}
+  nav.nav-topo a:hover{color:var(--amar)}
+
+  main{max-width:860px;margin:0 auto;padding:40px 20px}
+  h1{font-family:'Playfair Display',serif;font-size:30px;margin-bottom:6px}
+  .sub{color:var(--cinza);font-size:14px;margin-bottom:28px}
+
+  .tabs{display:flex;gap:10px;margin-bottom:26px;flex-wrap:wrap}
+  .tab{padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid var(--borda);background:transparent;cursor:pointer;color:var(--texto)}
+  .tab.ativa{background:var(--amar);color:var(--esc);border-color:var(--amar)}
+
+  .painel{display:none}
+  .painel.ativa{display:block}
+
+  .tema-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+  .tema-card{background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:18px;cursor:pointer}
+  .tema-card h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--esc);margin-bottom:6px}
+  @media (prefers-color-scheme: dark){ .tema-card h3{color:#fff} }
+  .tema-card p{font-size:13px;color:var(--cinza)}
+
+  .estudo{background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:22px;margin-bottom:16px}
+  .estudo .ref{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--amar);margin-bottom:6px}
+  .estudo h3{font-family:'Playfair Display',serif;font-size:19px;margin-bottom:10px;color:var(--esc)}
+  @media (prefers-color-scheme: dark){ .estudo h3{color:#fff} }
+  .estudo p{font-size:14px;line-height:1.7;color:var(--texto);margin-bottom:10px}
+  .estudo a{color:var(--amar);font-weight:700;font-size:13px;text-decoration:none}
+  .voltar{display:inline-block;margin-bottom:16px;font-size:13px;color:var(--med);text-decoration:none;cursor:pointer}
+
+  .livros-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .livro-item{background:var(--card);border:1px solid var(--borda);border-radius:8px;padding:12px 14px;font-size:14px;text-decoration:none;color:var(--texto);text-align:center}
+  .livro-item:hover{border-color:var(--amar)}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <a href="index.html" class="logo-aster"><span class="estrela">✦</span> Projeto Aster</a>
+  <nav class="nav-topo">
+    <a href="biblia.html">Bíblia</a>
+    <a href="edicoes.html">Editorial</a>
+    <a href="devocional.html">Devocional</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Estudos bíblicos</h1>
+  <p class="sub">Por tema e por livro da Bíblia.</p>
+
+  <div class="tabs">
+    <button class="tab ativa" data-painel="porTema">Por tema</button>
+    <button class="tab" data-painel="porLivro">Por livro</button>
+  </div>
+
+  <div class="painel ativa" id="porTema">
+    <div class="tema-grid" id="temaGrid"></div>
+    <div id="temaDetalhe" style="display:none"></div>
+  </div>
+
+  <div class="painel" id="porLivro">
+    <div class="livros-grid" id="livrosGrid"></div>
+  </div>
+</main>
+
+<script>
+const TEMAS = {
+  "fe": {
+    nome: "Fé",
+    desc: "Confiar em Deus mesmo sem ver o caminho inteiro.",
+    estudos: [
+      { ref:"Hebreus 11:1", titulo:"O que é fé, afinal?", texto:"Fé não é ausência de dúvida, é escolher confiar mesmo sem enxergar o fim da estrada. Hebreus define fé como 'a certeza daquilo que esperamos e a prova das coisas que não vemos'. Isso significa agir hoje baseado numa promessa que ainda não se cumpriu por completo." },
+      { ref:"Marcos 9:24", titulo:"Creio, ajuda a minha incredulidade", texto:"Um pai desesperado pede ajuda a Jesus para seu filho e resume uma fé honesta: 'Creio, ajuda a minha incredulidade.' Fé real convive com perguntas — o importante é continuar buscando, não fingir ter todas as respostas." }
+    ]
+  },
+  "familia": {
+    nome: "Família",
+    desc: "Relações, lar e os laços que Deus valoriza.",
+    estudos: [
+      { ref:"Josué 24:15", titulo:"Eu e a minha casa serviremos ao Senhor", texto:"Josué toma uma decisão pública e familiar: independente do que os outros escolham, sua casa seguirá um caminho definido. É um lembrete de que as decisões espirituais de quem lidera uma família moldam gerações." },
+      { ref:"Efésios 6:4", titulo:"Criar sem provocar", texto:"Paulo orienta pais a não exasperar os filhos, mas a criá-los 'na disciplina e admoestação do Senhor' — equilíbrio entre firmeza e cuidado, nunca abuso de autoridade." }
+    ]
+  },
+  "ansiedade": {
+    nome: "Ansiedade",
+    desc: "Lidando com preocupação, medo e inquietação.",
+    estudos: [
+      { ref:"Filipenses 4:6-7", titulo:"Não andeis ansiosos por coisa alguma", texto:"Paulo escreve isso preso, não de um lugar confortável. A instrução é prática: trocar a ansiedade por oração e gratidão, confiando que a paz de Deus guardará coração e mente — uma paz que 'excede todo entendimento'." },
+      { ref:"Mateus 6:34", titulo:"Basta a cada dia o seu mal", texto:"Jesus ensina a viver um dia de cada vez. Antecipar todos os problemas futuros de uma vez é um peso que não precisa ser carregado hoje." }
+    ]
+  },
+  "proposito": {
+    nome: "Propósito",
+    desc: "Chamado, vocação e sentido de vida.",
+    estudos: [
+      { ref:"Jeremias 29:11", titulo:"Planos de paz, e não de mal", texto:"Escrita a um povo exilado, essa promessa não é sobre conforto imediato, mas sobre um propósito maior sendo tecido mesmo em tempos difíceis." },
+      { ref:"Eclesiastes 3:1", titulo:"Tempo para cada coisa", texto:"Há tempo para tudo debaixo do céu. Entender em que estação da vida você está ajuda a não cobrar de si mesmo frutos fora de hora." }
+    ]
+  },
+  "perdao": {
+    nome: "Perdão",
+    desc: "Perdoar, pedir perdão e recomeçar.",
+    estudos: [
+      { ref:"Mateus 18:21-22", titulo:"Setenta vezes sete", texto:"Pedro pergunta até quantas vezes deve perdoar. A resposta de Jesus não é um número literal, é um convite a abandonar a contabilidade do perdão." },
+      { ref:"Colossenses 3:13", titulo:"Perdoai como o Senhor vos perdoou", texto:"O padrão de perdão que recebemos se torna o padrão que oferecemos — não porque é fácil, mas porque já fomos perdoados primeiro." }
+    ]
+  },
+  "oracao": {
+    nome: "Oração",
+    desc: "Conversar com Deus com honestidade.",
+    estudos: [
+      { ref:"Mateus 6:9-13", titulo:"O Pai Nosso como modelo", texto:"Jesus não dá uma fórmula mágica, dá uma estrutura: adoração, submissão, pedido diário, perdão e proteção. Um modelo simples para orações próprias." },
+      { ref:"1 Tessalonicenses 5:17", titulo:"Orai sem cessar", texto:"Mais que um ritual pontual, oração pode ser um diálogo contínuo ao longo do dia, em qualquer lugar." }
+    ]
+  }
+};
+
+const LIVROS = ["Gênesis","Êxodo","Levítico","Números","Deuteronômio","Josué","Juízes","Rute","1 Samuel","2 Samuel","1 Reis","2 Reis","1 Crônicas","2 Crônicas","Esdras","Neemias","Ester","Jó","Salmos","Provérbios","Eclesiastes","Cantares","Isaías","Jeremias","Lamentações","Ezequiel","Daniel","Oseias","Joel","Amós","Obadias","Jonas","Miqueias","Naum","Habacuque","Sofonias","Ageu","Zacarias","Malaquias","Mateus","Marcos","Lucas","João","Atos","Romanos","1 Coríntios","2 Coríntios","Gálatas","Efésios","Filipenses","Colossenses","1 Tessalonicenses","2 Tessalonicenses","1 Timóteo","2 Timóteo","Tito","Filemom","Hebreus","Tiago","1 Pedro","2 Pedro","1 João","2 João","3 João","Judas","Apocalipse"];
+
+const temaGrid = document.getElementById('temaGrid');
+Object.entries(TEMAS).forEach(([chave, tema]) => {
+  const div = document.createElement('div');
+  div.className = 'tema-card';
+  div.innerHTML = `<h3>${tema.nome}</h3><p>${tema.desc}</p>`;
+  div.onclick = () => mostrarTema(chave);
+  temaGrid.appendChild(div);
+});
+
+function mostrarTema(chave) {
+  const tema = TEMAS[chave];
+  temaGrid.style.display = 'none';
+  const detalhe = document.getElementById('temaDetalhe');
+  detalhe.style.display = 'block';
+  detalhe.innerHTML = `<a class="voltar" onclick="voltarTemas()">← Todos os temas</a><h1 style="margin-bottom:4px">${tema.nome}</h1><p class="sub">${tema.desc}</p>` +
+    tema.estudos.map(e => `<div class="estudo"><p class="ref">${e.ref}</p><h3>${e.titulo}</h3><p>${e.texto}</p><a href="biblia.html">Ler na Bíblia →</a></div>`).join('');
+}
+function voltarTemas() {
+  document.getElementById('temaDetalhe').style.display = 'none';
+  document.getElementById('temaDetalhe').innerHTML = '';
+  temaGrid.style.display = 'grid';
+}
+
+const livrosGrid = document.getElementById('livrosGrid');
+LIVROS.forEach(nome => {
+  const a = document.createElement('a');
+  a.className = 'livro-item';
+  a.href = 'biblia.html';
+  a.textContent = nome;
+  livrosGrid.appendChild(a);
+});
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativa'));
+    document.querySelectorAll('.painel').forEach(p => p.classList.remove('ativa'));
+    tab.classList.add('ativa');
+    document.getElementById(tab.dataset.painel).classList.add('ativa');
+  });
+});
+</script>
+</body>
+</html>

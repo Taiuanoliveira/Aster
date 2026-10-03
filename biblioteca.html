@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Biblioteca em PDF – Projeto Aster</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--esc:#0C3B5C;--med:#1F5A82;--azul:#B8E8FF;--amar:#E8A33D;--bg:#FBFAF6;--texto:#1a1a1a;--cinza:#666;--card:#fff;--borda:#e3ddd0}
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#0f1720;--texto:#e7edf3;--cinza:#9fb0bd;--card:#1b2430;--borda:#2a3442;--azul:#163049}
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,sans-serif;background:var(--bg);color:var(--texto);padding-bottom:60px}
+  a{color:inherit}
+  header.topo{background:var(--esc);display:flex;align-items:center;justify-content:space-between;padding:18px 40px;flex-wrap:wrap;gap:12px}
+  .logo-aster{display:flex;align-items:center;gap:8px;font-family:'Playfair Display',serif;font-weight:700;font-size:20px;color:#fff;text-decoration:none}
+  .logo-aster .estrela{color:var(--amar)}
+  nav.nav-topo a{color:#dfeaf2;text-decoration:none;font-size:14px;font-weight:500;margin-left:20px}
+  nav.nav-topo a:hover{color:var(--amar)}
+
+  main{max-width:960px;margin:0 auto;padding:40px 20px}
+  h1{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:6px}
+  .sub{color:var(--cinza);font-size:14px;margin-bottom:10px}
+  .aviso{background:#FFF4DE;border:1px solid #E8A33D;color:#6b4c00;font-size:13px;padding:12px 16px;border-radius:10px;margin-bottom:26px}
+  @media (prefers-color-scheme: dark){ .aviso{background:#3a2d10;border-color:#8a6a1f;color:#f0d9a0} }
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:20px}
+  .livro{background:var(--card);border:1px solid var(--borda);border-radius:12px;padding:18px;display:flex;flex-direction:column}
+  .capa{width:100%;height:150px;border-radius:6px;background:var(--esc);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;color:var(--amar);font-size:15px;text-align:center;padding:10px;margin-bottom:14px;box-shadow:0 8px 20px rgba(12,59,92,.25)}
+  .livro h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--esc);margin-bottom:6px}
+  @media (prefers-color-scheme: dark){ .livro h3{color:#fff} }
+  .livro p{font-size:13px;color:var(--cinza);line-height:1.5;flex:1;margin-bottom:14px}
+  .btn{padding:9px 14px;border-radius:8px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;cursor:pointer;border:none;background:var(--amar);color:var(--esc)}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <a href="index.html" class="logo-aster"><span class="estrela">✦</span> Projeto Aster</a>
+  <nav class="nav-topo">
+    <a href="biblia.html">Bíblia</a>
+    <a href="estudos.html">Estudos</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Biblioteca em PDF</h1>
+  <p class="sub">Livros e materiais para baixar.</p>
+  <p class="aviso">Esta seção ainda está em montagem: os títulos abaixo são exemplos de como vai ficar. Os PDFs reais serão adicionados em breve.</p>
+
+  <div class="grid" id="grid"></div>
+</main>
+
+<script>
+const LIVROS = [
+  { titulo:"Guia de Oração para 30 Dias", resumo:"Um roteiro simples com um tema de oração por dia, para criar o hábito de orar com constância.", arquivo:"#" },
+  { titulo:"Introdução ao Livro de Salmos", resumo:"Panorama histórico e literário dos Salmos, com sugestões de leitura por tipo (louvor, lamento, sabedoria).", arquivo:"#" },
+  { titulo:"Família segundo a Bíblia", resumo:"Reflexões curtas sobre papéis, cuidado mútuo e perdão dentro de casa, com base em textos do Antigo e Novo Testamento.", arquivo:"#" },
+  { titulo:"Caderno de Estudo: Romanos", resumo:"Estudo capítulo a capítulo da carta de Paulo aos Romanos, com perguntas para discussão em grupo.", arquivo:"#" },
+  { titulo:"100 Promessas da Bíblia", resumo:"Uma coletânea organizada por tema — ansiedade, provisão, perdão, força — para consulta rápida.", arquivo:"#" },
+  { titulo:"Guia de Leitura Devocional", resumo:"Como montar sua própria rotina devocional diária, com exemplos de estrutura e perguntas de reflexão.", arquivo:"#" }
+];
+
+const grid = document.getElementById('grid');
+LIVROS.forEach(l => {
+  const div = document.createElement('div');
+  div.className = 'livro';
+  div.innerHTML = `<div class="capa">${l.titulo}</div><h3>${l.titulo}</h3><p>${l.resumo}</p><a class="btn" href="${l.arquivo}" onclick="return avisar(event)">Baixar PDF</a>`;
+  grid.appendChild(div);
+});
+
+function avisar(e){
+  if (document.querySelector('.livro a').getAttribute('href') === '#') {
+    e.preventDefault();
+    alert('Este PDF ainda não foi adicionado. Em breve!');
+    return false;
+  }
+}
+</script>
+</body>
+</html>

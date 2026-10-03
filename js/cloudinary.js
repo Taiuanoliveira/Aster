@@ -1,6 +1,6 @@
-// Upload de imagens usando Cloudinary (gratuito, sem cartão de credito)
-const CLOUD_NAME = 'COLE_AQUI';
-const UPLOAD_PRESET = 'COLE_AQUI';
+// Upload de imagens usando Cloudinary (unsigned preset)
+const CLOUD_NAME = 'duast6nnl';
+const UPLOAD_PRESET = 'aster_upload';
 
 export async function enviarImagemCloudinary(arquivo) {
   const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;

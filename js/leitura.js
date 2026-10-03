@@ -40,3 +40,5 @@ export function montarTopoRodape(){
   document.body.append(rod);
   import('./site-config.js').then(m=>m.aplicarConfigSite()).catch(()=>{});
 }
+
+export function tituloPublico(v){ const m={'editor-chefe':'Editor-chefe','colunista':'Colunista'}; return m[v]||''; }

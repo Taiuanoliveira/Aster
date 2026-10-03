@@ -406,7 +406,7 @@
         let imagemUrl = imagemAtualUrl;
         if (arquivoImagem) imagemUrl = await enviarImagem(arquivoImagem, idNoticia);
 
-        await atualizarNoticia(idNoticia, { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, imagemUrl, edicao, gratuito, paywallOverride, ordemEdicao, cargoEditorialAutor });
+        await atualizarNoticia(idNoticia, { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, imagemUrl, edicao, gratuito, paywallOverride, ordemEdicao });
 
         if (status === STATUS.PUBLICADO) {
         }

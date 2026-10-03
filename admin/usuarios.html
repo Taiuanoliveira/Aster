@@ -41,8 +41,8 @@
       <section class="admin-bloco">
         <p class="admin-explicacao">
           Cada pessoa tem dois cargos independentes: o <strong>Cargo do Sistema</strong> (controla o que ela pode acessar no painel)
-          e o <strong>Cargo Editorial</strong> (aparece publicamente nas matérias e na seção "Nossa Equipe" do site — não muda nenhuma permissão).
-          Contas novas aparecem como <strong>leitor</strong> até você definir um cargo do sistema.
+          e o <strong>Título público</strong> (aparece publicamente nas matérias e na seção "Nossa Equipe" do site — não muda nenhuma permissão).
+          Contas novas aparecem como <strong>usuário</strong> até você definir um cargo do sistema.
         </p>
         <div id="listaUsuarios" class="admin-lista-usuarios">
           <p class="admin-carregando">Carregando...</p>
@@ -75,12 +75,7 @@
     const CARGOS_EDITORIAIS = [
       { valor: '', label: '— Nenhum —' },
       { valor: 'editor-chefe', label: 'Editor-chefe' },
-      { valor: 'pastor', label: 'Pastor' },
-      { valor: 'teologo', label: 'Teólogo' },
-      { valor: 'escritor', label: 'Escritor' },
       { valor: 'colunista', label: 'Colunista' },
-      { valor: 'revisor', label: 'Revisor' },
-      { valor: 'missionario', label: 'Missionário' },
     ];
 
     let uidEmEdicao = null;
@@ -137,14 +132,14 @@
             <div>
               <span class="campo-label-pequeno">Cargo do Sistema</span>
               <select data-uid="${d.id}" class="select-cargo">
-                <option value="leitor" ${u.cargo === 'leitor' ? 'selected' : ''}>Leitor</option>
+                <option value="leitor" ${u.cargo === 'leitor' ? 'selected' : ''}>Usuário (só lê o site)</option>
                 <option value="administrador" ${u.cargo === 'administrador' ? 'selected' : ''}>Administrador</option>
                 <option value="editor" ${u.cargo === 'editor' ? 'selected' : ''}>Editor</option>
                 <option value="colunista" ${u.cargo === 'colunista' ? 'selected' : ''}>Colunista</option>
                 <option value="revisor" ${u.cargo === 'revisor' ? 'selected' : ''}>Revisor</option>
               </select>
               <br><br>
-              <span class="campo-label-pequeno">Cargo Editorial</span>
+              <span class="campo-label-pequeno">Título público (aparece nos artigos)</span>
               <select data-uid="${d.id}" class="select-cargo-editorial">
                 ${optionsCargoEditorial(u.cargoEditorial || '')}
               </select>

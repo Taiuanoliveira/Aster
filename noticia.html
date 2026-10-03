@@ -8,7 +8,7 @@
 <script type="module">
 import { db } from './js/firebase-config.js';
 import { doc, getDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { montarTopoRodape, esc, sanitizar, dataBonita } from './js/leitura.js';
+import { montarTopoRodape, esc, sanitizar, dataBonita, tituloPublico } from './js/leitura.js';
 import { marcarReferencias } from './js/versiculos.js';
 import { registrarVisualizacao } from './js/interacoes.js';
 montarTopoRodape();
@@ -30,7 +30,7 @@ try{
     const n=s.data();document.title=n.titulo+' – Projeto Aster';
     a.innerHTML=(n.edicao?'<a class="voltar" href="edicoes.html">← Editorial</a><br>':'')+
       '<span class="cat">'+esc(n.categoria||'')+'</span><h1>'+esc(n.titulo)+'</h1>'+
-      '<p class="meta">'+esc(n.autorNome||'')+(n.autorNome&&n.criadoEm?' · ':'')+esc(dataBonita(n.criadoEm))+'</p>'+
+      '<p class="meta">'+esc(n.autorNome||'')+(tituloPublico(n.cargoEditorialAutor)?' ('+esc(tituloPublico(n.cargoEditorialAutor))+')':'')+(n.autorNome&&n.criadoEm?' · ':'')+esc(dataBonita(n.criadoEm))+'</p>'+
       (n.imagemUrl?'<img class="capa-img" src="'+esc(n.imagemUrl)+'" alt="">':'')+
       (n.resumo?'<p class="resumo">'+esc(n.resumo)+'</p>':'')+
       '<div class="corpo">'+sanitizar(n.conteudo)+'</div>';

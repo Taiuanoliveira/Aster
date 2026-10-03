@@ -57,7 +57,10 @@
   </div>
 </main>
 
-<script>
+<script type="module">
+let lerColecao = async () => [];
+try { ({ lerColecao } = await import('./js/conteudo.js')); } catch (e) {}
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const DEVOCIONAIS = [
   { ref:"Salmos 23:1", titulo:"O Pastor que não falta", texto:"\"O Senhor é o meu pastor, nada me faltará.\" Não é uma promessa de que tudo vai ser fácil, é a certeza de que, no essencial, você não caminha abandonado. Hoje, troque a preocupação pelo lembrete de que existe Alguém cuidando dos detalhes." },
   { ref:"Isaías 41:10", titulo:"Não temas", texto:"\"Não temas, porque eu sou contigo.\" O medo encolhe diante de uma presença maior. Não é a ausência de desafios que traz paz, é saber que você não os enfrenta sozinho." },
@@ -75,40 +78,30 @@ const DEVOCIONAIS = [
   { ref:"1 Pedro 5:7", titulo:"Lançar a ansiedade", texto:"\"Lançando sobre ele toda a vossa ansiedade, porque ele tem cuidado de vós.\" Carregar a preocupação sozinho nunca foi o plano." }
 ];
 
-const inicioAno = new Date(new Date().getFullYear(), 0, 1);
+const doBanco = await lerColecao('devocionais');
+const LISTA = doBanco.length ? doBanco : DEVOCIONAIS;
 const hoje = new Date();
-const diaDoAno = Math.floor((hoje - inicioAno) / 86400000);
-const idxHoje = diaDoAno % DEVOCIONAIS.length;
-
+const diaDoAno = Math.floor((hoje - new Date(hoje.getFullYear(), 0, 1)) / 86400000);
+const idxHoje = diaDoAno % LISTA.length;
 document.getElementById('dataAtual').textContent = hoje.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
-
-function montarCard(dev, destaque) {
-  return `<p class="ref">${dev.ref}</p><h1>${dev.titulo}</h1><p>${dev.texto}</p>`;
-}
-
-const devHoje = DEVOCIONAIS[idxHoje];
-document.getElementById('cardHoje').innerHTML = montarCard(devHoje) + `
-  <div class="acoes">
-    <button class="btn btn-amar" onclick="compartilharDevocional()">Compartilhar</button>
-    <a class="btn btn-outline" href="biblia.html" style="text-decoration:none;display:inline-block">Abrir na Bíblia</a>
-  </div>`;
-
-function compartilharDevocional(){
-  const msg = devHoje.titulo + '\n"' + devHoje.texto.replace(/\\"/g,'"') + '"\n' + devHoje.ref + '\nProjeto Aster';
-  if (navigator.share) navigator.share({ text: msg }).catch(()=>{});
-  else navigator.clipboard.writeText(msg).then(()=>alert('Copiado!'));
-}
-
+const devHoje = LISTA[idxHoje];
+document.getElementById('cardHoje').innerHTML = `<p class="ref">${esc(devHoje.ref)}</p><h1>${esc(devHoje.titulo)}</h1><p>${esc(devHoje.texto)}</p>
+  <div class="acoes"><button class="btn btn-amar" id="btnShare">Compartilhar</button>
+  <a class="btn btn-outline" href="biblia.html" style="text-decoration:none;display:inline-block">Abrir na Bíblia</a></div>`;
+document.getElementById('btnShare').addEventListener('click', () => {
+  const msg = devHoje.titulo + '\n"' + devHoje.texto + '"\n' + devHoje.ref + '\nProjeto Aster';
+  if (navigator.share) navigator.share({ text: msg }).catch(() => {});
+  else navigator.clipboard.writeText(msg).then(() => alert('Copiado!'));
+});
 const lista = document.getElementById('listaAnteriores');
 for (let i = 1; i <= 5; i++) {
-  const idx = (idxHoje - i + DEVOCIONAIS.length * 10) % DEVOCIONAIS.length;
-  const dData = new Date(hoje); dData.setDate(dData.getDate() - i);
-  const dev = DEVOCIONAIS[idx];
-  const div = document.createElement('div');
-  div.className = 'mini';
-  div.innerHTML = `<div class="d">${dData.toLocaleDateString('pt-BR')}</div><strong>${dev.titulo}</strong> — ${dev.ref}`;
+  const dev = LISTA[(idxHoje - i + LISTA.length * 10) % LISTA.length];
+  const d = new Date(hoje); d.setDate(d.getDate() - i);
+  const div = document.createElement('div'); div.className = 'mini';
+  div.innerHTML = `<div class="d">${d.toLocaleDateString('pt-BR')}</div><strong>${esc(dev.titulo)}</strong> — ${esc(dev.ref)}`;
   lista.appendChild(div);
 }
 </script>
+
 </body>
 </html>

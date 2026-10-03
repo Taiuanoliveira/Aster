@@ -97,6 +97,7 @@
     import { db } from "../js/firebase-config.js";
     import { enviarImagemCloudinary } from "../js/cloudinary.js";
     import { ativarAutoNegrito } from "../js/versiculos.js";
+    import { ativarAutoNegrito } from "../js/versiculos.js";
     import { collection, getDocs, orderBy, query, doc, getDoc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     let quillEditor = null;
@@ -280,9 +281,11 @@
         { href: 'categorias-admin.html', label: '🏷️ Categorias', cargos: ['administrador','editor'] },
         { href: 'tags-admin.html', label: '🔖 Tags e Destaques', cargos: ['administrador','editor'] },
         { href: 'edicoes-admin.html', label: '📚 Edições', cargos: ['administrador','editor'] },
+        { href: 'conteudo-admin.html', label: '🧩 Conteúdo do site', cargos: ['administrador','editor'] },
         { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
         { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
         { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
+        { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
         { href: 'configuracoes.html', label: '⚙️ Configurações', cargos: ['administrador'] },
       ];
@@ -355,6 +358,8 @@
       document.getElementById('mensagemErro').style.display = 'none';
       el.textContent = texto; el.style.display = 'block';
     }
+
+    ativarAutoNegrito(quillEditor);
 
     ativarAutoNegrito(quillEditor);
 

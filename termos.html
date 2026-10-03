@@ -5,5 +5,16 @@
 <link rel="stylesheet" href="css/leitura.css"><link rel="stylesheet" href="css/tema.css"><script src="js/tema.js"></script>
 </head><body>
 <article class="artigo"><h1>Termos de uso</h1><div class="corpo"><p>O Projeto Aster oferece leitura da Bíblia, estudos e um editorial mensal para fins de edificação e informação.</p><p>Os textos publicados pertencem aos seus autores. Não reproduza o conteúdo sem autorização.</p><p>Os materiais e as traduções da Bíblia seguem as licenças de cada fonte. Ao usar o site você concorda em não fazer uso indevido do conteúdo nem tentar prejudicar o funcionamento do serviço.</p><p>Estes termos podem ser atualizados. Dúvidas: entre em contato pelos canais do site.</p></div></article>
-<script type="module">import { montarTopoRodape } from './js/leitura.js'; montarTopoRodape();</script>
+<script type="module">
+import { montarTopoRodape } from './js/leitura.js'; montarTopoRodape();
+try {
+  const { lerDoc } = await import('./js/conteudo.js');
+  const d = await lerDoc('paginas', 'termos');
+  if (d && d.texto) {
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    if (d.titulo) document.querySelector('.artigo h1').textContent = d.titulo;
+    document.querySelector('.artigo .corpo').innerHTML = String(d.texto).split(/\n\s*\n/).filter(x => x.trim()).map(x => '<p>' + esc(x.trim()).replace(/\n/g, '<br>') + '</p>').join('');
+  }
+} catch (e) {}
+</script>
 </body></html>

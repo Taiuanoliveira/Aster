@@ -79,7 +79,10 @@
   </div>
 </main>
 
-<script>
+<script type="module">
+let lerColecao = async () => [];
+try { ({ lerColecao } = await import('./js/conteudo.js')); } catch (e) {}
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const TEMAS = {
   "fe": {
     nome: "Fé",
@@ -133,46 +136,43 @@ const TEMAS = {
 
 const LIVROS = ["Gênesis","Êxodo","Levítico","Números","Deuteronômio","Josué","Juízes","Rute","1 Samuel","2 Samuel","1 Reis","2 Reis","1 Crônicas","2 Crônicas","Esdras","Neemias","Ester","Jó","Salmos","Provérbios","Eclesiastes","Cantares","Isaías","Jeremias","Lamentações","Ezequiel","Daniel","Oseias","Joel","Amós","Obadias","Jonas","Miqueias","Naum","Habacuque","Sofonias","Ageu","Zacarias","Malaquias","Mateus","Marcos","Lucas","João","Atos","Romanos","1 Coríntios","2 Coríntios","Gálatas","Efésios","Filipenses","Colossenses","1 Tessalonicenses","2 Tessalonicenses","1 Timóteo","2 Timóteo","Tito","Filemom","Hebreus","Tiago","1 Pedro","2 Pedro","1 João","2 João","3 João","Judas","Apocalipse"];
 
+const slug = s => String(s || 'geral').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-');
+const doBanco = await lerColecao('estudos');
+let TEMAS_USO = TEMAS;
+if (doBanco.length) {
+  TEMAS_USO = {};
+  doBanco.forEach(e => {
+    const k = slug(e.tema);
+    if (!TEMAS_USO[k]) TEMAS_USO[k] = { nome: e.tema || 'Geral', desc: e.temaDesc || '', estudos: [] };
+    if (!TEMAS_USO[k].desc && e.temaDesc) TEMAS_USO[k].desc = e.temaDesc;
+    TEMAS_USO[k].estudos.push(e);
+  });
+}
 const temaGrid = document.getElementById('temaGrid');
-Object.entries(TEMAS).forEach(([chave, tema]) => {
-  const div = document.createElement('div');
-  div.className = 'tema-card';
-  div.innerHTML = `<h3>${tema.nome}</h3><p>${tema.desc}</p>`;
+Object.entries(TEMAS_USO).forEach(([chave, tema]) => {
+  const div = document.createElement('div'); div.className = 'tema-card';
+  div.innerHTML = `<h3>${esc(tema.nome)}</h3><p>${esc(tema.desc)}</p>`;
   div.onclick = () => mostrarTema(chave);
   temaGrid.appendChild(div);
 });
-
 function mostrarTema(chave) {
-  const tema = TEMAS[chave];
+  const tema = TEMAS_USO[chave];
   temaGrid.style.display = 'none';
-  const detalhe = document.getElementById('temaDetalhe');
-  detalhe.style.display = 'block';
-  detalhe.innerHTML = `<a class="voltar" onclick="voltarTemas()">← Todos os temas</a><h1 style="margin-bottom:4px">${tema.nome}</h1><p class="sub">${tema.desc}</p>` +
-    tema.estudos.map(e => `<div class="estudo"><p class="ref">${e.ref}</p><h3>${e.titulo}</h3><p>${e.texto}</p><a href="biblia.html">Ler na Bíblia →</a></div>`).join('');
+  const detalhe = document.getElementById('temaDetalhe'); detalhe.style.display = 'block';
+  detalhe.innerHTML = `<a class="voltar" id="voltarTemas">← Todos os temas</a><h1 style="margin-bottom:4px">${esc(tema.nome)}</h1><p class="sub">${esc(tema.desc)}</p>` +
+    tema.estudos.map(e => `<div class="estudo"><p class="ref">${esc(e.ref)}</p><h3>${esc(e.titulo)}</h3><p>${esc(e.texto)}</p><a href="biblia.html">Ler na Bíblia →</a></div>`).join('');
+  document.getElementById('voltarTemas').addEventListener('click', () => { detalhe.style.display = 'none'; detalhe.innerHTML = ''; temaGrid.style.display = 'grid'; });
 }
-function voltarTemas() {
-  document.getElementById('temaDetalhe').style.display = 'none';
-  document.getElementById('temaDetalhe').innerHTML = '';
-  temaGrid.style.display = 'grid';
-}
-
 const livrosGrid = document.getElementById('livrosGrid');
-LIVROS.forEach(nome => {
-  const a = document.createElement('a');
-  a.className = 'livro-item';
-  a.href = 'biblia.html';
-  a.textContent = nome;
-  livrosGrid.appendChild(a);
-});
-
+LIVROS.forEach(nome => { const a = document.createElement('a'); a.className = 'livro-item'; a.href = 'biblia.html'; a.textContent = nome; livrosGrid.appendChild(a); });
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativa'));
-    document.querySelectorAll('.painel').forEach(p => p.classList.remove('ativa'));
-    tab.classList.add('ativa');
-    document.getElementById(tab.dataset.painel).classList.add('ativa');
+    document.querySelectorAll('.painel').forEach(x => x.classList.remove('ativa'));
+    tab.classList.add('ativa'); document.getElementById(tab.dataset.painel).classList.add('ativa');
   });
 });
 </script>
+
 </body>
 </html>

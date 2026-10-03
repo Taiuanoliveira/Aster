@@ -52,7 +52,10 @@
   <div class="grid" id="grid"></div>
 </main>
 
-<script>
+<script type="module">
+let lerColecao = async () => [];
+try { ({ lerColecao } = await import('./js/conteudo.js')); } catch (e) {}
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LIVROS = [
   { titulo:"Guia de Oração para 30 Dias", resumo:"Um roteiro simples com um tema de oração por dia, para criar o hábito de orar com constância.", arquivo:"#" },
   { titulo:"Introdução ao Livro de Salmos", resumo:"Panorama histórico e literário dos Salmos, com sugestões de leitura por tipo (louvor, lamento, sabedoria).", arquivo:"#" },
@@ -62,21 +65,18 @@ const LIVROS = [
   { titulo:"Guia de Leitura Devocional", resumo:"Como montar sua própria rotina devocional diária, com exemplos de estrutura e perguntas de reflexão.", arquivo:"#" }
 ];
 
+const doBanco = await lerColecao('biblioteca');
+const itens = doBanco.length ? doBanco : LIVROS;
+if (doBanco.length) { const av = document.querySelector('.aviso'); if (av) av.remove(); }
 const grid = document.getElementById('grid');
-LIVROS.forEach(l => {
-  const div = document.createElement('div');
-  div.className = 'livro';
-  div.innerHTML = `<div class="capa">${l.titulo}</div><h3>${l.titulo}</h3><p>${l.resumo}</p><a class="btn" href="${l.arquivo}" onclick="return avisar(event)">Baixar PDF</a>`;
+itens.forEach(l => {
+  const ok = l.arquivo && l.arquivo !== '#';
+  const div = document.createElement('div'); div.className = 'livro';
+  div.innerHTML = `<div class="capa">${esc(l.titulo)}</div><h3>${esc(l.titulo)}</h3><p>${esc(l.resumo)}</p><a class="btn" href="${ok ? esc(l.arquivo) : '#'}"${ok ? ' target="_blank" rel="noopener"' : ''}>Baixar PDF</a>`;
+  if (!ok) div.querySelector('a').addEventListener('click', e => { e.preventDefault(); alert('Este PDF ainda não foi adicionado. Em breve!'); });
   grid.appendChild(div);
 });
-
-function avisar(e){
-  if (document.querySelector('.livro a').getAttribute('href') === '#') {
-    e.preventDefault();
-    alert('Este PDF ainda não foi adicionado. Em breve!');
-    return false;
-  }
-}
 </script>
+
 </body>
 </html>

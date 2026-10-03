@@ -11,6 +11,7 @@ import { db } from './js/firebase-config.js';
 import { doc, getDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { montarTopoRodape, esc, sanitizar } from './js/leitura.js';
 import { marcarReferencias } from './js/versiculos.js';
+import { marcarReferencias } from './js/versiculos.js';
 montarTopoRodape();
 const $=id=>document.getElementById(id), c=$('conteudo');
 try{
@@ -27,6 +28,7 @@ try{
     h+='<h2 class="sec">Nesta edição</h2>';
     h+=m.length?m.map((n,i)=>'<a class="mat'+(i===0?' capa-mat':'')+'" href="noticia.html?id='+encodeURIComponent(n.id)+'"><span class="n">'+String(i+1).padStart(2,'0')+'</span><div style="flex:1">'+(i===0?'<small class="selo">Matéria de capa</small>':'')+'<h3>'+esc(n.titulo)+'</h3><p>'+esc(n.resumo||'')+'</p></div>'+(n.imagemUrl?'<img src="'+esc(n.imagemUrl)+'" alt="">':'')+'</a>').join(''):'<p class="vazio">Os artigos desta edição serão publicados em breve.</p>';
     c.innerHTML=h;
+    c.querySelectorAll('.corpo').forEach(marcarReferencias);
     c.querySelectorAll('.corpo').forEach(marcarReferencias);
   }
 }catch(err){$('nome').textContent='Erro ao carregar';c.innerHTML='<p class="vazio">Não foi possível carregar agora.</p>';console.error(err);}

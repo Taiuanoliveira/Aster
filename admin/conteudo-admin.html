@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conteúdo do site – Painel Projeto Aster</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-logo">Projeto Aster</div>
+      <p class="admin-cargo-label">Cargo: <strong id="cargoAtual">—</strong></p>
+      <nav class="admin-nav" id="menuAdmin"></nav>
+      <a href="../conta.html" class="admin-btn-sair" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px;">Meu Perfil</a>
+      <button id="btnSair" class="admin-btn-sair">Sair</button>
+    </aside>
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <h1>Conteúdo do site</h1>
+        <a href="../index.html" class="admin-link-site">Ver site →</a>
+      </header>
+      <div id="msgSucesso" class="auth-msg sucesso" style="display:none;"></div>
+      <div id="msgErro" class="auth-msg erro" style="display:none;"></div>
+      <section class="admin-bloco"><div id="abas" style="display:flex;gap:8px;flex-wrap:wrap;"></div></section>
+      <section class="admin-bloco" id="painel">Carregando...</section>
+    </main>
+  </div>
+  <script type="module">
+    import { protegerPagina, sair, CARGOS } from "../js/auth.js";
+    import { db } from "../js/firebase-config.js";
+    import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    function montarMenu(cargo) {
+      const itens = [
+        { href: 'dashboard.html', label: '📊 Dashboard', cargos: ['administrador','editor','colunista','revisor'] },
+        { href: 'publicar.html', label: '✍️ Nova Notícia', cargos: ['administrador','editor','colunista'] },
+        { href: 'gerenciar-noticias.html', label: '📰 Gerenciar Notícias', cargos: ['administrador','editor','colunista','revisor'] },
+        { href: 'categorias-admin.html', label: '🏷️ Categorias', cargos: ['administrador','editor'] },
+        { href: 'edicoes-admin.html', label: '📚 Edições', cargos: ['administrador','editor'] },
+        { href: 'conteudo-admin.html', label: '🧩 Conteúdo do site', cargos: ['administrador','editor'] },
+        { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
+        { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
+        { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
+        { href: 'planos-admin.html', label: '💳 Planos', cargos: ['administrador'] },
+        { href: 'configuracoes.html', label: '⚙️ Configurações', cargos: ['administrador'] },
+      ];
+      document.getElementById('menuAdmin').innerHTML = itens.filter(i => i.cargos.includes(cargo))
+        .map(i => `<a href="${i.href}"${i.href === 'conteudo-admin.html' ? ' style="color:#E8A33D"' : ''}>${i.label}</a>`).join('');
+    }
+    function msg(id, texto) {
+      const el = document.getElementById(id); el.textContent = texto; el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 4000);
+    }
+
+    // ---- O que cada seção edita ----
+    const SECOES = {
+      estudos: { nome: 'Estudos', col: 'estudos', campos: [
+        ['tema', 'Tema (ex: Fé)', 'text'], ['temaDesc', 'Descrição do tema (escreva igual em todos os estudos do mesmo tema)', 'text'],
+        ['ref', 'Referência bíblica (ex: Hebreus 11:1)', 'text'], ['titulo', 'Título do estudo', 'text'],
+        ['texto', 'Texto', 'area'], ['ordem', 'Ordem', 'number']], resumo: e => e.tema + ' · ' + e.titulo },
+      devocionais: { nome: 'Devocional', col: 'devocionais', campos: [
+        ['ref', 'Referência bíblica', 'text'], ['titulo', 'Título', 'text'], ['texto', 'Texto', 'area'], ['ordem', 'Ordem (o site mostra um por dia, em sequência)', 'number']],
+        resumo: e => e.ref + ' · ' + e.titulo },
+      biblioteca: { nome: 'Biblioteca', col: 'biblioteca', campos: [
+        ['titulo', 'Título do material', 'text'], ['resumo', 'Resumo', 'area'],
+        ['arquivo', 'Link do PDF (Google Drive, Dropbox ou outro link público)', 'text'], ['ordem', 'Ordem', 'number']],
+        resumo: e => e.titulo + (e.arquivo && e.arquivo !== '#' ? '' : '  (sem PDF ainda)') },
+      planos: { nome: 'Planos de leitura', col: 'planos', campos: [
+        ['nome', 'Nome do plano (ex: Em 6 meses)', 'text'], ['dias', 'Duração em dias (a Bíblia é dividida igualmente)', 'number'], ['ordem', 'Ordem', 'number']],
+        resumo: e => e.nome + ' · ' + e.dias + ' dias' },
+      termos: { nome: 'Termos de uso', pagina: 'termos', arquivo: 'termos.html' },
+      privacidade: { nome: 'Privacidade', pagina: 'privacidade', arquivo: 'privacidade.html' }
+    };
+
+    // ---- Importar o que já está escrito nas páginas do site ----
+    async function lerDaPagina(arq, regex) {
+      const t = await (await fetch('../' + arq)).text(); const m = t.match(regex);
+      if (!m) throw new Error('não encontrei o conteúdo em ' + arq);
+      return new Function('return (' + m[1] + ')')();
+    }
+    const IMPORTAR = {
+      estudos: async () => { const T = await lerDaPagina('estudos.html', /const TEMAS = (\{[\s\S]*?\n\});/); const o = [];
+        Object.values(T).forEach((t, i) => t.estudos.forEach((e, j) => o.push({ tema: t.nome, temaDesc: t.desc, ref: e.ref, titulo: e.titulo, texto: e.texto, ordem: i * 100 + j + 1 }))); return o; },
+      devocionais: async () => (await lerDaPagina('devocional.html', /const DEVOCIONAIS = (\[[\s\S]*?\n\]);/)).map((e, i) => ({ ...e, ordem: i + 1 })),
+      biblioteca: async () => (await lerDaPagina('biblioteca.html', /const LIVROS = (\[[\s\S]*?\n\]);/)).map((e, i) => ({ ...e, ordem: i + 1 })),
+      planos: async () => [{ nome: 'Em 1 ano', dias: 365, ordem: 1 }, { nome: 'Em 90 dias', dias: 90, ordem: 2 }]
+    };
+
+    let atual = 'estudos', editandoId = null;
+    const $ = id => document.getElementById(id);
+    function abas() {
+      $('abas').innerHTML = '';
+      Object.entries(SECOES).forEach(([k, s]) => {
+        const b = document.createElement('button'); b.type = 'button'; b.textContent = s.nome;
+        b.className = k === atual ? 'btn-primario' : 'btn-secundario';
+        b.style.cssText = 'padding:9px 16px;cursor:pointer;' + (k === atual ? '' : 'background:none;border:1px solid #ccc;');
+        b.onclick = () => { atual = k; editandoId = null; abas(); render(); };
+        $('abas').appendChild(b);
+      });
+    }
+    function campo(c, valor) {
+      const [id, rotulo, tipo] = c, wrap = document.createElement('div');
+      const l = document.createElement('label'); l.textContent = rotulo; wrap.appendChild(l);
+      const el = document.createElement(tipo === 'area' ? 'textarea' : 'input');
+      if (tipo === 'area') el.rows = 6; else el.type = tipo; el.id = 'f_' + id; el.value = valor == null ? '' : valor;
+      wrap.appendChild(el); return wrap;
+    }
+    function botao(texto, classe, fn) { const b = document.createElement('button'); b.type = 'button'; b.className = classe; b.textContent = texto; b.onclick = fn; return b; }
+
+    async function render() {
+      const s = SECOES[atual], p = $('painel'); p.innerHTML = 'Carregando...';
+      try { s.pagina ? await renderPagina(s, p) : await renderLista(s, p); }
+      catch (e) { p.innerHTML = ''; msg('msgErro', 'Erro: ' + e.message + ' (confira as regras do Firestore)'); }
+    }
+
+    async function renderLista(s, p) {
+      const snap = await getDocs(collection(db, s.col));
+      const itens = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+      const emEdicao = itens.find(i => i.id === editandoId) || {};
+      p.innerHTML = '';
+      const h = document.createElement('h2'); h.textContent = editandoId ? 'Editando' : 'Adicionar em ' + s.nome; p.appendChild(h);
+      s.campos.forEach(c => p.appendChild(campo(c, c[0] === 'ordem' && !editandoId ? (itens.length ? Math.max(...itens.map(i => i.ordem || 0)) + 1 : 1) : emEdicao[c[0]])));
+      const acoes = document.createElement('div'); acoes.className = 'form-acoes';
+      acoes.appendChild(botao(editandoId ? 'Salvar alterações' : 'Adicionar', 'btn-primario', async () => {
+        const dados = {};
+        for (const c of s.campos) { const v = $('f_' + c[0]).value.trim(); dados[c[0]] = c[2] === 'number' ? (parseInt(v) || 0) : v; }
+        if (!dados[s.campos[0][0]] || (s.col !== 'planos' && s.col !== 'biblioteca' && !dados.titulo) || (s.col === 'planos' && !dados.dias)) { msg('msgErro', 'Preencha os campos principais.'); return; }
+        if (editandoId) await updateDoc(doc(db, s.col, editandoId), dados); else await addDoc(collection(db, s.col), dados);
+        msg('msgSucesso', 'Salvo! Já aparece no site.'); editandoId = null; render();
+      }));
+      if (editandoId) acoes.appendChild(botao('Cancelar', 'btn-secundario', () => { editandoId = null; render(); }));
+      p.appendChild(acoes);
+
+      const h2 = document.createElement('h2'); h2.style.marginTop = '28px'; h2.textContent = 'Itens publicados (' + itens.length + ')'; p.appendChild(h2);
+      if (!itens.length) {
+        const aviso = document.createElement('p'); aviso.style.cssText = 'color:#777;font-size:13px;margin:8px 0 12px;';
+        aviso.textContent = 'Nada cadastrado ainda: o site está mostrando o conteúdo padrão. Importe esse conteúdo para poder editar cada item aqui.'; p.appendChild(aviso);
+        p.appendChild(botao('Importar o conteúdo que já está no site', 'btn-primario', async () => {
+          const lista = await IMPORTAR[atual](); for (const d of lista) await addDoc(collection(db, s.col), d);
+          msg('msgSucesso', lista.length + ' itens importados.'); render();
+        }));
+      }
+      itens.forEach(i => {
+        const linha = document.createElement('div'); linha.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #eee;';
+        const t = document.createElement('div'); t.style.flexGrow = '1'; t.textContent = s.resumo(i); linha.appendChild(t);
+        const ed = botao('Editar', '', () => { editandoId = i.id; render(); window.scrollTo(0, 0); });
+        const rm = botao('Remover', '', async () => { if (confirm('Remover este item?')) { await deleteDoc(doc(db, s.col, i.id)); render(); } });
+        ed.style.cssText = 'background:none;border:none;color:#E8A33D;font-weight:700;font-size:12px;text-transform:uppercase;cursor:pointer;';
+        rm.style.cssText = 'background:none;border:none;color:#b3261e;font-weight:700;font-size:12px;text-transform:uppercase;cursor:pointer;';
+        linha.append(ed, rm); p.appendChild(linha);
+      });
+    }
+
+    async function renderPagina(s, p) {
+      const ref = doc(db, 'paginas', s.pagina), snap = await getDoc(ref);
+      let titulo = '', texto = '';
+      if (snap.exists()) { titulo = snap.data().titulo || ''; texto = snap.data().texto || ''; }
+      else {
+        const html = new DOMParser().parseFromString(await (await fetch('../' + s.arquivo)).text(), 'text/html');
+        titulo = (html.querySelector('.artigo h1') || {}).textContent || s.nome;
+        texto = Array.from(html.querySelectorAll('.artigo .corpo p')).map(x => x.textContent).join('\n\n');
+      }
+      p.innerHTML = '';
+      const h = document.createElement('h2'); h.textContent = s.nome; p.appendChild(h);
+      p.appendChild(campo(['titulo', 'Título da página', 'text'], titulo));
+      p.appendChild(campo(['texto', 'Texto (separe os parágrafos com uma linha em branco)', 'area'], texto));
+      $('f_texto').rows = 16;
+      const acoes = document.createElement('div'); acoes.className = 'form-acoes';
+      acoes.appendChild(botao('Salvar página', 'btn-primario', async () => {
+        await setDoc(ref, { titulo: $('f_titulo').value.trim(), texto: $('f_texto').value.trim() });
+        msg('msgSucesso', 'Página salva! Já aparece no site.');
+      }));
+      p.appendChild(acoes);
+    }
+
+    protegerPagina([CARGOS.ADMIN, CARGOS.EDITOR], (user, cargo) => {
+      $('cargoAtual').textContent = cargo; montarMenu(cargo); abas(); render();
+    });
+    $('btnSair').addEventListener('click', async () => { await sair(); window.location.href = '../index.html'; });
+  </script>
+</body>
+</html>

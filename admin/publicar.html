@@ -59,7 +59,12 @@
           <div id="editorQuill"></div>
           <input type="hidden" id="conteudo">
 
-          <label for="edicao">Edição</label>
+          <label>Coautores (opcional — no máximo 3 autores, contando você)</label>
+          <input type="text" id="coautor1" list="listaEquipe" maxlength="80" placeholder="Nome do 2º autor">
+          <input type="text" id="coautor2" list="listaEquipe" maxlength="80" placeholder="Nome do 3º autor" style="margin-top:8px">
+          <datalist id="listaEquipe"></datalist>
+
+          <label for="edicao">Edição (só aparecem edições abertas)</label>
           <select id="edicao">
             <option value="">Nenhum (artigo avulso)</option>
           </select>
@@ -221,13 +226,20 @@
       document.getElementById('categoria').value = selecionadas[0] || '';
     }
 
+    async function carregarEquipeNaLista() {
+      try {
+        const snap = await getDocs(collection(db, 'equipe'));
+        document.getElementById('listaEquipe').innerHTML = snap.docs.map(d => '<option value="' + String(d.data().nome || '').replace(/"/g, '&quot;') + '">').join('');
+      } catch (e) {}
+    }
     async function carregarEdicoesNoSelect() {
+      carregarEquipeNaLista();
       const select = document.getElementById('edicao');
       try {
         const snap = await getDocs(query(collection(db, 'edicoes'), orderBy('criadoEm', 'desc')));
         snap.forEach(d => {
           const ed = d.data();
-          if (ed.status === 'publicada') return;
+          if (ed.status !== 'aberta') return; // só edições abertas aceitam artigos
           const opt = document.createElement('option');
           opt.value = ed.nome;
           opt.textContent = ed.nome;
@@ -244,9 +256,10 @@
     const params = new URLSearchParams(window.location.search);
     const idParaEditar = params.get('id');
 
-    protegerPagina([CARGOS.ADMIN, CARGOS.EDITOR, CARGOS.COLUNISTA], async (user, cargo) => {
+    protegerPagina([CARGOS.ADMIN, CARGOS.EDITOR, CARGOS.COLUNISTA, CARGOS.REVISOR], async (user, cargo) => {
       usuarioAtual = user;
       cargoAtual = cargo;
+      if (cargo === CARGOS.REVISOR && !idParaEditar) { window.location.href = 'gerenciar-noticias.html'; return; }
       document.getElementById('cargoAtual').textContent = formatarCargo(cargo);
       montarMenu(cargo);
       montarBotoesAcao(cargo);
@@ -290,28 +303,26 @@
 
     function montarBotoesAcao(cargo) {
       const acoes = document.getElementById('formAcoes');
-      if (cargo === CARGOS.COLUNISTA) {
-        acoes.innerHTML = `
-          <button type="button" class="btn-auth btn-secundario" data-acao="rascunho">Salvar rascunho</button>
-          <button type="button" class="btn-auth" data-acao="enviar_revisao">Enviar para revisão</button>`;
-      } else {
-        acoes.innerHTML = `
-          <button type="button" class="btn-auth btn-secundario" data-acao="rascunho">Salvar rascunho</button>
-          <button type="button" class="btn-auth" data-acao="publicar">Publicar</button>`;
-      }
-      acoes.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => salvarNoticia(btn.dataset.acao)));
-
-      document.getElementById('edicao').addEventListener('change', function() {
-        const temEdicao = this.value !== '';
-        document.getElementById('edicaoOpcoes').style.display = temEdicao ? 'block' : 'none';
-        if (cargo !== CARGOS.COLUNISTA) {
-          acoes.innerHTML = temEdicao
-            ? `<button type="button" class="btn-auth btn-secundario" data-acao="rascunho">Salvar rascunho</button>
-               <button type="button" class="btn-auth" data-acao="indexar" style="background:#5c4a00;">Indexar na Edição</button>`
-            : `<button type="button" class="btn-auth btn-secundario" data-acao="rascunho">Salvar rascunho</button>
-               <button type="button" class="btn-auth" data-acao="publicar">Publicar</button>`;
-          acoes.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => salvarNoticia(btn.dataset.acao)));
+      const ehChefe = cargo === CARGOS.ADMIN || cargo === CARGOS.EDITOR;
+      function desenhar() {
+        const temEdicao = document.getElementById('edicao').value !== '';
+        let h = '';
+        if (cargo === CARGOS.REVISOR) {
+          h = '<button type="button" class="btn-auth" data-acao="aprovar_rev">Salvar correções e aprovar</button>' +
+              '<button type="button" class="btn-auth btn-secundario" data-acao="devolver_rev">Devolver ao autor</button>';
+        } else {
+          h = '<button type="button" class="btn-auth btn-secundario" data-acao="rascunho">Salvar rascunho</button>';
+          if (temEdicao) h += '<button type="button" class="btn-auth" data-acao="indexar" style="background:#5c4a00;">Indexar na edição</button>';
+          else h += ehChefe ? '<button type="button" class="btn-auth" data-acao="publicar">Publicar</button>'
+                            : '<button type="button" class="btn-auth" data-acao="enviar_revisao">Enviar para revisão</button>';
         }
+        acoes.innerHTML = h;
+        acoes.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => salvarNoticia(btn.dataset.acao)));
+      }
+      desenhar();
+      document.getElementById('edicao').addEventListener('change', function () {
+        document.getElementById('edicaoOpcoes').style.display = this.value !== '' ? 'block' : 'none';
+        desenhar();
       });
     }
 
@@ -322,6 +333,7 @@
       document.getElementById('categoria').value = noticia.categoria || '';
       document.getElementById('resumo').value = noticia.resumo || '';
       document.getElementById('paywallOverride').value = noticia.paywallOverride || '';
+      ['coautor1', 'coautor2'].forEach((cid, i) => { const el = document.getElementById(cid); if (el) el.value = (noticia.coautores || [])[i] || ''; });
       if (noticia.edicao) {
         const selEd = document.getElementById('edicao');
         if (!Array.from(selEd.options).some(o => o.value === noticia.edicao)) {
@@ -329,6 +341,7 @@
           selEd.appendChild(o);
         }
         selEd.value = noticia.edicao;
+        selEd.dispatchEvent(new Event('change'));
         selEd.dispatchEvent(new Event('change'));
         document.getElementById('ordemEdicao').value = noticia.ordemEdicao || 1;
         document.getElementById('gratuito').checked = !!noticia.gratuito;
@@ -376,23 +389,29 @@
       const conteudoHtml = quillEditor.root.innerHTML;
       const conteudo = conteudoHtml;
       const categoriasSelecionadas = Array.from(document.querySelectorAll('#containerCategorias input:checked')).map(i => i.value);
-      if (categoriasSelecionadas.length === 0) { mostrarErro('Selecione pelo menos uma categoria.'); return; }
-      const categoria = categoriasSelecionadas[0];
+            const categoria = categoriasSelecionadas[0] || '';
       const destaque = document.getElementById('destaque')?.value || '';
       const tagsSelecionadas = Array.from(document.querySelectorAll('#containerTags input:checked')).map(i => i.value);
       document.getElementById('categoria').value = categoria;
       const edicao = document.getElementById('edicao').value;
+      const coautores = ['coautor1', 'coautor2'].map(i => (document.getElementById(i) || { value: '' }).value.trim()).filter(Boolean).slice(0, 2);
       let gratuito = edicao ? document.getElementById('gratuito').checked : true;
       const paywallOverride = document.getElementById('paywallOverride').value;
       let ordemEdicao = parseInt(document.getElementById('ordemEdicao')?.value) || 1;
       const arquivoImagem = document.getElementById('imagem').files[0];
 
-      if (!titulo || !categoria || !conteudo) { mostrarErro('Preencha ao menos título, categoria e conteúdo.'); return; }
+      const textoPuro = quillEditor.getText().trim();
+      if (!titulo) { mostrarErro('Escreva ao menos o título para salvar.'); return; }
+      if (acao !== 'rascunho' && !textoPuro) { mostrarErro('Escreva algum texto no artigo antes de continuar.'); return; }
+      if (acao === 'indexar' && !edicao) { mostrarErro('Escolha uma edição aberta para indexar o artigo.'); return; }
+      if (acao === 'publicar' && !categoria) { mostrarErro('Selecione pelo menos uma categoria para publicar.'); return; }
 
       let status = STATUS.RASCUNHO;
       if (acao === 'enviar_revisao') status = STATUS.EM_REVISAO;
       if (acao === 'publicar') status = STATUS.PUBLICADO;
-      if (acao === 'indexar') status = 'indexado';
+      if (acao === 'indexar') status = (cargoAtual === CARGOS.ADMIN || cargoAtual === CARGOS.EDITOR) ? 'indexado' : STATUS.EM_REVISAO;
+      if (acao === 'aprovar_rev') status = STATUS.APROVADO;
+      if (acao === 'devolver_rev') status = STATUS.DEVOLVIDO;
 
       try {
         let idNoticia = noticiaIdEdicao;
@@ -412,7 +431,7 @@
         let imagemUrl = imagemAtualUrl;
         if (arquivoImagem) imagemUrl = await enviarImagem(arquivoImagem, idNoticia);
 
-        await atualizarNoticia(idNoticia, { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, imagemUrl, imagemLegenda: (document.getElementById('imagemLegenda') || {}).value || '', edicao, gratuito, paywallOverride, ordemEdicao });
+        await atualizarNoticia(idNoticia, { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, coautores, imagemUrl, imagemLegenda: (document.getElementById('imagemLegenda') || {}).value || '', edicao, gratuito, paywallOverride, ordemEdicao });
 
         if (status === STATUS.PUBLICADO) {
         }
@@ -422,8 +441,21 @@
         const urlAtual = new URL(window.location.href);
         urlAtual.searchParams.set('id', idNoticia);
         window.history.replaceState({}, '', urlAtual.toString());
-        mostrarSucesso('Artigo salvo com sucesso!');
-        setTimeout(() => window.location.href = 'gerenciar-noticias.html', 1500);
+        const horas = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        if (acao === 'rascunho') {
+          mostrarSucesso('✓ Rascunho salvo às ' + horas + '. Você pode continuar escrevendo ou encontrá-lo depois em Gerenciar Artigos → Rascunhos.');
+          document.getElementById('mensagemSucesso').insertAdjacentHTML('beforeend', ' <a href="gerenciar-noticias.html?aba=rascunho">Ver rascunhos</a>');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          const textos = {
+            indexar: status === 'indexado' ? 'Artigo indexado na edição "' + edicao + '".' : 'Artigo indexado na edição "' + edicao + '" e enviado para aprovação.',
+            enviar_revisao: 'Artigo enviado para revisão.', publicar: 'Artigo publicado.',
+            aprovar_rev: 'Correções salvas e artigo aprovado.', devolver_rev: 'Artigo devolvido ao autor.'
+          };
+          mostrarSucesso('✓ ' + (textos[acao] || 'Artigo salvo.'));
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setTimeout(() => window.location.href = 'gerenciar-noticias.html?aba=' + status, 1800);
+        }
       } catch (err) {
         mostrarErro('Erro ao salvar o artigo. Verifique sua permissão e tente novamente.');
         console.error(err);

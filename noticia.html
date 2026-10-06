@@ -93,20 +93,28 @@ try {
     registrarVisualizacao(noticiaId);
     montarFerramentas(n.titulo);
     iniciarAcoes();
-    carregarFotoAutor(n.autorUid);
+    carregarFotoAutor(n.autorUid, n.autorNome);
   }
 } catch (err) {
   a.innerHTML = '<p class="vazio">Não foi possível carregar agora.</p>';
   console.error(err);
 }
 
-async function carregarFotoAutor(autorUid) {
-  if (!autorUid) return;
+async function carregarFotoAutor(autorUid, autorNome) {
   try {
-    const s = await getDoc(doc(db, 'equipe', autorUid));
-    if (s.exists() && s.data().fotoUrl) {
+    let foto = '';
+    if (autorUid) {
+      const s = await getDoc(doc(db, 'equipe', autorUid));
+      if (s.exists() && s.data().fotoUrl) foto = s.data().fotoUrl;
+    }
+    if (!foto && autorNome) {
+      const q = await getDocs(query(collection(db, 'equipe'), where('nome', '==', autorNome)));
+      const m = q.docs.map(d => d.data()).find(x => x.fotoUrl);
+      if (m) foto = m.fotoUrl;
+    }
+    if (foto) {
       const av = document.getElementById('bylineAv');
-      if (av) { av.outerHTML = '<img class="av" id="bylineAv" src="' + esc(s.data().fotoUrl) + '" alt="">'; }
+      if (av) av.outerHTML = '<img class="av" id="bylineAv" src="' + esc(foto) + '" alt="">';
     }
   } catch (e) {}
 }

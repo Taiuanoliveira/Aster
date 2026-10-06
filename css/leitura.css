@@ -191,3 +191,26 @@ html[data-tema="escuro"] .artigo .corpo>p:first-of-type::first-letter{color:#fff
 .apoie-box{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--azul);color:var(--esc);border-radius:10px;padding:16px 20px;margin:0 auto 26px}
 .apoie-box span{flex:1;min-width:200px;font-size:14px}
 .apoie-box a{background:var(--amar);color:var(--esc);font-weight:700;text-decoration:none;padding:9px 18px;border-radius:8px;font-size:14px}
+
+/* artigo-v3 */
+.trilha{display:flex;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--cinza);margin:24px auto 18px}
+.trilha a{color:var(--med);text-decoration:none}
+.trilha a:hover{color:var(--amar);text-decoration:underline}
+.trilha .sep{margin:0 8px;color:#b9b3a2}
+.trilha .atual{color:var(--texto);font-weight:600}
+.byline{display:flex;align-items:center;gap:12px;margin:0 auto 14px}
+.byline .av{width:46px;height:46px;border-radius:50%;object-fit:cover;background:var(--azul);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:18px;color:var(--esc);flex-shrink:0}
+.byline .info{font-size:13px;color:var(--cinza);line-height:1.5}
+.byline .info strong{display:block;color:#b8741a;font-size:16px;font-weight:800}
+.artigo .corpo>p:first-of-type{display:flow-root}
+.artigo .cat{margin-top:18px}
+.capa-fig figcaption{margin-bottom:14px}
+html[data-tema="escuro"] .trilha a{color:#8cc4ea}
+html[data-tema="escuro"] .trilha .sep{color:#4a5b6b}
+html[data-tema="escuro"] .byline .av{color:#cfe6f3}
+html[data-tema="escuro"] .byline .info{color:#9fb0bd}
+html[data-tema="escuro"] .byline .info strong{color:var(--amar)}
+html[data-tema="escuro"] .apoie-box{background:#163049;color:#e7edf3}
+html[data-tema="escuro"] .apoie-box strong{color:#fff}
+html[data-tema="escuro"] .ref-biblica{color:#8cc4ea}
+html[data-tema="escuro"] .comentario-login a{color:#8cc4ea}

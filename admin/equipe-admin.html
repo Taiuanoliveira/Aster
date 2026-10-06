@@ -41,7 +41,9 @@
         </div>
       </section>
       <section class="admin-bloco">
-        <h2 style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:16px;">Membros atuais</h2>
+        <h2 style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:8px;">Membros atuais</h2>
+        <p style="font-size:13px;color:#777;margin-bottom:10px;">Quem recebe um cargo em <strong>Usuários</strong> entra aqui sozinho. Para trazer quem já tinha cargo antes, clique no botão.</p>
+        <button class="btn-primario" style="margin-bottom:16px;" onclick="sincronizarTodos()">↻ Trazer quem já tem cargo</button>
         <div id="listaMembros">Carregando...</div>
       </section>
     </main>
@@ -49,7 +51,7 @@
   <script type="module">
     import { protegerPagina, sair, CARGOS } from "../js/auth.js";
     import { db } from "../js/firebase-config.js";
-    import { collection, addDoc, getDocs, deleteDoc, doc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { collection, addDoc, getDocs, deleteDoc, doc, orderBy, query, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { enviarImagemCloudinary } from "../js/cloudinary.js";
 
     function montarMenu(cargo) {
@@ -102,6 +104,23 @@
         lista.appendChild(div);
       });
     }
+
+    window.sincronizarTodos = async function () {
+      const STAFF = ['administrador', 'editor', 'colunista', 'revisor'];
+      const NOME = { administrador: 'Administrador', editor: 'Editor', colunista: 'Colunista', revisor: 'Revisor' };
+      try {
+        const us = await getDocs(collection(db, 'usuarios')); let novos = 0;
+        for (const d of us.docs) {
+          const u = d.data(); if (!STAFF.includes(u.cargo)) continue;
+          const ref = doc(db, 'equipe', d.id), ex = await getDoc(ref);
+          const dados = { uid: d.id, nome: u.nome || u.email || 'Sem nome', funcao: u.cargo, cargo: u.cargoEditorial || NOME[u.cargo] };
+          if (u.fotoUrl) dados.fotoUrl = u.fotoUrl;
+          if (!ex.exists()) { dados.ordem = Math.floor(Date.now() / 1000); if (u.bio) dados.bio = u.bio; novos++; }
+          await setDoc(ref, dados, { merge: true });
+        }
+        msg('msgSucesso', novos + ' pessoa(s) adicionada(s) à equipe.'); carregarMembros();
+      } catch (e) { msg('msgErro', 'Erro: ' + e.message); }
+    };
 
     window.adicionarMembro = async function() {
       const nome = document.getElementById('nome').value.trim();

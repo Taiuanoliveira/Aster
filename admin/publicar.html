@@ -59,7 +59,7 @@
           <div id="editorQuill"></div>
           <input type="hidden" id="conteudo">
 
-          <label>Coautores (opcional — no máximo 3 autores, contando você)</label>
+          <label>Coautores (opcional, até 3 autores contando você) — escolha pessoas da Equipe para o artigo aparecer na lista delas</label>
           <input type="text" id="coautor1" list="listaEquipe" maxlength="80" placeholder="Nome do 2º autor">
           <input type="text" id="coautor2" list="listaEquipe" maxlength="80" placeholder="Nome do 3º autor" style="margin-top:8px">
           <datalist id="listaEquipe"></datalist>
@@ -229,11 +229,12 @@
     async function carregarEquipeNaLista() {
       try {
         const snap = await getDocs(collection(db, 'equipe'));
+        window.__equipe = snap.docs.map(d => ({ nome: String(d.data().nome || ''), uid: d.data().uid || '' }));
         document.getElementById('listaEquipe').innerHTML = snap.docs.map(d => '<option value="' + String(d.data().nome || '').replace(/"/g, '&quot;') + '">').join('');
       } catch (e) {}
     }
     async function carregarEdicoesNoSelect() {
-      carregarEquipeNaLista();
+      window.__equipeP = carregarEquipeNaLista();
       const select = document.getElementById('edicao');
       try {
         const snap = await getDocs(query(collection(db, 'edicoes'), orderBy('criadoEm', 'desc')));
@@ -333,6 +334,9 @@
       document.getElementById('categoria').value = noticia.categoria || '';
       document.getElementById('resumo').value = noticia.resumo || '';
       document.getElementById('paywallOverride').value = noticia.paywallOverride || '';
+      window.__autorUid = noticia.autorUid;
+      window.__pares = noticia.coautoresPares || [];
+      window.__uidsAntigos = noticia.coautoresUids || [];
       ['coautor1', 'coautor2'].forEach((cid, i) => { const el = document.getElementById(cid); if (el) el.value = (noticia.coautores || [])[i] || ''; });
       if (noticia.edicao) {
         const selEd = document.getElementById('edicao');
@@ -395,6 +399,15 @@
       document.getElementById('categoria').value = categoria;
       const edicao = document.getElementById('edicao').value;
       const coautores = ['coautor1', 'coautor2'].map(i => (document.getElementById(i) || { value: '' }).value.trim()).filter(Boolean).slice(0, 2);
+      await window.__equipeP;
+      const autorPrincipal = window.__autorUid || usuarioAtual.uid;
+      const pares = coautores.map(nm => {
+        const k = nm.toLowerCase();
+        const m = (window.__pares || []).find(x => x.nome.toLowerCase() === k) || (window.__equipe || []).find(x => x.nome.toLowerCase() === k);
+        return { nome: nm, uid: m && m.uid ? m.uid : '' };
+      });
+      const semLista = !(window.__equipe || []).length && !(window.__pares || []).length && coautores.length;
+      const coautoresUids = semLista ? (window.__uidsAntigos || []) : [...new Set(pares.map(x => x.uid).filter(u => u && u !== autorPrincipal))];
       let gratuito = edicao ? document.getElementById('gratuito').checked : true;
       const paywallOverride = document.getElementById('paywallOverride').value;
       let ordemEdicao = parseInt(document.getElementById('ordemEdicao')?.value) || 1;
@@ -431,7 +444,7 @@
         let imagemUrl = imagemAtualUrl;
         if (arquivoImagem) imagemUrl = await enviarImagem(arquivoImagem, idNoticia);
 
-        await atualizarNoticia(idNoticia, { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, coautores, imagemUrl, imagemLegenda: (document.getElementById('imagemLegenda') || {}).value || '', edicao, gratuito, paywallOverride, ordemEdicao });
+        await atualizarNoticia(idNoticia, { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, coautores, coautoresUids, coautoresPares: pares, imagemUrl, imagemLegenda: (document.getElementById('imagemLegenda') || {}).value || '', edicao, gratuito, paywallOverride, ordemEdicao });
 
         if (status === STATUS.PUBLICADO) {
         }

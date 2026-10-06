@@ -41,7 +41,8 @@ service cloud.firestore {
       // público: publicados e os "indexados" em edições
       allow read: if resource.data.status in ['publicado', 'indexado']
         || ehEditor() || ehRevisor()
-        || (logado() && resource.data.autorUid == request.auth.uid);
+        || (logado() && (resource.data.autorUid == request.auth.uid
+            || request.auth.uid in resource.data.get('coautoresUids', [])));
 
       allow create: if logado() && request.resource.data.autorUid == request.auth.uid
         && (ehEditor()
@@ -49,7 +50,10 @@ service cloud.firestore {
 
       allow update: if ehEditor()
         || (ehRevisor() && request.resource.data.status in ['aprovado', 'devolvido'])
-        || (ehColunista() && resource.data.autorUid == request.auth.uid
+        || (ehColunista()
+            && (resource.data.autorUid == request.auth.uid
+                || (request.auth.uid in resource.data.get('coautoresUids', [])
+                    && request.resource.data.get('coautoresUids', []) == resource.data.get('coautoresUids', [])))
             && resource.data.status != 'publicado' && resource.data.status != 'indexado'
             && request.resource.data.autorUid == resource.data.autorUid
             && request.resource.data.status in ['rascunho', 'em_revisao']);
@@ -102,7 +106,13 @@ service cloud.firestore {
 
     // ---------- CONFIGURAÇÕES DO SITE: todos leem; só administrador escreve ----------
     match /configuracoes/{id} { allow read: if true; allow write: if ehAdmin(); }
-    match /equipe/{id}        { allow read: if true; allow write: if ehAdmin(); }
+    match /equipe/{id} {
+      allow read: if true;
+      allow write: if ehAdmin();
+      // cada pessoa edita só o próprio resumo, foto e contatos
+      allow update: if logado() && request.auth.uid == id
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bio', 'fotoUrl', 'contatos', 'atualizadoEm']);
+    }
     match /emAlta/{id}        { allow read: if true; allow write: if ehAdmin(); }
     match /institucional/{id} { allow read: if true; allow write: if ehAdmin(); }
   }

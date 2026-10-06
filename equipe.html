@@ -48,6 +48,12 @@
 </style>
 <link rel="stylesheet" href="css/tema.css">
 <script src="js/tema.js"></script>
+<style>
+.membro .funcao{display:block;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:#E8A33D;font-weight:700;margin-top:4px}
+.membro .bio{font-size:13px;line-height:1.5;margin:10px 0 0;opacity:.85}
+.membro .contatos{margin-top:10px;font-size:13px}
+.membro .contatos a{font-weight:600;text-decoration:none;color:#1F5A82}
+</style>
 </head>
 <body>
 
@@ -88,14 +94,24 @@
       grid.innerHTML = '<p class="vazio">A equipe ainda não foi cadastrada.</p>';
     } else {
       grid.innerHTML = '';
+      const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const FUNCOES = { administrador: 'Administração', editor: 'Edição', colunista: 'Colunista', revisor: 'Revisão' };
       snap.forEach(d => {
-        const m = d.data();
+        const m = d.data(), c = m.contatos || {};
         const div = document.createElement('div');
         div.className = 'membro';
-        const avatar = m.fotoUrl
-          ? `<img class="avatar" src="${m.fotoUrl}" alt="${m.nome}">`
-          : `<div class="avatar">${(m.nome || '?').charAt(0).toUpperCase()}</div>`;
-        div.innerHTML = `${avatar}<h3>${m.nome}</h3><span>${m.cargo || ''}</span>`;
+        const avatar = m.fotoUrl && /^https:\/\//i.test(m.fotoUrl)
+          ? `<img class="avatar" src="${esc(m.fotoUrl)}" alt="${esc(m.nome)}">`
+          : `<div class="avatar">${esc((m.nome || '?').charAt(0).toUpperCase())}</div>`;
+        const links = [];
+        if (c.instagram) links.push(`<a href="https://instagram.com/${encodeURIComponent(c.instagram)}" target="_blank" rel="noopener noreferrer">Instagram</a>`);
+        if (c.whatsapp) links.push(`<a href="https://wa.me/${encodeURIComponent(c.whatsapp)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>`);
+        if (c.email && /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(c.email)) links.push(`<a href="mailto:${esc(c.email)}">E-mail</a>`);
+        if (c.site && /^https:\/\//i.test(c.site)) links.push(`<a href="${esc(c.site)}" target="_blank" rel="noopener noreferrer">Site</a>`);
+        div.innerHTML = `${avatar}<h3>${esc(m.nome)}</h3><span>${esc(m.cargo || '')}</span>` +
+          (FUNCOES[m.funcao] ? `<small class="funcao">${FUNCOES[m.funcao]}</small>` : '') +
+          (m.bio ? `<p class="bio">${esc(m.bio)}</p>` : '') +
+          (links.length ? `<div class="contatos">${links.join(' · ')}</div>` : '');
         grid.appendChild(div);
       });
     }

@@ -116,7 +116,7 @@
         botoes = '<button class="btn-mini btn-publicar" data-id="' + n.id + '" data-acao="publicar">' + (n.edicao ? 'Indexar na edição' : 'Publicar') + '</button>';
       const emAndamento = n.status !== STATUS.PUBLICADO && n.status !== 'indexado';
       const podeEditar = chefe || (revisor && ['em_revisao', 'aprovado', 'devolvido'].includes(n.status)) || (cargoAtual === CARGOS.COLUNISTA && emAndamento);
-      const podeExcluir = cargoAtual === CARGOS.ADMIN || (cargoAtual === CARGOS.COLUNISTA && emAndamento);
+      const podeExcluir = cargoAtual === CARGOS.ADMIN || (cargoAtual === CARGOS.COLUNISTA && emAndamento && n.autorUid === usuarioAtual.uid);
       const autores = [n.autorNome || 'desconhecido'].concat(n.coautores || []).join(', ');
       return '<div class="admin-item-noticia"><div><strong>' + esc(n.titulo) + '</strong> ' +
         '<span class="admin-status status-' + esc(n.status) + '">' + esc(ROTULO[n.status] || n.status) + '</span> ' +

@@ -91,13 +91,15 @@ export async function listarPorCategoria(categoria, qtde = 20) {
 
 // --- LISTAR NOTÍCIAS DE UM AUTOR (para o Colunista ver só as próprias) ---
 export async function listarPorAutor(autorUid) {
-  const q = query(
-    collection(db, COL),
-    where("autorUid", "==", autorUid),
-    orderBy("atualizadoEm", "desc")
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const proprias = await getDocs(query(collection(db, COL), where("autorUid", "==", autorUid), orderBy("atualizadoEm", "desc")));
+  const lista = proprias.docs.map(d => ({ id: d.id, ...d.data() }));
+  try {
+    const co = await getDocs(query(collection(db, COL), where("coautoresUids", "array-contains", autorUid)));
+    const ids = new Set(lista.map(n => n.id));
+    co.docs.forEach(d => { if (!ids.has(d.id)) lista.push({ id: d.id, ...d.data(), ehCoautor: true }); });
+    lista.sort((a, b) => ((b.atualizadoEm && b.atualizadoEm.seconds) || 0) - ((a.atualizadoEm && a.atualizadoEm.seconds) || 0));
+  } catch (e) { console.error(e); }
+  return lista;
 }
 
 // --- LISTAR POR STATUS (para o Revisor ver a fila de revisão, etc.) ---

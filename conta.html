@@ -109,6 +109,24 @@
     <button class="btn btn-amar" id="btnSalvarNome">Salvar alterações</button>
   </section>
 
+  <section id="secEquipe" style="display:none">
+    <style>#secEquipe textarea,#secEquipe input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font:inherit;margin-bottom:10px}</style>
+    <h2>Meu perfil na Equipe</h2>
+    <p style="font-size:13px;margin-bottom:12px;opacity:.8">O que você escrever aqui aparece na página pública "Nossa Equipe". Preencha só o que quiser mostrar. A foto é a do seu perfil (lápis ✎ lá em cima).</p>
+    <label for="eqBio">Sobre você</label>
+    <textarea id="eqBio" rows="4" maxlength="500" placeholder="Quem é você, sua história, o que escreve..."></textarea>
+    <label for="eqInsta">Instagram (só o usuário, sem @)</label>
+    <input type="text" id="eqInsta" maxlength="40" placeholder="seuusuario">
+    <label for="eqZap">WhatsApp (com código do país e DDD, só números)</label>
+    <input type="text" id="eqZap" maxlength="20" placeholder="5575999999999">
+    <label for="eqEmail">E-mail público</label>
+    <input type="text" id="eqEmail" maxlength="80" placeholder="voce@exemplo.com">
+    <label for="eqSite">Site ou link</label>
+    <input type="text" id="eqSite" maxlength="120" placeholder="https://...">
+    <p class="salvo-msg" id="eqMsg">Salvo!</p>
+    <button class="btn btn-amar" id="btnSalvarEquipe">Salvar perfil público</button>
+  </section>
+
   <section>
     <h2>Notificações</h2>
     <div class="toggle-linha">
@@ -186,6 +204,7 @@
     try {
       const url = await enviarImagemCloudinary(arquivo);
       await updateDoc(doc(db, "usuarios", usuarioAtual.uid), { fotoUrl: url });
+      try { await updateDoc(doc(db, "equipe", usuarioAtual.uid), { fotoUrl: url }); } catch (e) {}
       document.getElementById('avatarImg').src = url;
       document.getElementById('avatarImg').style.display = 'block';
       document.getElementById('avatarInicial').style.display = 'none';
@@ -214,11 +233,39 @@
     });
   });
 
+  async function carregarPerfilEquipe(uid) {
+    try {
+      const s = await getDoc(doc(db, "equipe", uid));
+      if (!s.exists()) return;
+      const e = s.data(), c = e.contatos || {};
+      document.getElementById('eqBio').value = e.bio || '';
+      document.getElementById('eqInsta').value = c.instagram || '';
+      document.getElementById('eqZap').value = c.whatsapp || '';
+      document.getElementById('eqEmail').value = c.email || '';
+      document.getElementById('eqSite').value = c.site || '';
+      document.getElementById('secEquipe').style.display = '';
+    } catch (er) { console.error(er); }
+  }
+  document.getElementById('btnSalvarEquipe').addEventListener('click', async () => {
+    const contatos = {
+      instagram: document.getElementById('eqInsta').value.trim().replace(/^@/, '').replace(/[^A-Za-z0-9._]/g, ''),
+      whatsapp: document.getElementById('eqZap').value.replace(/\D/g, ''),
+      email: document.getElementById('eqEmail').value.trim(),
+      site: document.getElementById('eqSite').value.trim()
+    };
+    if (contatos.site && !/^https:\/\//i.test(contatos.site)) contatos.site = 'https://' + contatos.site.replace(/^https?:\/\//i, '');
+    try {
+      await updateDoc(doc(db, "equipe", usuarioAtual.uid), { bio: document.getElementById('eqBio').value.trim(), contatos, atualizadoEm: new Date().toISOString() });
+      const m = document.getElementById('eqMsg'); m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 2000);
+    } catch (er) { alert('Não foi possível salvar agora.'); console.error(er); }
+  });
+
   async function carregarDadosPerfil(user) {
     try {
       const snap = await getDoc(doc(db, "usuarios", user.uid));
       if (!snap.exists()) return;
       const d = snap.data();
+      carregarPerfilEquipe(user.uid);
       const nome = d.nome || user.displayName || "";
       if (nome) {
         document.getElementById('perfilNome').textContent = nome;

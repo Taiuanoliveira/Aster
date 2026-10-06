@@ -36,9 +36,11 @@ let regra = '2-paragrafos';
 
 try {
   const id = new URLSearchParams(location.search).get('id');
-  const s = id ? await getDoc(doc(db, 'noticias', id)) : null;
+  const dm = (id && id.indexOf('demo-') === 0) ? await (await import('./js/demo.js')).carregarDemo() : null;
+  const sd = dm ? dm.artigo(id) : null;
+  const s = dm ? { exists: () => !!sd, data: () => sd } : (id ? await getDoc(doc(db, 'noticias', id)) : null);
   let edOk = true;
-  if (s && s.exists() && s.data().edicao) {
+  if (!dm && s && s.exists() && s.data().edicao) {
     try { edOk = !(await getDocs(query(collection(db, 'edicoes'), where('nome', '==', s.data().edicao), where('status', '==', 'publicada')))).empty; } catch (e) { edOk = false; }
   }
   if (!s || !s.exists() || !['publicado', 'indexado'].includes(s.data().status) || !edOk) {
@@ -53,7 +55,8 @@ try {
       set('meta[name="description"]', d || 'Leia este artigo no Projeto Aster.'); set('meta[property="og:title"]', n.titulo); set('meta[property="og:description"]', d);
       if (n.imagemUrl) { let m = document.querySelector('meta[property="og:image"]'); if (!m) { m = document.createElement('meta'); m.setAttribute('property', 'og:image'); document.head.appendChild(m); } m.setAttribute('content', n.imagemUrl); } }
     let edicaoDoc = null;
-    if (n.edicao) {
+    if (dm && n.edicao) { edicaoDoc = dm.edicaoPorNome(n.edicao); }
+    else if (n.edicao) {
       try {
         const qs = await getDocs(query(collection(db, 'edicoes'), where('nome', '==', n.edicao), where('status', '==', 'publicada')));
         const d0 = qs.docs.find(x => x.data().status === 'publicada');
@@ -92,8 +95,8 @@ try {
     marcarReferencias(a.querySelector('.corpo'));
     try { if (!sessionStorage.getItem('aster_v_' + noticiaId)) { sessionStorage.setItem('aster_v_' + noticiaId, '1'); try { if (!sessionStorage.getItem('aster_v_' + noticiaId)) { sessionStorage.setItem('aster_v_' + noticiaId, '1'); registrarVisualizacao(noticiaId); } } catch (e) { registrarVisualizacao(noticiaId); } } } catch (e) { registrarVisualizacao(noticiaId); }
     montarFerramentas(n.titulo);
-    iniciarAcoes();
-    carregarFotoAutor(n.autorUid, n.autorNome);
+    if (dm) iniciarDemo(); else iniciarAcoes();
+    if (!dm) carregarFotoAutor(n.autorUid, n.autorNome);
     montarNavMateria(n);
   }
 } catch (err) {
@@ -169,6 +172,12 @@ async function liberarSeAssinante(user) {
   } else if (g) {
     g.outerHTML = gateHTML(true);
   }
+}
+function iniciarDemo() {
+  const av = () => alert('Este é um artigo de exemplo. Curtir, salvar e comentar funcionam nos artigos reais.');
+  ['btnCurtir', 'btnSalvar'].forEach(i => document.getElementById(i).addEventListener('click', av));
+  document.getElementById('areaFormComentario').innerHTML = '<p class="comentario-login">Os comentários ficam disponíveis nos artigos reais.</p>';
+  document.getElementById('listaComentarios').innerHTML = '';
 }
 function iniciarAcoes() {
   observarLogin(async (user) => {

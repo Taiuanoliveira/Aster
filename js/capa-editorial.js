@@ -3,8 +3,9 @@ import { collection, getDocs, query, where } from 'https://www.gstatic.com/fireb
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 try {
   const s = await getDocs(query(collection(db, 'edicoes'), where('status', '==', 'publicada')));
-  const l = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => e.status === 'publicada')
+  let l = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => e.status === 'publicada')
     .sort((a, b) => String(b.publicadaEm || b.criadoEm || '').localeCompare(String(a.publicadaEm || a.criadoEm || '')));
+  if (!l[0]) { try { const dm = await (await import('./demo.js')).carregarDemo(); if (dm) l = dm.edicoes; } catch (e) {} }
   if (l[0]) {
     const e = l[0], $ = id => document.getElementById(id);
     $('edNome').textContent = e.nome || '';

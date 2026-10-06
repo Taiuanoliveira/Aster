@@ -32,6 +32,9 @@ export async function carregarArtigos() {
   const nomesEd = new Set(eds.docs.map(d => d.data().nome));
   const artigos = [...pub.docs.filter(d => !d.data().edicao || nomesEd.has(d.data().edicao)), ...idx.docs.filter(d => nomesEd.has(d.data().edicao))]
     .map(d => ({ id: d.id, ...d.data() })).sort((a, b) => ms(b.criadoEm) - ms(a.criadoEm));
+  if (!artigos.length) {
+    try { const dm = await (await import('./demo.js')).carregarDemo(); if (dm) return { artigos: dm.artigos, ...dm.tx }; } catch (e) {}
+  }
   return { artigos, ...tx };
 }
 

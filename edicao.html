@@ -32,8 +32,8 @@ try{
     let h='';
     if(e.cartaLeitor&&e.cartaLeitor.replace(/<[^>]*>/g,'').trim())h+='<div class="carta"><h2>Carta ao leitor</h2><div class="corpo">'+sanitizar(e.cartaLeitor)+'</div></div>';
     const porStatus=st=>getDocs(query(collection(db,'noticias'),where('edicao','==',e.nome),where('status','==',st)));
-    const [qa,qb]=await Promise.all([porStatus('publicado'),porStatus('indexado')]);
-    const q={docs:[...qa.docs,...qb.docs]};
+    const [qa,qb]=dm?[{docs:[]},{docs:[]}]:await Promise.all([porStatus('publicado'),porStatus('indexado')]);
+    const q=dm?{docs:dm.artigosDaEdicao(id).map(a=>{const {id:i,...r}=a;return {id:i,data:()=>r};})}:{docs:[...qa.docs,...qb.docs]};
     const acesso=n=>'';
     const m=q.docs.map(d=>({id:d.id,...d.data()})).filter(n=>n.status==='publicado'||n.status==='indexado').sort((a,b)=>(a.ordemEdicao ?? 99)-(b.ordemEdicao ?? 99));
     h+='<h2 class="sec">Nesta edição</h2>';

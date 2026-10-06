@@ -1,0 +1,32 @@
+/* Projeto Aster – Editorial em fileira que desliza (capa da edição + artigos, depois a edição anterior) */
+.edc{margin:0}
+.edc-setas{display:flex;justify-content:flex-end;gap:8px;margin:0 0 12px}
+.edc-setas button{width:40px;height:40px;border-radius:50%;border:1px solid #d8d3c4;background:#fff;color:#0C3B5C;font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.edc-setas button:hover:not(:disabled){background:#E8A33D;border-color:#E8A33D}
+.edc-setas button:disabled{opacity:.35;cursor:default}
+.edc-trilho{display:flex;align-items:flex-start;gap:18px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;padding:4px 2px 16px}
+.edc-trilho::-webkit-scrollbar{display:none}
+.edc-capa{flex:0 0 280px;scroll-snap-align:start;position:relative;aspect-ratio:3/4;border-radius:10px;overflow:hidden;background:#0C3B5C center/cover;color:#fff;text-decoration:none;display:flex;flex-direction:column;justify-content:flex-end;padding:18px;box-shadow:0 14px 30px rgba(12,59,92,.28)}
+.edc-capa::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,59,92,.25) 0%,rgba(12,59,92,.94) 80%)}
+.edc-capa>*{position:relative}
+.edc-capa .ant{position:absolute;top:14px;left:16px;font:700 10px Inter,sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:#0C3B5C;background:#B8E8FF;padding:4px 9px;border-radius:999px}
+.edc-capa .num{font:700 11px Inter,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#E8A33D;margin-bottom:6px}
+.edc-capa h3{font:800 26px/1.08 Inter,sans-serif;letter-spacing:-.4px;margin:0 0 8px;color:#fff}
+.edc-capa p{font-size:13px;line-height:1.45;color:#dbe8f1;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.edc-capa .ler{align-self:flex-start;margin-top:14px;background:#E8A33D;color:#0C3B5C;font:700 13px Inter,sans-serif;padding:9px 16px;border-radius:7px}
+.edc-art{flex:0 0 270px;scroll-snap-align:start;display:block;text-decoration:none;color:inherit}
+.edc-art .img{aspect-ratio:4/3;border-radius:8px;background:#0C3B5C center/cover;display:flex;align-items:center;justify-content:center;color:#E8A33D;font-size:26px}
+.edc-art small{display:block;margin:12px 0 6px;font:700 11px Inter,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#b8741a}
+.edc-art h4{font:800 19px/1.2 Inter,sans-serif;letter-spacing:-.2px;color:#0C3B5C;margin:0 0 8px}
+.edc-art:hover h4{color:#b8741a}
+.edc-art span{font-size:12.5px;color:#666}
+.edc-fim{flex:0 0 220px;scroll-snap-align:start;aspect-ratio:3/4;border:2px dashed #d8d3c4;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;text-decoration:none;color:#0C3B5C;font:700 15px Inter,sans-serif;padding:16px}
+.edc-fim b{font-size:28px;color:#E8A33D}
+.edc-fim:hover{border-color:#E8A33D}
+.edc-todas{display:inline-block;margin-top:4px;font-weight:700;color:#0C3B5C}
+html[data-tema="escuro"] .edc-setas button{background:#1b2430;border-color:#2a3442;color:#fff}
+html[data-tema="escuro"] .edc-art h4,html[data-tema="escuro"] .edc-fim,html[data-tema="escuro"] .edc-todas{color:#fff}
+html[data-tema="escuro"] .edc-art span{color:#9fb0bd}
+html[data-tema="escuro"] .edc-fim{border-color:#3b5368}
+html[data-tema="escuro"] .edc-art small{color:#E8A33D}
+@media(max-width:720px){.edc-setas{display:none}.edc-capa{flex-basis:74%}.edc-art{flex-basis:68%}.edc-fim{flex-basis:56%}}

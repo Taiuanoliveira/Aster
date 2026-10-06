@@ -94,7 +94,7 @@ service cloud.firestore {
     }
 
     // ---------- CONTEÚDO DO SITE: todos leem; editor e administrador escrevem ----------
-    match /edicoes/{id}    { allow read: if true; allow write: if ehEditor(); }
+    match /edicoes/{id}    { allow read: if resource.data.status == 'publicada' || ehEquipe(); allow write: if ehEditor(); }
     match /categorias/{id} { allow read: if true; allow write: if ehEditor(); }
     match /tags/{id}       { allow read: if true; allow write: if ehEditor(); }
     match /destaques/{id}  { allow read: if true; allow write: if ehEditor(); }

@@ -70,6 +70,8 @@
   </div>
 
   <script type="module">
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
     import { protegerPagina, sair, CARGOS } from "../js/auth.js";
     import { db } from "../js/firebase-config.js";
     import { collection, addDoc, getDocs, deleteDoc, doc, orderBy, query, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -112,7 +114,7 @@
         const tag = d.data();
         const span = document.createElement('span');
         span.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:#f4f4f4;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;border:1.5px solid #eee;';
-        span.innerHTML = `#${tag.nome} <button onclick="removerTag('${d.id}')" style="background:none;border:none;cursor:pointer;color:#b3261e;font-weight:700;font-size:14px;line-height:1;padding:0 2px;">×</button>`;
+        span.innerHTML = `#${esc(tag.nome)} <button onclick="removerTag('${d.id}')" style="background:none;border:none;cursor:pointer;color:#b3261e;font-weight:700;font-size:14px;line-height:1;padding:0 2px;">×</button>`;
         lista.appendChild(span);
       });
     }
@@ -165,7 +167,7 @@
         const div = document.createElement('div');
         div.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #eee;';
         div.innerHTML = `
-          <span style="background:${dest.cor};color:#fff;padding:4px 12px;font-size:11px;font-weight:700;text-transform:uppercase;border-radius:3px;white-space:nowrap;">${dest.emoji || ''} ${dest.nome}</span>
+          <span style="background:${esc(dest.cor)};color:#fff;padding:4px 12px;font-size:11px;font-weight:700;text-transform:uppercase;border-radius:3px;white-space:nowrap;">${esc(dest.emoji || '')} ${esc(dest.nome)}</span>
           <span style="flex-grow:1;font-size:13px;color:#777;">${dest.fixo ? '(padrão)' : ''}</span>
           ${!dest.fixo ? `<button onclick="removerDestaque('${d.id}')" style="background:none;border:none;cursor:pointer;color:#b3261e;font-weight:700;font-size:12px;text-transform:uppercase;">Remover</button>` : ''}
         `;

@@ -1,10 +1,10 @@
 import { db } from './firebase-config.js';
-import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 try {
-  const s = await getDocs(collection(db, 'edicoes'));
+  const s = await getDocs(query(collection(db, 'edicoes'), where('status', '==', 'publicada')));
   const l = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => e.status === 'publicada')
-    .sort((a, b) => String(b.criadoEm || '').localeCompare(String(a.criadoEm || '')));
+    .sort((a, b) => String(b.publicadaEm || b.criadoEm || '').localeCompare(String(a.publicadaEm || a.criadoEm || '')));
   if (l[0]) {
     const e = l[0], $ = id => document.getElementById(id);
     $('edNome').textContent = e.nome || '';
@@ -23,4 +23,8 @@ try {
     $('edLink').href = 'edicao.html?id=' + encodeURIComponent(e.id);
     $('edLink').textContent = 'Ler a edição';
   }
-} catch (err) { console.error(err); }
+} catch (err) {
+  console.error(err);
+  const t = document.getElementById('edNome');
+  if (t && /^Em breve/.test(t.textContent)) t.textContent = 'Não foi possível carregar a edição agora.';
+}

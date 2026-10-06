@@ -52,6 +52,8 @@
   </div>
 
   <script type="module">
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
     import { protegerPagina, sair, CARGOS } from "../js/auth.js";
     import { listarPorAutor, listarPorStatus, listarPublicadas, STATUS } from "../js/noticias.js";
 
@@ -141,8 +143,8 @@
       listaNoticias.innerHTML = noticias.map(n => `
         <div class="admin-item-noticia">
           <div>
-            <strong>${n.titulo}</strong>
-            <span class="admin-status status-${n.status}">${n.status.replace('_',' ')}</span>
+            <strong>${esc(n.titulo)}</strong>
+            <span class="admin-status status-${esc(n.status)}">${esc(n.status.replace('_',' '))}</span>
           </div>
           <a href="gerenciar-noticias.html?id=${n.id}">Abrir →</a>
         </div>

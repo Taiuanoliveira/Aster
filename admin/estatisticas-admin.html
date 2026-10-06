@@ -62,6 +62,8 @@
     </main>
   </div>
   <script type="module">
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
     import { protegerPagina, sair, CARGOS } from "../js/auth.js";
     import { db } from "../js/firebase-config.js";
     import { collection, getDocs, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -112,7 +114,7 @@
         document.getElementById('totalSalvos').textContent=s.toLocaleString('pt-BR');
         document.getElementById('totalNoticias').textContent=todasNoticias.length;
         renderTabela();
-      }catch(e){document.getElementById('tabelaContainer').innerHTML=`<p style="color:#b3261e;">Erro: ${e.message}</p>`;}
+      }catch(e){document.getElementById('tabelaContainer').innerHTML=`<p style="color:#b3261e;">Erro: ${esc(e.message)}</p>`;}
     }
     function getDados(){
       const ordem=document.getElementById('filtroOrdem').value;
@@ -128,7 +130,7 @@
       const lista=getDados();
       const c=document.getElementById('tabelaContainer');
       if(!lista.length){c.innerHTML='<p style="color:#888;padding:20px;">Nenhum artigo encontrado.</p>';return;}
-      c.innerHTML=`<table class="tabela-stats"><thead><tr><th>#</th><th>Artigo</th><th>Categoria</th><th>👁 Views</th><th>❤️ Curtidas</th><th>💬 Coments</th><th>🔖 Salvos</th></tr></thead><tbody>${lista.map((n,i)=>`<tr><td style="color:#888;font-size:12px;">${i+1}</td><td class="titulo-noticia"><a href="../noticia.html?id=${n.id}" target="_blank">${n.titulo||'(sem título)'}</a></td><td><span class="tag-cat">${n.categoria||'—'}</span></td><td><span class="badge-num verde">${(n.stats.visualizacoes||0).toLocaleString('pt-BR')}</span></td><td><span class="badge-num azul">${n.stats.curtidas||0}</span></td><td><span class="badge-num roxo">${n.stats.comentarios||0}</span></td><td><span class="badge-num laranja">${n.stats.salvos||0}</span></td></tr>`).join('')}</tbody></table>`;
+      c.innerHTML=`<table class="tabela-stats"><thead><tr><th>#</th><th>Artigo</th><th>Categoria</th><th>👁 Views</th><th>❤️ Curtidas</th><th>💬 Coments</th><th>🔖 Salvos</th></tr></thead><tbody>${lista.map((n,i)=>`<tr><td style="color:#888;font-size:12px;">${i+1}</td><td class="titulo-noticia"><a href="../noticia.html?id=${n.id}" target="_blank">${esc(n.titulo||'(sem título)')}</a></td><td><span class="tag-cat">${esc(n.categoria||'—')}</span></td><td><span class="badge-num verde">${(n.stats.visualizacoes||0).toLocaleString('pt-BR')}</span></td><td><span class="badge-num azul">${n.stats.curtidas||0}</span></td><td><span class="badge-num roxo">${n.stats.comentarios||0}</span></td><td><span class="badge-num laranja">${n.stats.salvos||0}</span></td></tr>`).join('')}</tbody></table>`;
     };
     window.exportarCSV=function(){
       const lista=getDados();

@@ -70,6 +70,8 @@
   </div>
 
   <script type="module">
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
     import { protegerPagina, sair, CARGOS } from "../js/auth.js";
     import { db } from "../js/firebase-config.js";
     import { collection, getDocs, doc, updateDoc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -127,10 +129,10 @@
         const u = d.data();
         return `
           <div class="admin-item-usuario" data-uid="${d.id}">
-            <div class="usuario-avatar" style="${u.fotoUrl ? `background-image:url('${u.fotoUrl}')` : ''}"></div>
+            <div class="usuario-avatar" style="${u.fotoUrl ? `background-image:url('${esc(u.fotoUrl)}')` : ''}"></div>
             <div class="usuario-textos">
-              <strong>${u.nome || 'Sem nome'}</strong>
-              <span class="admin-email-pequeno">${u.email || ''}</span>
+              <strong>${esc(u.nome || 'Sem nome')}</strong>
+              <span class="admin-email-pequeno">${esc(u.email || '')}</span>
             </div>
             <div>
               <span class="campo-label-pequeno">Cargo do Sistema</span>
@@ -148,7 +150,7 @@
               </select>
               <br><br>
               <span class="campo-label-pequeno">Assinante até</span><br>
-              <input type="date" class="input-premium" data-uid="${d.id}" value="${u.premiumAte || ''}">
+              <input type="date" class="input-premium" data-uid="${d.id}" value="${esc(u.premiumAte || '')}">
               ${u.premiumAte && u.premiumAte >= new Date().toISOString().slice(0,10)
                 ? '<span style="color:#E8A33D;font-size:11px;font-weight:700;margin-left:6px;">✓ Ativo</span>'
                 : (u.premiumAte ? '<span style="color:#999;font-size:11px;margin-left:6px;">Expirado</span>' : '')}

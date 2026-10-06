@@ -214,3 +214,21 @@ html[data-tema="escuro"] .apoie-box{background:#163049;color:#e7edf3}
 html[data-tema="escuro"] .apoie-box strong{color:#fff}
 html[data-tema="escuro"] .ref-biblica{color:#8cc4ea}
 html[data-tema="escuro"] .comentario-login a{color:#8cc4ea}
+
+/* ---- Editorial: contraste das cores e navegação entre edições/matérias ---- */
+main .hero-info .rot, .of-txt .selo, .artigo .cat, .byline .info strong { color: #8a5a12; }
+html[data-tema="escuro"] main .hero-info .rot,
+html[data-tema="escuro"] .of-txt .selo,
+html[data-tema="escuro"] .artigo .cat,
+html[data-tema="escuro"] .byline .info strong { color: var(--amar); }
+html[data-tema="escuro"] h2.sec { color: #e7edf3; }
+html[data-tema="escuro"] .of-aut { color: #8cc4ea; }
+.nav-edicoes, .nav-materias { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 34px 0 10px; font-size: 14px; }
+.nav-materias { border-top: 1px solid #e3ddd0; padding-top: 18px; }
+.nav-edicoes a, .nav-materias a { color: #1F5A82; font-weight: 600; text-decoration: none; }
+.nav-edicoes a:hover, .nav-materias a:hover { text-decoration: underline; }
+.nav-edicoes button { background: transparent; border: 1.5px solid #1F5A82; color: #1F5A82; border-radius: 8px; padding: 8px 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.nav-materias span:last-child { text-align: right; margin-left: auto; }
+html[data-tema="escuro"] .nav-edicoes a, html[data-tema="escuro"] .nav-materias a { color: #8cc4ea; }
+html[data-tema="escuro"] .nav-edicoes button { color: #8cc4ea; border-color: #3b5368; }
+html[data-tema="escuro"] .nav-materias { border-top-color: #2a3442; }

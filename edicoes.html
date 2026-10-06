@@ -40,7 +40,7 @@
 <main class="larga" id="conteudo"><p class="vazio">Carregando…</p></main>
 <script type="module">
 import { db } from './js/firebase-config.js';
-import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { montarTopoRodape, esc, dataBonita } from './js/leitura.js';
 montarTopoRodape();
 const box = document.getElementById('conteudo');
@@ -54,18 +54,18 @@ function capa(e) {
   return d;
 }
 try {
-  const s = await getDocs(collection(db, 'edicoes'));
+  const s = await getDocs(query(collection(db, 'edicoes'), where('status', '==', 'publicada')));
   const l = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => e.status === 'publicada')
-    .sort((a, b) => String(b.criadoEm || '').localeCompare(String(a.criadoEm || '')));
+    .sort((a, b) => String(b.publicadaEm || b.criadoEm || '').localeCompare(String(a.publicadaEm || a.criadoEm || '')));
   if (!l.length) { box.innerHTML = '<p class="vazio">A primeira edição sairá em breve.</p>'; }
   else {
     box.innerHTML = '';
     const e = l[0], link = 'edicao.html?id=' + encodeURIComponent(e.id);
     const hero = document.createElement('section'); hero.className = 'hero-ed';
-    const a = document.createElement('a'); a.className = 'capa-link'; a.href = link; a.appendChild(capa(e)); hero.appendChild(a);
+    const a = document.createElement('a'); a.className = 'capa-link'; a.href = link; a.setAttribute('aria-label', 'Ler ' + e.nome); a.setAttribute('aria-label', 'Ler ' + e.nome); a.appendChild(capa(e)); hero.appendChild(a);
     const info = document.createElement('div'); info.className = 'hero-info';
     info.innerHTML = '<p class="rot">Edição atual</p><h2>' + esc(e.nome) + '</h2><p class="meta">' +
-      esc([e.numero ? 'Nº ' + e.numero : '', e.especial ? 'Especial' : '', e.tema || '', dataBonita(e.criadoEm)].filter(Boolean).join(' · ')) + '</p>' +
+      esc([e.numero ? 'Nº ' + e.numero : '', e.especial ? 'Especial' : '', e.tema || '', dataBonita(e.publicadaEm || e.criadoEm)].filter(Boolean).join(' · ')) + '</p>' +
       (e.descricao ? '<p class="desc">' + esc(e.descricao) + '</p>' : '') +
       '<span class="acesso ' + 'livre' + '">' + 'Leitura gratuita' + '</span><br>' +
       '<a class="btn-ler" href="' + link + '">Ler a edição</a>';
@@ -76,7 +76,7 @@ try {
       l.slice(1).forEach(x => {
         const it = document.createElement('a'); it.className = 'cap-item'; it.href = 'edicao.html?id=' + encodeURIComponent(x.id);
         it.appendChild(capa(x));
-        it.insertAdjacentHTML('beforeend', '<strong>' + esc(x.nome) + '</strong><span>' + esc(dataBonita(x.criadoEm)) + '' + '</span>');
+        it.insertAdjacentHTML('beforeend', '<strong>' + esc(x.nome) + '</strong><span>' + esc(dataBonita(x.publicadaEm || x.criadoEm)) + '' + '</span>');
         g.appendChild(it);
       });
       box.appendChild(g);

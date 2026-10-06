@@ -49,6 +49,8 @@
     </main>
   </div>
   <script type="module">
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
     import { protegerPagina, sair, CARGOS } from "../js/auth.js";
     import { db } from "../js/firebase-config.js";
     import { collection, addDoc, getDocs, deleteDoc, doc, orderBy, query, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -91,8 +93,8 @@
         const div = document.createElement('div');
         div.style.cssText = 'display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #eee;';
         div.innerHTML = `
-          ${m.fotoUrl ? `<img src="${m.fotoUrl}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">` : '<div style="width:44px;height:44px;border-radius:50%;background:#eee;"></div>'}
-          <div style="flex-grow:1;"><strong>${m.nome}</strong><div style="font-size:12px;color:#777;">${m.cargo} — posição ${m.ordem}</div></div>
+          ${m.fotoUrl ? `<img src="${esc(m.fotoUrl)}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">` : '<div style="width:44px;height:44px;border-radius:50%;background:#eee;"></div>'}
+          <div style="flex-grow:1;"><strong>${esc(m.nome)}</strong><div style="font-size:12px;color:#777;">${esc(m.cargo)} — posição ${esc(m.ordem)}</div></div>
           <button data-id="${d.id}" style="background:none;border:none;color:#b3261e;font-weight:700;font-size:12px;text-transform:uppercase;cursor:pointer;">Remover</button>
         `;
         div.querySelector('button').onclick = async () => {

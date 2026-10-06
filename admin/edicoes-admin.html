@@ -135,6 +135,8 @@
 
   <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
   <script type="module">
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
     import { protegerPagina, sair, CARGOS } from "../js/auth.js";
     import { db } from "../js/firebase-config.js";
     import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -365,28 +367,38 @@
           div.className = 'edicao-item';
           div.innerHTML = `
             <div class="edicao-cabecalho">
-              ${ed.capaUrl ? `<img src="${ed.capaUrl}">` : ''}
+              ${ed.capaUrl ? `<img src="${esc(ed.capaUrl)}">` : ''}
               <div class="edicao-cabecalho-textos">
                 <span class="tag-status ${status}">${status === 'publicada' ? 'Publicada' : 'Rascunho'}</span>
-                <div><strong>${ed.nome}</strong>${ed.numero ? ' · nº ' + ed.numero : ''}${ed.especial ? ' · ESPECIAL' : ''}${ed.edicaoGratuita ? ' · grátis' : ''}</div>
-                <div style="font-size:12px;color:#777;">${ed.tema}${ed.descricao ? ' — ' + ed.descricao : ''}</div>
+                <div><strong>${esc(ed.nome)}</strong>${ed.numero ? ' · nº ' + ed.numero : ''}${ed.especial ? ' · ESPECIAL' : ''}${ed.edicaoGratuita ? ' · grátis' : ''}</div>
+                <div style="font-size:12px;color:#777;">${esc(ed.tema)}${esc(ed.descricao ? ' — ' + ed.descricao : '')}</div>
               </div>
             </div>
             <div class="edicao-acoes">
               ${status === 'rascunho'
-                ? `<button class="publicar" data-id="${d.id}" data-nome="${ed.nome}">Publicar edição</button>`
+                ? `<button class="publicar" data-id="${d.id}" data-nome="${esc(ed.nome)}">Publicar edição</button>`
                 : `<button class="despublicar" data-id="${d.id}">Voltar para rascunho</button>`
               }
               <button class="editar" data-id="${d.id}">Editar</button>
-              <button class="excluir" data-id="${d.id}" data-nome="${ed.nome}">Excluir</button>
+              <button class="excluir" data-id="${d.id}" data-nome="${esc(ed.nome)}">Excluir</button>
             </div>
-            <span class="toggle-materias" data-id="${d.id}" data-nome="${ed.nome}">▾ Ver / ordenar matérias desta edição</span>
+            <span class="toggle-materias" data-id="${d.id}" data-nome="${esc(ed.nome)}">▾ Ver / ordenar matérias desta edição</span>
             <div class="lista-materias-edicao" id="materias-${d.id}"></div>
           `;
 
-          div.querySelector('.publicar')?.addEventListener('click', async (e) => {
-            if (confirm('Publicar a edição "' + ed.nome + '"? Depois de publicada, ela trava: não será mais possível vincular novas matérias a ela diretamente na tela de Novo Artigo.')) {
-              await updateDoc(doc(db, 'edicoes', d.id), { status: 'publicada' });
+          div.querySelector('.publicar')?.addEventListener('click', async () => {
+            const avisos = [];
+            try {
+              const vinc = await getDocs(query(collection(db, 'noticias'), where('edicao', '==', ed.nome)));
+              if (vinc.empty) avisos.push('Nenhum artigo está ligado a esta edição.');
+              else if (!vinc.docs.some(m => ['publicado', 'indexado'].includes(m.data().status))) avisos.push('Nenhum artigo desta edição está pronto (indexado ou publicado): os leitores verão a edição vazia.');
+            } catch (err) {}
+            if (!ed.capaUrl) avisos.push('A edição está sem capa (o site vai mostrar uma capa simples).');
+            if (!String(ed.cartaLeitor || '').replace(/<[^>]*>/g, '').trim()) avisos.push('A edição está sem carta ao leitor.');
+            const texto = 'Publicar a edição "' + ed.nome + '"?' + (avisos.length ? '\n\nAtenção:\n• ' + avisos.join('\n• ') : '') +
+              '\n\nDepois de publicada, ela trava: não será mais possível vincular novas matérias a ela diretamente na tela de Novo Artigo.';
+            if (confirm(texto)) {
+              await updateDoc(doc(db, 'edicoes', d.id), { status: 'publicada', publicadaEm: new Date().toISOString() });
               carregarEdicoes();
             }
           });
@@ -401,10 +413,10 @@
           div.querySelector('.editar').addEventListener('click', () => editarEdicao(d.id));
 
           div.querySelector('.excluir').addEventListener('click', async () => {
-            if (!confirm('Excluir a edição "' + ed.nome + '"? Os artigos não serão apagados: eles apenas deixam de pertencer a esta edição.')) return;
+            if (!confirm('Excluir a edição "' + ed.nome + '"? Os artigos não serão apagados: eles deixam de pertencer a esta edição (os que estavam prontos na edição voltam para Aprovado).')) return;
             try {
               const vinc = await getDocs(query(collection(db, 'noticias'), where('edicao', '==', ed.nome)));
-              for (const m of vinc.docs) await updateDoc(doc(db, 'noticias', m.id), { edicao: '', ordemEdicao: 1 });
+              for (const m of vinc.docs) await updateDoc(doc(db, 'noticias', m.id), Object.assign({ edicao: '', ordemEdicao: 1 }, m.data().status === 'indexado' ? { status: 'aprovado' } : {}));
               await deleteDoc(doc(db, 'edicoes', d.id));
               if (editandoId === d.id) limparForm();
               carregarEdicoes();
@@ -447,8 +459,8 @@
         container.innerHTML = materias.map(m => `
           <div class="materia-ordem-item" data-id="${m.id}">
             <input type="number" class="input-ordem" value="${m.ordemEdicao || 0}" min="0">
-            <span class="materia-titulo">${m.titulo || '(sem título)'}</span>
-            <span class="materia-status-mini">${m.status || ''}</span>
+            <span class="materia-titulo">${esc(m.titulo || '(sem título)')}</span>
+            <span class="materia-status-mini">${esc(m.status || '')}</span>
           </div>
         `).join('') + '<button type="button" class="btn-salvar-ordem">Salvar ordem desta edição</button>';
 

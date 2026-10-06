@@ -55,7 +55,7 @@ try {
     let edicaoDoc = null;
     if (n.edicao) {
       try {
-        const qs = await getDocs(query(collection(db, 'edicoes'), where('nome', '==', n.edicao)));
+        const qs = await getDocs(query(collection(db, 'edicoes'), where('nome', '==', n.edicao), where('status', '==', 'publicada')));
         const d0 = qs.docs.find(x => x.data().status === 'publicada');
         if (d0) edicaoDoc = { id: d0.id, ...d0.data() };
       } catch (e) {}
@@ -90,14 +90,33 @@ try {
         '<div id="listaComentarios">Carregando comentários…</div>' +
       '</section>';
     marcarReferencias(a.querySelector('.corpo'));
-    registrarVisualizacao(noticiaId);
+    try { if (!sessionStorage.getItem('aster_v_' + noticiaId)) { sessionStorage.setItem('aster_v_' + noticiaId, '1'); try { if (!sessionStorage.getItem('aster_v_' + noticiaId)) { sessionStorage.setItem('aster_v_' + noticiaId, '1'); registrarVisualizacao(noticiaId); } } catch (e) { registrarVisualizacao(noticiaId); } } } catch (e) { registrarVisualizacao(noticiaId); }
     montarFerramentas(n.titulo);
     iniciarAcoes();
     carregarFotoAutor(n.autorUid, n.autorNome);
+    montarNavMateria(n);
   }
 } catch (err) {
   a.innerHTML = '<p class="vazio">Não foi possível carregar agora.</p>';
   console.error(err);
+}
+
+async function montarNavMateria(n) {
+  if (!n.edicao) return;
+  try {
+    const por = st => getDocs(query(collection(db, 'noticias'), where('edicao', '==', n.edicao), where('status', '==', st)));
+    const [qa, qb] = await Promise.all([por('publicado'), por('indexado')]);
+    const lista = [...qa.docs, ...qb.docs].map(d => ({ id: d.id, ...d.data() })).sort((x, y) => (x.ordemEdicao ?? 99) - (y.ordemEdicao ?? 99));
+    const i = lista.findIndex(x => x.id === noticiaId);
+    if (i < 0 || lista.length < 2) return;
+    const ant = lista[i - 1], prox = lista[i + 1];
+    const nav = document.createElement('nav');
+    nav.className = 'nav-materias'; nav.setAttribute('aria-label', 'Outras matérias da edição');
+    nav.innerHTML = '<span>' + (ant ? '<a href="noticia.html?id=' + encodeURIComponent(ant.id) + '">← ' + esc(ant.titulo) + '</a>' : '') + '</span>' +
+                    '<span>' + (prox ? '<a href="noticia.html?id=' + encodeURIComponent(prox.id) + '">' + esc(prox.titulo) + ' →</a>' : '') + '</span>';
+    const ref = document.getElementById('acoesArt');
+    if (ref) ref.after(nav);
+  } catch (e) {}
 }
 
 async function carregarFotoAutor(autorUid, autorNome) {

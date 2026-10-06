@@ -30,7 +30,7 @@ export async function carregarArtigos() {
     carregarTaxonomia()
   ]);
   const nomesEd = new Set(eds.docs.map(d => d.data().nome));
-  const artigos = [...pub.docs, ...idx.docs.filter(d => nomesEd.has(d.data().edicao))]
+  const artigos = [...pub.docs.filter(d => !d.data().edicao || nomesEd.has(d.data().edicao)), ...idx.docs.filter(d => nomesEd.has(d.data().edicao))]
     .map(d => ({ id: d.id, ...d.data() })).sort((a, b) => ms(b.criadoEm) - ms(a.criadoEm));
   return { artigos, ...tx };
 }

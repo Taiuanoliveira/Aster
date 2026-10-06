@@ -27,7 +27,7 @@ try{
   if(!s||!s.exists()||s.data().status!=='publicada'){$('nome').textContent='Edição não encontrada';c.innerHTML='<p class="vazio">Esta edição não existe ou ainda não foi publicada.</p>';}
   else{
     const e=s.data();document.title=e.nome+' – Projeto Aster';
-    $('tema').textContent=(e.numero?'Edição nº '+e.numero:'Edição')+(e.especial?' · Especial':'')+(e.tema?' · '+e.tema:'');$('nome').textContent=e.nome;$('desc').textContent=e.descricao||'';if(e.edicaoGratuita)$('desc').textContent=(e.descricao?e.descricao+' · ':'')+'Edição gratuita';
+    $('tema').textContent=(e.numero?'Edição nº '+e.numero:'Edição')+(e.especial?' · Especial':'')+(e.tema?' · '+e.tema:'');$('nome').textContent=e.nome;$('desc').textContent=e.descricao||'';
     let h='';
     if(e.cartaLeitor&&e.cartaLeitor.replace(/<[^>]*>/g,'').trim())h+='<div class="carta"><h2>Carta ao leitor</h2><div class="corpo">'+sanitizar(e.cartaLeitor)+'</div></div>';
     const porStatus=st=>getDocs(query(collection(db,'noticias'),where('edicao','==',e.nome),where('status','==',st)));

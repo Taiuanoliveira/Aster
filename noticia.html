@@ -37,7 +37,11 @@ let regra = '2-paragrafos';
 try {
   const id = new URLSearchParams(location.search).get('id');
   const s = id ? await getDoc(doc(db, 'noticias', id)) : null;
-  if (!s || !s.exists() || !['publicado', 'indexado'].includes(s.data().status)) {
+  let edOk = true;
+  if (s && s.exists() && s.data().edicao) {
+    try { edOk = !(await getDocs(query(collection(db, 'edicoes'), where('nome', '==', s.data().edicao), where('status', '==', 'publicada')))).empty; } catch (e) { edOk = false; }
+  }
+  if (!s || !s.exists() || !['publicado', 'indexado'].includes(s.data().status) || !edOk) {
     a.innerHTML = '<p class="vazio">Este artigo não existe ou ainda não foi publicado.</p>';
   } else {
     noticiaId = id;

@@ -76,7 +76,7 @@ try {
       l.slice(1).forEach(x => {
         const it = document.createElement('a'); it.className = 'cap-item'; it.href = 'edicao.html?id=' + encodeURIComponent(x.id);
         it.appendChild(capa(x));
-        it.insertAdjacentHTML('beforeend', '<strong>' + esc(x.nome) + '</strong><span>' + esc(dataBonita(x.criadoEm)) + (x.edicaoGratuita ? ' · gratuita' : '') + '</span>');
+        it.insertAdjacentHTML('beforeend', '<strong>' + esc(x.nome) + '</strong><span>' + esc(dataBonita(x.criadoEm)) + '' + '</span>');
         g.appendChild(it);
       });
       box.appendChild(g);

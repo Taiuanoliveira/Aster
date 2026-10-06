@@ -28,6 +28,14 @@ export function dataBonita(v){
   }catch(e){return '';}
 }
 
+export function dataHoraBonita(v){
+  try{
+    const d=v&&v.toDate?v.toDate():new Date(v);
+    if(isNaN(d))return '';
+    return d.toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'})+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){return '';}
+}
+
 export function montarTopoRodape(){
   const topo=document.createElement('header');
   topo.className='topo';
@@ -42,3 +50,11 @@ export function montarTopoRodape(){
 }
 
 export function tituloPublico(v){ const m={'editor-chefe':'Editor-chefe','colunista':'Colunista'}; return m[v]||''; }
+
+export function trilhaHTML(partes){
+  return '<nav class="trilha">'+partes.map((p,i)=>{
+    const sep = i>0 ? '<span class="sep">›</span>' : '';
+    const item = p.href ? '<a href="'+esc(p.href)+'">'+esc(p.texto)+'</a>' : '<span class="atual">'+esc(p.texto)+'</span>';
+    return sep+item;
+  }).join('')+'</nav>';
+}

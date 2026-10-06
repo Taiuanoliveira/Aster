@@ -9,7 +9,7 @@
 <meta property="og:locale" content="pt_BR">
 <meta property="og:title" content="Artigo – Projeto Aster">
 <meta property="og:description" content="Leia este artigo no Projeto Aster.">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/leitura.css"><link rel="stylesheet" href="css/tema.css"><script src="js/tema.js"></script>
 </head><body>
 <article class="artigo" id="art"><p class="vazio">Carregando…</p></article>
@@ -17,7 +17,7 @@
 import { montarFerramentas } from './js/ferramentas-artigo.js';
 import { db } from './js/firebase-config.js';
 import { doc, getDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { montarTopoRodape, esc, sanitizar, dataBonita } from './js/leitura.js';
+import { montarTopoRodape, esc, sanitizar, dataBonita, dataHoraBonita, trilhaHTML } from './js/leitura.js';
 import { marcarReferencias } from './js/versiculos.js';
 import { observarLogin } from './js/auth.js';
 import {
@@ -62,12 +62,24 @@ try {
     }
     regra = (n.paywallOverride && n.paywallOverride !== 'sempre-liberado') ? n.paywallOverride : '2-paragrafos';
     bloqueado = false; // conteúdo gratuito; apoio voluntário em apoiar.html
-    a.innerHTML = (n.edicao ? '<a class="voltar" href="' + (edicaoDoc ? 'edicao.html?id=' + encodeURIComponent(edicaoDoc.id) : 'edicoes.html') + '">← ' + esc(n.edicao) + '</a><br>' : '') +
-      '<span class="cat">' + esc(n.categoria || '') + '</span><h1>' + esc(n.titulo) + '</h1>' +
-      '<p class="meta">' + esc([n.autorNome].concat(n.coautores || []).filter(Boolean).join(', ')) + (n.autorNome && n.criadoEm ? ' · ' : '') + esc(dataBonita(n.criadoEm)) + ' · ' + Math.max(1, Math.round(String(n.conteudo || '').replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length / 200)) + ' min de leitura</p>' +
+    const trilhaPartes = [{ texto: 'Início', href: 'index.html' }];
+    if (n.edicao) {
+      trilhaPartes.push({ texto: 'Editorial', href: 'edicoes.html' });
+      trilhaPartes.push({ texto: n.edicao, href: edicaoDoc ? 'edicao.html?id=' + encodeURIComponent(edicaoDoc.id) : 'edicoes.html' });
+    } else {
+      trilhaPartes.push({ texto: 'Artigos', href: 'artigos.html' });
+    }
+    trilhaPartes.push({ texto: n.titulo });
+    const nomesAutor = [n.autorNome].concat(n.coautores || []).filter(Boolean).join(', ');
+    const minLeitura = Math.max(1, Math.round(String(n.conteudo || '').replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length / 200));
+    a.innerHTML = trilhaHTML(trilhaPartes) +
       (n.imagemUrl ? '<figure class="capa-fig"><img class="capa-img" src="' + esc(n.imagemUrl) + '" alt="' + esc(n.imagemLegenda || '') + '">' + (n.imagemLegenda ? '<figcaption>' + esc(n.imagemLegenda) + '</figcaption>' : '') + '</figure>' : '') +
+      '<span class="cat">' + esc(n.categoria || '') + '</span><h1>' + esc(n.titulo) + '</h1>' +
+      '<hr class="linha-fina">' +
+      '<div class="byline" id="byline"><div class="av" id="bylineAv">' + esc((nomesAutor || '?').charAt(0).toUpperCase()) + '</div><div class="info"><strong>' + esc(nomesAutor) + '</strong>' + esc(dataHoraBonita(n.criadoEm)) + (n.criadoEm ? ' · ' : '') + minLeitura + ' min de leitura</div></div>' +
+      '<div class="toolbar-art" id="toolbarArt"></div>' +
       (n.resumo ? '<p class="resumo">' + esc(n.resumo) + '</p>' : '') +
-      '<div class="ferr" id="ferrArt"></div><div class="corpo" id="corpoArt">' + sanitizar(bloqueado ? cortar(n.conteudo, regra) : n.conteudo) + '</div>' + (bloqueado ? gateHTML(false) : '') +
+      '<div class="corpo" id="corpoArt">' + sanitizar(bloqueado ? cortar(n.conteudo, regra) : n.conteudo) + '</div>' + (bloqueado ? gateHTML(false) : '') +
       '<div class="acoes-art" id="acoesArt">' +
         '<button class="btn-acao" id="btnCurtir">🤍 Curtir <span class="n" id="numCurtidas">0</span></button>' +
         '<button class="btn-acao" id="btnSalvar">🔖 Salvar</button>' +
@@ -81,10 +93,22 @@ try {
     registrarVisualizacao(noticiaId);
     montarFerramentas(n.titulo);
     iniciarAcoes();
+    carregarFotoAutor(n.autorUid);
   }
 } catch (err) {
   a.innerHTML = '<p class="vazio">Não foi possível carregar agora.</p>';
   console.error(err);
+}
+
+async function carregarFotoAutor(autorUid) {
+  if (!autorUid) return;
+  try {
+    const s = await getDoc(doc(db, 'equipe', autorUid));
+    if (s.exists() && s.data().fotoUrl) {
+      const av = document.getElementById('bylineAv');
+      if (av) { av.outerHTML = '<img class="av" id="bylineAv" src="' + esc(s.data().fotoUrl) + '" alt="">'; }
+    }
+  } catch (e) {}
 }
 
 function cortar(html, r) {

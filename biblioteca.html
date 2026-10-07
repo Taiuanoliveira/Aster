@@ -53,6 +53,10 @@
   .livro .tag{font-size:11px;padding:3px 9px;border-radius:999px;background:#eef3f7;color:var(--med);cursor:pointer}
   .livro .tag.trad{background:#fff3df;color:#8a5a12}
   #vazio{display:none;text-align:center;color:var(--cinza);padding:30px 0}
+  .busca span{white-space:normal;text-align:right;max-width:45%}
+  .chip small{opacity:.65;font-size:11px}.chip.on small{opacity:.9}
+  .chip.extra{display:none}.chips.aberto .chip.extra{display:inline-block}
+  .chip.mais{border-style:dashed}
 </style>
 <link rel="stylesheet" href="css/tema.css">
 <script src="js/tema.js"></script>
@@ -112,12 +116,19 @@ const norm = s => String(s == null ? '' : s).toLowerCase().normalize('NFD').repl
 const lista = itens.map(l => ({ ...l, arquivo: baixarDireto(l.arquivo), temas: Array.isArray(l.temas) ? l.temas : [] }))
   .filter(l => !l.catalogo || /^https:\/\//i.test(l.arquivo)); // obras do catálogo só aparecem quando têm PDF
 const estado = { q: '', tradicao: '', tema: '' };
-const unicos = f => [...new Set(lista.flatMap(f).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
-function chips(idEl, valores, chave) {
+const contar = f => { const m = {}; lista.forEach(l => f(l).forEach(v => { if (v) m[v] = (m[v] || 0) + 1; })); return Object.entries(m).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR')); };
+function chips(idEl, pares, chave) {
   const el = document.getElementById(idEl);
-  if (!valores.length) { el.parentElement.style.display = 'none'; return; }
-  el.innerHTML = '<button type="button" class="chip" data-v="">Todos</button>' + valores.map(v => '<button type="button" class="chip" data-v="' + esc(v) + '">' + esc(v) + '</button>').join('');
-  el.onclick = e => { const b = e.target.closest('.chip'); if (b) { estado[chave] = b.dataset.v; desenhar(); } };
+  if (!pares.length) { el.parentElement.style.display = 'none'; return; }
+  const LIMITE = 8;
+  el.innerHTML = '<button type="button" class="chip" data-v="">Todos</button>' +
+    pares.map((p, i) => '<button type="button" class="chip' + (i >= LIMITE ? ' extra' : '') + '" data-v="' + esc(p[0]) + '">' + esc(p[0]) + ' <small>' + p[1] + '</small></button>').join('') +
+    (pares.length > LIMITE ? '<button type="button" class="chip mais" data-mais="1">+ ver todos (' + pares.length + ')</button>' : '');
+  el.onclick = e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    if (b.dataset.mais) { el.classList.toggle('aberto'); b.textContent = el.classList.contains('aberto') ? '− ver menos' : '+ ver todos (' + pares.length + ')'; return; }
+    estado[chave] = estado[chave] === b.dataset.v ? '' : b.dataset.v; desenhar();
+  };
 }
 function cartao(l) {
   const ok = l.arquivo && /^https:\/\//i.test(l.arquivo);
@@ -141,13 +152,15 @@ function desenhar() {
     return termos.every(w => palheiro.includes(w));
   });
   grid.innerHTML = ''; achados.forEach(l => grid.appendChild(cartao(l)));
-  document.getElementById('contagem').textContent = achados.length + (achados.length === 1 ? ' livro' : ' livros');
+  const ativos = [estado.tradicao, estado.tema].filter(Boolean);
+  document.getElementById('contagem').textContent = achados.length + (achados.length === 1 ? ' livro' : ' livros') + (ativos.length ? ' em ' + ativos.join(' + ') : '');
   document.getElementById('vazio').style.display = achados.length ? 'none' : 'block';
   document.querySelectorAll('#chipsTrad .chip').forEach(b => b.classList.toggle('on', b.dataset.v === estado.tradicao));
   document.querySelectorAll('#chipsTema .chip').forEach(b => b.classList.toggle('on', b.dataset.v === estado.tema));
+  ['chipsTrad', 'chipsTema'].forEach(id => { const el = document.getElementById(id); if (el.querySelector('.chip.extra.on')) el.classList.add('aberto'); });
 }
-chips('chipsTrad', unicos(l => [l.tradicao]), 'tradicao');
-chips('chipsTema', unicos(l => l.temas), 'tema');
+chips('chipsTrad', contar(l => [l.tradicao]), 'tradicao');
+chips('chipsTema', contar(l => l.temas), 'tema');
 document.getElementById('busca').addEventListener('input', e => { estado.q = e.target.value; desenhar(); });
 document.getElementById('limpar').addEventListener('click', e => { e.preventDefault(); estado.q = ''; estado.tradicao = ''; estado.tema = ''; document.getElementById('busca').value = ''; desenhar(); });
 desenhar();

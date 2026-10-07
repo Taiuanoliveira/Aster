@@ -204,6 +204,21 @@
         });
         bt.style.cssText = 'margin:8px 0 14px;padding:9px 16px;cursor:pointer;';
         p.appendChild(bt);
+        const br = botao('📝 Preencher resumos das obras do catálogo', 'btn-secundario', async () => {
+          const { resumoDe } = await import('../js/catalogo-resumos.js');
+          const padrao = /^(Credos e confissões|Igreja antiga e medieval|Reforma luterana|Reforma reformada e puritanos|Arminianismo e wesleyanos|Vida cristã e devocionais|Apologética e estudo bíblico|Em português e do Brasil)/;
+          const pend = itens.filter(i => i.catalogo && (!i.resumo || padrao.test(i.resumo)));
+          const alvo = pend.map(i => ({ i, r: resumoDe(i.titulo, i.autor) })).filter(x => x.r);
+          if (!alvo.length) { msg('msgSucesso', 'Nenhuma obra do catálogo está esperando resumo.'); return; }
+          if (!confirm('Preencher o resumo de ' + alvo.length + ' obras? Resumos que você mesmo escreveu não são alterados.')) return;
+          msg('msgSucesso', 'Preenchendo ' + alvo.length + ' resumos… aguarde.');
+          for (let k = 0; k < alvo.length; k += 20)
+            await Promise.all(alvo.slice(k, k + 20).map(x => updateDoc(doc(db, s.col, x.i.id), { resumo: x.r })));
+          const sobra = pend.length - alvo.length;
+          msg('msgSucesso', alvo.length + ' resumos preenchidos.' + (sobra ? ' ' + sobra + ' obra(s) ficaram sem resumo automático.' : '')); render();
+        });
+        br.style.cssText = 'margin:8px 0 14px 8px;padding:9px 16px;cursor:pointer;';
+        p.appendChild(br);
       }
       if (!itens.length) {
         const aviso = document.createElement('p'); aviso.style.cssText = 'color:#777;font-size:13px;margin:8px 0 12px;';

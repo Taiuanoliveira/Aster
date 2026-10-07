@@ -1,3 +1,4 @@
+import { resumoDe } from './catalogo-resumos.js';
 // Catálogo de obras com ORIGINAL em domínio público (Brasil: autor falecido até 1955).
 // Lista de apoio: confira cada PDF e cada tradução antes de publicar. Traduções modernas têm direitos próprios.
 const LINHA = { c: 'Calvinismo (Reformada)', a: 'Arminianismo', w: 'Wesleyanismo (Metodista)', l: 'Luteranismo', g: 'Anglicanismo', p: 'Patrística (Pais da Igreja)', b: 'Batista', m: 'Medieval / Católica clássica', n: 'Neutro / sem linha explícita' };
@@ -238,5 +239,5 @@ export const CATALOGO = [];
 GRUPOS.forEach(([grupo, linhas]) => linhas.trim().split('\n').forEach(l => {
   const [titulo, autor, ano, linha, temas] = l.split('|').map(x => x.trim());
   CATALOGO.push({ titulo, autor, tradicao: LINHA[linha] || LINHA.n, temas: [...(temas || '')].map(k => TEMA[k]).filter(Boolean),
-    resumo: grupo + (ano ? '. Autor falecido em ' + ano + '.' : '.'), arquivo: '', capaUrl: '', catalogo: true });
+    resumo: resumoDe(titulo, autor) || (grupo + (ano ? '. Autor falecido em ' + ano + '.' : '.')), arquivo: '', capaUrl: '', catalogo: true });
 }));

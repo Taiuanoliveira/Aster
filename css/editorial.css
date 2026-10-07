@@ -30,3 +30,6 @@ html[data-tema="escuro"] .edc-art span{color:#9fb0bd}
 html[data-tema="escuro"] .edc-fim{border-color:#3b5368}
 html[data-tema="escuro"] .edc-art small{color:#E8A33D}
 @media(max-width:720px){.edc-setas{display:none}.edc-capa{flex-basis:74%}.edc-art{flex-basis:68%}.edc-fim{flex-basis:56%}}
+/* contraste */
+.edc-art small{color:#8a5a12}
+html[data-tema="escuro"] .edc-art small{color:#E8A33D}

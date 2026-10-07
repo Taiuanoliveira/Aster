@@ -1,6 +1,6 @@
 // Projeto Aster – Editorial da home: [capa da edição] [artigos dela…] [edição anterior] [artigos…] … [ver todas]
 import { db } from './firebase-config.js';
-import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { carregarArtigos, esc, dataCurta } from './artigos-lista.js';
 
 const MAX_EDICOES = 3;   // quantas edições entram na fileira (as mais recentes)
@@ -8,12 +8,13 @@ const urlOk = u => /^https:\/\//i.test(u || '') ? String(u).replace(/['"\\()\s]/
 const fundo = u => urlOk(u) ? ' style="background-image:url(\'' + urlOk(u) + '\')"' : '';
 
 async function carregarEdicoes() {
+  let l = [];
   try {
-    const s = await getDocs(collection(db, 'edicoes'));
-    const l = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => e.status === 'publicada')
-      .sort((a, b) => String(b.criadoEm || '').localeCompare(String(a.criadoEm || '')));
-    if (l.length) return l;
-  } catch (e) { return []; }
+    const s = await getDocs(query(collection(db, 'edicoes'), where('status', '==', 'publicada')));
+    l = s.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => String(b.publicadaEm || b.criadoEm || '').localeCompare(String(a.publicadaEm || a.criadoEm || '')));
+  } catch (e) { l = []; }
+  if (l.length) return l;
   try { const dm = await (await import('./demo.js')).carregarDemo(); return dm ? dm.edicoes : []; } catch (e) { return []; }
 }
 
@@ -30,7 +31,7 @@ try {
           '<span class="num">' + esc(e.especial ? 'Especial' : (e.numero ? 'Edição nº ' + e.numero : 'Edição')) + '</span>' +
           '<h3>' + esc(e.tema || e.nome) + '</h3>' + (e.descricao ? '<p>' + esc(e.descricao) + '</p>' : '') +
           '<span class="ler">Ler a edição</span></a>');
-        dados.artigos.filter(a => a.edicao === e.nome).sort((a, b) => (a.ordemEdicao || 99) - (b.ordemEdicao || 99)).forEach(a => {
+        dados.artigos.filter(a => a.edicao === e.nome).sort((a, b) => (a.ordemEdicao ?? 99) - (b.ordemEdicao ?? 99)).forEach(a => {
           const slug = (a.categorias && a.categorias[0]) || a.categoria || '';
           slides.push('<a class="edc-art" href="noticia.html?id=' + encodeURIComponent(a.id) + '">' +
             '<div class="img"' + fundo(a.imagemUrl) + '>' + (urlOk(a.imagemUrl) ? '' : '✦') + '</div>' +

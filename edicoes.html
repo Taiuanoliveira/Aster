@@ -63,7 +63,7 @@ try {
     box.innerHTML = '';
     const e = l[0], link = 'edicao.html?id=' + encodeURIComponent(e.id);
     const hero = document.createElement('section'); hero.className = 'hero-ed';
-    const a = document.createElement('a'); a.className = 'capa-link'; a.href = link; a.setAttribute('aria-label', 'Ler ' + e.nome); a.setAttribute('aria-label', 'Ler ' + e.nome); a.appendChild(capa(e)); hero.appendChild(a);
+    const a = document.createElement('a'); a.className = 'capa-link'; a.href = link; a.setAttribute('aria-label', 'Ler ' + e.nome); a.appendChild(capa(e)); hero.appendChild(a);
     const info = document.createElement('div'); info.className = 'hero-info';
     info.innerHTML = '<p class="rot">Edição atual</p><h2>' + esc(e.nome) + '</h2><p class="meta">' +
       esc([e.numero ? 'Nº ' + e.numero : '', e.especial ? 'Especial' : '', e.tema || '', dataBonita(e.publicadaEm || e.criadoEm)].filter(Boolean).join(' · ')) + '</p>' +

@@ -19,6 +19,7 @@ import { db } from './js/firebase-config.js';
 import { doc, getDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { montarTopoRodape, esc, sanitizar, dataBonita, dataHoraBonita, trilhaHTML } from './js/leitura.js';
 import { marcarReferencias } from './js/versiculos.js';
+import { montarAudio } from './js/audio-artigo.js';
 import { observarLogin } from './js/auth.js';
 import {
   registrarVisualizacao, curtidaDoUsuario, contarCurtidas, alternarCurtida,
@@ -93,30 +94,59 @@ try {
         '<div id="listaComentarios">Carregando comentários…</div>' +
       '</section>';
     marcarReferencias(a.querySelector('.corpo'));
-    try { if (!sessionStorage.getItem('aster_v_' + noticiaId)) { sessionStorage.setItem('aster_v_' + noticiaId, '1'); try { if (!sessionStorage.getItem('aster_v_' + noticiaId)) { sessionStorage.setItem('aster_v_' + noticiaId, '1'); registrarVisualizacao(noticiaId); } } catch (e) { registrarVisualizacao(noticiaId); } } } catch (e) { registrarVisualizacao(noticiaId); }
+    if (!dm) { try { if (!sessionStorage.getItem('aster_v_' + noticiaId)) { sessionStorage.setItem('aster_v_' + noticiaId, '1'); registrarVisualizacao(noticiaId); } } catch (e) { registrarVisualizacao(noticiaId); } }
     montarFerramentas(n.titulo);
+    try { montarAudio({ titulo: n.titulo, autor: nomesAutor, resumo: n.resumo, corpo: document.getElementById('corpoArt') }); } catch (e) {}
     if (dm) iniciarDemo(); else iniciarAcoes();
     if (!dm) carregarFotoAutor(n.autorUid, n.autorNome);
-    montarNavMateria(n);
+    montarNavMateria(n, dm);
   }
 } catch (err) {
   a.innerHTML = '<p class="vazio">Não foi possível carregar agora.</p>';
   console.error(err);
 }
 
-async function montarNavMateria(n) {
+async function montarNavMateria(n, dm) {
   if (!n.edicao) return;
   try {
-    const por = st => getDocs(query(collection(db, 'noticias'), where('edicao', '==', n.edicao), where('status', '==', st)));
-    const [qa, qb] = await Promise.all([por('publicado'), por('indexado')]);
-    const lista = [...qa.docs, ...qb.docs].map(d => ({ id: d.id, ...d.data() })).sort((x, y) => (x.ordemEdicao ?? 99) - (y.ordemEdicao ?? 99));
+    let lista = [], eds = [];
+    if (dm) {
+      const ed = dm.edicaoPorNome(n.edicao);
+      lista = ed ? dm.artigosDaEdicao(ed.id).slice() : [];
+      eds = dm.edicoes.slice();
+    } else {
+      const por = st => getDocs(query(collection(db, 'noticias'), where('edicao', '==', n.edicao), where('status', '==', st)));
+      const [qa, qb] = await Promise.all([por('publicado'), por('indexado')]);
+      lista = [...qa.docs, ...qb.docs].map(d => ({ id: d.id, ...d.data() }));
+      try { eds = (await getDocs(query(collection(db, 'edicoes'), where('status', '==', 'publicada')))).docs.map(d => ({ id: d.id, ...d.data() })); } catch (e) { eds = []; }
+    }
+    lista.sort((x, y) => (x.ordemEdicao ?? 99) - (y.ordemEdicao ?? 99));
+    eds.sort((x, y) => String(x.publicadaEm || x.criadoEm || '').localeCompare(String(y.publicadaEm || y.criadoEm || '')));
     const i = lista.findIndex(x => x.id === noticiaId);
-    if (i < 0 || lista.length < 2) return;
+    if (i < 0) return;
+    const ie = eds.findIndex(x => x.nome === n.edicao);
     const ant = lista[i - 1], prox = lista[i + 1];
+    const edAtual = ie >= 0 ? eds[ie] : null, edAnt = ie > 0 ? eds[ie - 1] : null, edProx = ie >= 0 ? eds[ie + 1] : null;
+    const rotulo = e => e.nome + (e.tema ? ' · ' + e.tema : '');
+    const link = (pag, id) => pag + '?id=' + encodeURIComponent(id);
+    const card = (cls, rot, tit, href) => '<a class="nl-card ' + cls + '" href="' + href + '"><small>' + esc(rot) + '</small><b>' + esc(tit) + '</b></a>';
+
+    let esq = '<span class="nl-vazio"></span>', dir = '<span class="nl-vazio"></span>';
+    if (ant) esq = card('nl-ant', '← Artigo anterior', ant.titulo, link('noticia.html', ant.id));
+    else if (edAnt) esq = card('nl-ant', '← Edição anterior', rotulo(edAnt), link('edicao.html', edAnt.id));
+    if (prox) dir = card('nl-prox', 'Próximo artigo →', prox.titulo, link('noticia.html', prox.id));
+    else if (edProx) dir = card('nl-prox nl-fim', 'Você terminou esta edição · Próxima edição →', rotulo(edProx), link('edicao.html', edProx.id));
+    else if (edAtual) dir = card('nl-prox nl-fim', 'Você terminou esta edição', 'Ver todos os artigos da edição', link('edicao.html', edAtual.id));
+
+    const extras = [];
+    if (edAtual) extras.push('<a href="' + link('edicao.html', edAtual.id) + '">Ver todos os artigos desta edição</a>');
+    if (ant && edAnt) extras.push('<a href="' + link('edicao.html', edAnt.id) + '">← Edição anterior</a>');
+    if (prox && edProx) extras.push('<a href="' + link('edicao.html', edProx.id) + '">Próxima edição →</a>');
+
     const nav = document.createElement('nav');
-    nav.className = 'nav-materias'; nav.setAttribute('aria-label', 'Outras matérias da edição');
-    nav.innerHTML = '<span>' + (ant ? '<a href="noticia.html?id=' + encodeURIComponent(ant.id) + '">← ' + esc(ant.titulo) + '</a>' : '') + '</span>' +
-                    '<span>' + (prox ? '<a href="noticia.html?id=' + encodeURIComponent(prox.id) + '">' + esc(prox.titulo) + ' →</a>' : '') + '</span>';
+    nav.className = 'nav-leitura';
+    nav.setAttribute('aria-label', 'Continuar lendo');
+    nav.innerHTML = '<div class="nl-linha">' + esq + dir + '</div>' + (extras.length ? '<p class="nl-ed">' + extras.join(' · ') + '</p>' : '');
     const ref = document.getElementById('acoesArt');
     if (ref) ref.after(nav);
   } catch (e) {}

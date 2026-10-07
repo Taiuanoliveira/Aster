@@ -232,3 +232,36 @@ html[data-tema="escuro"] .of-aut { color: #8cc4ea; }
 html[data-tema="escuro"] .nav-edicoes a, html[data-tema="escuro"] .nav-materias a { color: #8cc4ea; }
 html[data-tema="escuro"] .nav-edicoes button { color: #8cc4ea; border-color: #3b5368; }
 html[data-tema="escuro"] .nav-materias { border-top-color: #2a3442; }
+
+/* ---- Leitor: continuar lendo (artigo anterior/próximo e edição anterior/próxima) e botão Ouvir ---- */
+.nav-leitura{margin:34px 0 8px;border-top:1px solid #e3ddd0;padding-top:20px}
+.nl-linha{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.nl-card{display:flex;flex-direction:column;gap:5px;padding:14px 16px;border:1.5px solid #e3ddd0;border-radius:12px;text-decoration:none;color:inherit;background:#fff;min-height:76px}
+.nl-card small{font:700 11px/1.3 Inter,sans-serif;letter-spacing:1.1px;text-transform:uppercase;color:#8a5a12}
+.nl-card b{font-family:'Playfair Display',serif;font-size:17px;line-height:1.25;color:#0C3B5C;font-weight:700}
+.nl-card:hover{border-color:#E8A33D}
+.nl-prox{text-align:right;align-items:flex-end}
+.nl-fim{background:#0C3B5C;border-color:#0C3B5C}
+.nl-fim small{color:#E8A33D}
+.nl-fim b{color:#fff}
+.nl-vazio{display:block}
+.nl-ed{margin:16px 0 0;text-align:center;font-size:14px;font-weight:600}
+.nl-ed a{color:#1F5A82;text-decoration:none}
+.nl-ed a:hover{text-decoration:underline}
+@media(max-width:560px){.nl-linha{grid-template-columns:1fr}.nl-prox{text-align:left;align-items:flex-start}.nl-vazio{display:none}}
+html[data-tema="escuro"] .nav-leitura{border-top-color:#2a3442}
+html[data-tema="escuro"] .nl-card{background:#1b2430;border-color:#2a3442}
+html[data-tema="escuro"] .nl-card b{color:#fff}
+html[data-tema="escuro"] .nl-card small{color:#E8A33D}
+html[data-tema="escuro"] .nl-fim{background:#163049;border-color:#2f4a60}
+html[data-tema="escuro"] .nl-ed a{color:#8cc4ea}
+.ouvir-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 22px;padding:10px 14px;border:1px solid #e3ddd0;border-radius:12px;background:#f4f8fb}
+.ouvir-bar [hidden]{display:none!important}
+.ouvir-play{background:#0C3B5C;color:#fff;border:none;border-radius:999px;padding:9px 18px;font:700 14px Inter,sans-serif;cursor:pointer}
+.ouvir-play:hover{background:#1F5A82}
+.ouvir-sec{background:transparent;color:#1F5A82;border:1.5px solid #1F5A82;border-radius:999px;padding:7px 14px;font:600 13px Inter,sans-serif;cursor:pointer}
+.ouvir-st{font-size:13px;color:#4f6270}
+html[data-tema="escuro"] .ouvir-bar{background:#1b2430;border-color:#2a3442}
+html[data-tema="escuro"] .ouvir-play{background:#E8A33D;color:#0C3B5C}
+html[data-tema="escuro"] .ouvir-sec{color:#8cc4ea;border-color:#3b5368}
+html[data-tema="escuro"] .ouvir-st{color:#9fb0bd}

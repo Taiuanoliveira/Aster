@@ -109,7 +109,8 @@ function baixarDireto(u) {
   return u;
 }
 const norm = s => String(s == null ? '' : s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-const lista = itens.map(l => ({ ...l, arquivo: baixarDireto(l.arquivo), temas: Array.isArray(l.temas) ? l.temas : [] }));
+const lista = itens.map(l => ({ ...l, arquivo: baixarDireto(l.arquivo), temas: Array.isArray(l.temas) ? l.temas : [] }))
+  .filter(l => !l.catalogo || /^https:\/\//i.test(l.arquivo)); // obras do catálogo só aparecem quando têm PDF
 const estado = { q: '', tradicao: '', tema: '' };
 const unicos = f => [...new Set(lista.flatMap(f).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 function chips(idEl, valores, chave) {

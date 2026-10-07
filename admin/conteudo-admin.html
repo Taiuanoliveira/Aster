@@ -190,6 +190,21 @@
       p.appendChild(acoes);
 
       const h2 = document.createElement('h2'); h2.style.marginTop = '28px'; h2.textContent = 'Itens publicados (' + itens.length + ')'; p.appendChild(h2);
+      if (atual === 'biblioteca') {
+        const bt = botao('📚 Importar catálogo de domínio público (sem PDFs)', 'btn-secundario', async () => {
+          const { CATALOGO } = await import('../js/catalogo-biblioteca.js');
+          const ja = new Set(itens.map(i => ((i.titulo || '') + '|' + (i.autor || '')).toLowerCase()));
+          const novos = CATALOGO.filter(c => !ja.has((c.titulo + '|' + c.autor).toLowerCase()));
+          if (!novos.length) { msg('msgSucesso', 'O catálogo já está todo importado.'); return; }
+          if (!confirm('Importar ' + novos.length + ' obras? Elas ficam só aqui no painel, sem PDF, e só aparecem no site depois que você colocar o link do PDF de cada uma.')) return;
+          msg('msgSucesso', 'Importando ' + novos.length + ' obras… aguarde.');
+          for (let i = 0; i < novos.length; i += 20)
+            await Promise.all(novos.slice(i, i + 20).map((d, j) => addDoc(collection(db, s.col), { ...d, ordem: 1000 + i + j })));
+          msg('msgSucesso', novos.length + ' obras importadas. Agora é só ir colocando o link do PDF de cada uma.'); render();
+        });
+        bt.style.cssText = 'margin:8px 0 14px;padding:9px 16px;cursor:pointer;';
+        p.appendChild(bt);
+      }
       if (!itens.length) {
         const aviso = document.createElement('p'); aviso.style.cssText = 'color:#777;font-size:13px;margin:8px 0 12px;';
         aviso.textContent = 'Nada cadastrado ainda: o site está mostrando o conteúdo padrão. Importe esse conteúdo para poder editar cada item aqui.'; p.appendChild(aviso);

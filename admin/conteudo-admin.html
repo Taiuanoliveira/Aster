@@ -72,8 +72,11 @@
       biblioteca: { nome: 'Biblioteca', col: 'biblioteca', campos: [
         ['titulo', 'Título do material', 'text'], ['resumo', 'Descrição (explique o que é este material)', 'area'],
         ['capaUrl', 'Capa do material — imagem vertical, ideal 600 × 800 px (opcional)', 'imagem'],
+        ['autor', 'Autor (ou autores)', 'text'],
+        ['tradicao', 'Linha teológica do autor', 'tradicao'],
+        ['temas', 'Temas do livro (escolha quantos quiser ou crie o seu)', 'temas'],
         ['arquivo', 'Link do PDF (Google Drive, Dropbox ou outro link público)', 'text'], ['ordem', 'Ordem', 'number']],
-        resumo: e => e.titulo + (e.arquivo && e.arquivo !== '#' ? '' : '  (sem PDF ainda)') },
+        resumo: e => e.titulo + (e.autor ? ' — ' + e.autor : '') + (e.arquivo && e.arquivo !== '#' ? '' : '  (sem PDF ainda)') },
       planos: { nome: 'Planos de leitura', col: 'planos', campos: [
         ['nome', 'Nome do plano (ex: Em 6 meses)', 'text'], ['dias', 'Duração em dias (a Bíblia é dividida igualmente)', 'number'], ['ordem', 'Ordem', 'number']],
         resumo: e => e.nome + ' · ' + e.dias + ' dias' },
@@ -107,9 +110,40 @@
         $('abas').appendChild(b);
       });
     }
+    const NEUTRO = 'Neutro / sem linha explícita';
+    const TRADICOES = ['Calvinismo (Reformada)', 'Arminianismo', 'Wesleyanismo (Metodista)', 'Luteranismo', 'Anglicanismo', 'Batista', 'Pentecostal / Carismática', 'Anabatista / Menonita', 'Dispensacionalismo', 'Teologia da Aliança', 'Patrística (Pais da Igreja)'];
+    const TEMAS = ['Fé', 'Salvação', 'Graça', 'Justificação', 'Santificação', 'Predestinação e livre-arbítrio', 'Escatologia', 'Cristologia', 'Espírito Santo', 'Igreja', 'Oração', 'Vida cristã', 'Família e casamento', 'Evangelismo e missões', 'Apologética', 'História da Igreja', 'Teologia sistemática', 'Bíblia e interpretação', 'Devocional', 'Avivamento', 'Sofrimento', 'Liderança e ministério', 'Adoração', 'Ética cristã'];
     function campo(c, valor) {
       const [id, rotulo, tipo] = c, wrap = document.createElement('div');
       const l = document.createElement('label'); l.textContent = rotulo; wrap.appendChild(l);
+      if (tipo === 'tradicao') {
+        const sel = document.createElement('select'); sel.id = 'f_' + id + '_sel'; sel.style.cssText = 'width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;font:inherit';
+        [['', 'Escolha…'], [NEUTRO, NEUTRO]].concat(TRADICOES.map(x => [x, x])).concat([['__outra', 'Outra (digitar)…']]).forEach(o => { const op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; sel.appendChild(op); });
+        const out = document.createElement('input'); out.type = 'text'; out.id = 'f_' + id + '_out'; out.placeholder = 'Qual linha? (ex.: Pentecostalismo clássico)'; out.style.cssText = 'display:none;margin-top:8px';
+        const conhecidas = ['', NEUTRO].concat(TRADICOES);
+        if (valor && !conhecidas.includes(valor)) { sel.value = '__outra'; out.value = valor; out.style.display = 'block'; } else sel.value = valor || '';
+        sel.onchange = () => { out.style.display = sel.value === '__outra' ? 'block' : 'none'; };
+        const oc = document.createElement('input'); oc.type = 'hidden'; oc.id = 'f_' + id;
+        wrap.append(sel, out, oc); return wrap;
+      }
+      if (tipo === 'temas') {
+        const escolhidos = new Set(Array.isArray(valor) ? valor : []);
+        const oc = document.createElement('input'); oc.type = 'hidden'; oc.id = 'f_' + id;
+        const box = document.createElement('div'); box.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px';
+        const desenhar = () => {
+          oc.value = [...escolhidos].join('||'); box.innerHTML = '';
+          [...new Set(TEMAS.concat([...escolhidos]))].forEach(nome => {
+            const b = document.createElement('button'); b.type = 'button'; b.textContent = nome;
+            b.style.cssText = 'padding:6px 12px;border-radius:999px;cursor:pointer;font:inherit;font-size:13px;border:1px solid ' + (escolhidos.has(nome) ? '#0C3B5C;background:#0C3B5C;color:#fff' : '#ccc;background:#fff;color:#333');
+            b.onclick = () => { if (escolhidos.has(nome)) escolhidos.delete(nome); else escolhidos.add(nome); desenhar(); };
+            box.appendChild(b);
+          });
+        };
+        const novo = document.createElement('input'); novo.type = 'text'; novo.placeholder = 'Criar outro tema (ex.: Missões urbanas)'; novo.style.cssText = 'width:70%;display:inline-block';
+        const add = document.createElement('button'); add.type = 'button'; add.textContent = '+ Adicionar'; add.style.cssText = 'margin-left:8px;padding:10px 14px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer;font:inherit';
+        add.onclick = () => { const n = novo.value.trim().replace(/\|/g, ''); if (n) { escolhidos.add(n); novo.value = ''; desenhar(); } };
+        desenhar(); wrap.append(box, novo, add, oc); return wrap;
+      }
       if (tipo === 'imagem') {
         const oculto = document.createElement('input'); oculto.type = 'hidden'; oculto.id = 'f_' + id; oculto.value = valor || '';
         const arq = document.createElement('input'); arq.type = 'file'; arq.accept = 'image/*'; arq.id = 'f_' + id + '_arq';
@@ -145,7 +179,8 @@
             const f = $('f_' + c[0] + '_arq').files[0];
             if (f) { try { v = await enviarImagemCloudinary(f); } catch (e) { msg('msgErro', 'Não foi possível enviar a imagem: ' + e.message); return; } }
           }
-          dados[c[0]] = c[2] === 'number' ? (parseInt(v) || 0) : v;
+          if (c[2] === 'tradicao') { const sv = $('f_' + c[0] + '_sel').value; v = sv === '__outra' ? $('f_' + c[0] + '_out').value.trim() : sv; }
+          dados[c[0]] = c[2] === 'number' ? (parseInt(v) || 0) : (c[2] === 'temas' ? (v ? v.split('||') : []) : v);
         }
         if (!dados[s.campos[0][0]] || (s.col !== 'planos' && s.col !== 'biblioteca' && !dados.titulo) || (s.col === 'planos' && !dados.dias)) { msg('msgErro', 'Preencha os campos principais.'); return; }
         if (editandoId) await updateDoc(doc(db, s.col, editandoId), dados); else await addDoc(collection(db, s.col), dados);

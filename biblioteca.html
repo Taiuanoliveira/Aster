@@ -39,6 +39,20 @@
   
   .livro p{font-size:13px;color:var(--cinza);line-height:1.5;flex:1;margin-bottom:14px}
   .btn{padding:9px 14px;border-radius:8px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;cursor:pointer;border:none;background:var(--amar);color:var(--esc)}
+  .capa.img{height:auto;aspect-ratio:3/4;padding:0;overflow:hidden}.capa.img img{width:100%;height:100%;object-fit:cover;display:block}
+  .busca{display:flex;gap:10px;align-items:center;margin:6px 0 16px}
+  .busca input{flex:1;padding:13px 16px;border:1px solid var(--borda);border-radius:10px;font:inherit;font-size:15px;background:var(--card);color:var(--texto)}
+  .busca span{font-size:13px;color:var(--cinza);white-space:nowrap}
+  .filtros{margin-bottom:14px}
+  .filtros b{display:block;font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:var(--cinza);margin-bottom:6px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1px solid var(--borda);background:var(--card);color:var(--texto);border-radius:999px;padding:6px 14px;font:inherit;font-size:13px;cursor:pointer}
+  .chip.on{background:var(--esc);color:#fff;border-color:var(--esc)}
+  .livro .autor{font-size:12px;font-weight:600;color:var(--med);margin:-2px 0 8px}
+  .livro .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .livro .tag{font-size:11px;padding:3px 9px;border-radius:999px;background:#eef3f7;color:var(--med);cursor:pointer}
+  .livro .tag.trad{background:#fff3df;color:#8a5a12}
+  #vazio{display:none;text-align:center;color:var(--cinza);padding:30px 0}
 </style>
 <link rel="stylesheet" href="css/tema.css">
 <script src="js/tema.js"></script>
@@ -62,6 +76,10 @@
   <p class="sub">Livros e materiais para baixar.</p>
   <p class="aviso">Esta seção ainda está em montagem: os títulos abaixo são exemplos de como vai ficar. Os PDFs reais serão adicionados em breve.</p>
 
+  <div class="busca"><input type="search" id="busca" placeholder="Buscar por título, autor, linha teológica ou tema (ex.: calvinismo, salvação)…" autocomplete="off"><span id="contagem"></span></div>
+  <div class="filtros"><b>Linha teológica</b><div class="chips" id="chipsTrad"></div></div>
+  <div class="filtros"><b>Tema</b><div class="chips" id="chipsTema"></div></div>
+  <p id="vazio">Nenhum livro encontrado. Tente outra palavra ou <a href="#" id="limpar">limpe os filtros</a>.</p>
   <div class="grid" id="grid"></div>
 </main>
 
@@ -90,14 +108,48 @@ function baixarDireto(u) {
   if (/^https:\/\/(www\.)?dropbox\.com\//i.test(u)) return u.replace(/([?&])dl=0/, '$1dl=1').replace(/^([^?]*)$/, '$1?dl=1');
   return u;
 }
-itens.forEach(l => {
-  l = { ...l, arquivo: baixarDireto(l.arquivo) };
+const norm = s => String(s == null ? '' : s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const lista = itens.map(l => ({ ...l, arquivo: baixarDireto(l.arquivo), temas: Array.isArray(l.temas) ? l.temas : [] }));
+const estado = { q: '', tradicao: '', tema: '' };
+const unicos = f => [...new Set(lista.flatMap(f).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+function chips(idEl, valores, chave) {
+  const el = document.getElementById(idEl);
+  if (!valores.length) { el.parentElement.style.display = 'none'; return; }
+  el.innerHTML = '<button type="button" class="chip" data-v="">Todos</button>' + valores.map(v => '<button type="button" class="chip" data-v="' + esc(v) + '">' + esc(v) + '</button>').join('');
+  el.onclick = e => { const b = e.target.closest('.chip'); if (b) { estado[chave] = b.dataset.v; desenhar(); } };
+}
+function cartao(l) {
   const ok = l.arquivo && /^https:\/\//i.test(l.arquivo);
   const div = document.createElement('div'); div.className = 'livro';
-  div.innerHTML = `${l.capaUrl && /^https:\/\//i.test(l.capaUrl) ? '<div class="capa img"><img src="' + esc(l.capaUrl) + '" alt="' + esc(l.titulo) + '"></div>' : '<div class="capa">' + esc(l.titulo) + '</div>'}<h3>${esc(l.titulo)}</h3><p>${esc(l.resumo)}</p><a class="btn" href="${ok ? esc(l.arquivo) : '#'}"${ok ? ' target="_blank" rel="noopener"' : ''}>Baixar PDF</a>`;
-  if (!ok) div.querySelector('a').addEventListener('click', e => { e.preventDefault(); alert('Este PDF ainda não foi adicionado. Em breve!'); });
-  grid.appendChild(div);
-});
+  const capa = l.capaUrl && /^https:\/\//i.test(l.capaUrl) ? '<div class="capa img"><img src="' + esc(l.capaUrl) + '" alt="' + esc(l.titulo) + '"></div>' : '<div class="capa">' + esc(l.titulo) + '</div>';
+  const tags = (l.tradicao ? '<span class="tag trad" data-k="tradicao" data-v="' + esc(l.tradicao) + '">' + esc(l.tradicao) + '</span>' : '') +
+    l.temas.map(x => '<span class="tag" data-k="tema" data-v="' + esc(x) + '">' + esc(x) + '</span>').join('');
+  div.innerHTML = capa + '<h3>' + esc(l.titulo) + '</h3>' + (l.autor ? '<div class="autor">' + esc(l.autor) + '</div>' : '') +
+    '<p>' + esc(l.resumo) + '</p>' + (tags ? '<div class="tags">' + tags + '</div>' : '') +
+    '<a class="btn" href="' + (ok ? esc(l.arquivo) : '#') + '"' + (ok ? ' target="_blank" rel="noopener"' : '') + '>Baixar PDF</a>';
+  if (!ok) div.querySelector('.btn').addEventListener('click', e => { e.preventDefault(); alert('Este PDF ainda não foi adicionado. Em breve!'); });
+  div.querySelectorAll('.tag').forEach(tg => tg.addEventListener('click', () => { estado[tg.dataset.k] = tg.dataset.v; desenhar(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+  return div;
+}
+function desenhar() {
+  const termos = norm(estado.q).split(/\s+/).filter(Boolean);
+  const achados = lista.filter(l => {
+    if (estado.tradicao && l.tradicao !== estado.tradicao) return false;
+    if (estado.tema && !l.temas.includes(estado.tema)) return false;
+    const palheiro = norm([l.titulo, l.autor, l.resumo, l.tradicao, l.temas.join(' ')].join(' '));
+    return termos.every(w => palheiro.includes(w));
+  });
+  grid.innerHTML = ''; achados.forEach(l => grid.appendChild(cartao(l)));
+  document.getElementById('contagem').textContent = achados.length + (achados.length === 1 ? ' livro' : ' livros');
+  document.getElementById('vazio').style.display = achados.length ? 'none' : 'block';
+  document.querySelectorAll('#chipsTrad .chip').forEach(b => b.classList.toggle('on', b.dataset.v === estado.tradicao));
+  document.querySelectorAll('#chipsTema .chip').forEach(b => b.classList.toggle('on', b.dataset.v === estado.tema));
+}
+chips('chipsTrad', unicos(l => [l.tradicao]), 'tradicao');
+chips('chipsTema', unicos(l => l.temas), 'tema');
+document.getElementById('busca').addEventListener('input', e => { estado.q = e.target.value; desenhar(); });
+document.getElementById('limpar').addEventListener('click', e => { e.preventDefault(); estado.q = ''; estado.tradicao = ''; estado.tema = ''; document.getElementById('busca').value = ''; desenhar(); });
+desenhar();
 </script>
 
 <script type="module">import('./js/site-config.js').then(m=>m.aplicarConfigSite()).catch(()=>{});</script>

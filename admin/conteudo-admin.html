@@ -46,6 +46,7 @@
         { href: 'tags-admin.html', label: '🔖 Tags e Destaques', cargos: ['administrador','editor'] },
         { href: 'edicoes-admin.html', label: '📚 Edições', cargos: ['administrador','editor'] },
         { href: 'conteudo-admin.html', label: '🧩 Conteúdo do site', cargos: ['administrador','editor'] },
+        { href: 'conteudo-admin.html?aba=biblioteca', label: '📚 Biblioteca', cargos: ['administrador','editor'] },
         { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
         { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
         { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
@@ -98,7 +99,7 @@
       planos: async () => [{ nome: 'Em 1 ano', dias: 365, ordem: 1 }, { nome: 'Em 90 dias', dias: 90, ordem: 2 }]
     };
 
-    let atual = 'estudos', editandoId = null;
+    let atual = (() => { const a = new URLSearchParams(location.search).get('aba'); return a && SECOES[a] ? a : 'estudos'; })(), editandoId = null;
     const $ = id => document.getElementById(id);
     function abas() {
       $('abas').innerHTML = '';

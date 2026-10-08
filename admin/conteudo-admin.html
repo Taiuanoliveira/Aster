@@ -76,8 +76,9 @@
         ['autor', 'Autor (ou autores)', 'text'],
         ['tradicao', 'Linha teológica do autor', 'tradicao'],
         ['temas', 'Temas do livro (escolha quantos quiser ou crie o seu)', 'temas'],
-        ['arquivo', 'Link do PDF (Google Drive, Dropbox ou outro link público)', 'text'], ['ordem', 'Ordem', 'number']],
-        resumo: e => e.titulo + (e.autor ? ' — ' + e.autor : '') + (e.arquivo && e.arquivo !== '#' ? '' : '  (sem PDF ainda)') },
+        ['arquivo', 'Link do PDF (Google Drive, Dropbox ou outro link público)', 'text'],
+        ['status', 'Status', 'status'], ['ordem', 'Ordem', 'number']],
+        resumo: e => (e.status === 'publicado' ? '🟢 ' : '🟡 ') + e.titulo + (e.autor ? ' — ' + e.autor : '') + (e.status === 'publicado' ? '' : '  (rascunho)') + (e.arquivo && e.arquivo !== '#' ? '' : '  · sem PDF ainda') },
       planos: { nome: 'Planos de leitura', col: 'planos', campos: [
         ['nome', 'Nome do plano (ex: Em 6 meses)', 'text'], ['dias', 'Duração em dias (a Bíblia é dividida igualmente)', 'number'], ['ordem', 'Ordem', 'number']],
         resumo: e => e.nome + ' · ' + e.dias + ' dias' },
@@ -145,6 +146,12 @@
         add.onclick = () => { const n = novo.value.trim().replace(/\|/g, ''); if (n) { escolhidos.add(n); novo.value = ''; desenhar(); } };
         desenhar(); wrap.append(box, novo, add, oc); return wrap;
       }
+      if (tipo === 'status') {
+        const sel = document.createElement('select'); sel.id = 'f_' + id; sel.style.cssText = 'width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;font:inherit';
+        [['rascunho', '🟡 Rascunho (não aparece no site)'], ['publicado', '🟢 Publicado (visível no site)']].forEach(o => { const op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; sel.appendChild(op); });
+        sel.value = valor || 'rascunho';
+        wrap.appendChild(sel); return wrap;
+      }
       if (tipo === 'imagem') {
         const oculto = document.createElement('input'); oculto.type = 'hidden'; oculto.id = 'f_' + id; oculto.value = valor || '';
         const arq = document.createElement('input'); arq.type = 'file'; arq.accept = 'image/*'; arq.id = 'f_' + id + '_arq';
@@ -200,7 +207,7 @@
           if (!confirm('Importar ' + novos.length + ' obras? Elas ficam só aqui no painel, sem PDF, e só aparecem no site depois que você colocar o link do PDF de cada uma.')) return;
           msg('msgSucesso', 'Importando ' + novos.length + ' obras… aguarde.');
           for (let i = 0; i < novos.length; i += 20)
-            await Promise.all(novos.slice(i, i + 20).map((d, j) => addDoc(collection(db, s.col), { ...d, ordem: 1000 + i + j })));
+            await Promise.all(novos.slice(i, i + 20).map((d, j) => addDoc(collection(db, s.col), { ...d, ordem: 1000 + i + j, status: 'rascunho' })));
           msg('msgSucesso', novos.length + ' obras importadas. Agora é só ir colocando o link do PDF de cada uma.'); render();
         });
         bt.style.cssText = 'margin:8px 0 14px;padding:9px 16px;cursor:pointer;';
@@ -236,6 +243,11 @@
         const rm = botao('Remover', '', async () => { if (confirm('Remover este item?')) { await deleteDoc(doc(db, s.col, i.id)); render(); } });
         ed.style.cssText = 'background:none;border:none;color:#E8A33D;font-weight:700;font-size:12px;text-transform:uppercase;cursor:pointer;';
         rm.style.cssText = 'background:none;border:none;color:#b3261e;font-weight:700;font-size:12px;text-transform:uppercase;cursor:pointer;';
+        if (s.col === 'biblioteca') {
+          const pub = botao(i.status === 'publicado' ? 'Tornar rascunho' : 'Publicar', '', async () => { await updateDoc(doc(db, s.col, i.id), { status: i.status === 'publicado' ? 'rascunho' : 'publicado' }); render(); });
+          pub.style.cssText = 'background:none;border:none;color:' + (i.status === 'publicado' ? '#777' : '#1b8a3a') + ';font-weight:700;font-size:12px;text-transform:uppercase;cursor:pointer;';
+          linha.appendChild(pub);
+        }
         linha.append(ed, rm); p.appendChild(linha);
       });
     }

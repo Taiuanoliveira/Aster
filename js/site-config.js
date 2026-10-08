@@ -27,7 +27,7 @@ export async function aplicarConfigSite() {
   if (c) {
     document.querySelectorAll('.logo-aster').forEach(a => {
       if (https(c.logoUrl)) a.innerHTML = '<img src="' + esc(c.logoUrl) + '" alt="" style="height:30px;width:auto;border-radius:4px"> ' + esc(nome || 'Projeto Aster');
-      else if (nome) a.innerHTML = '<span class="estrela">✦</span> ' + esc(nome);
+      else if (nome) a.innerHTML = '<img class="logo-img" src="img/logo.svg" alt="" width="32" height="32"> ' + esc(nome);
     });
   }
 
@@ -45,7 +45,7 @@ export async function aplicarConfigSite() {
   if (contato.length) partes.push('<p ' + p + '>' + contato.join(' · ') + '</p>');
   const links = ['<a href="termos.html">Termos de uso</a>', '<a href="privacidade.html">Privacidade</a>']
     .concat(inst.filter(i => linkOk(i.link)).map(i => '<a href="' + esc(i.link) + '"' + (/^https?:/i.test(i.link) ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' + esc(i.titulo) + '</a>'));
-  partes.push('<p ' + p + '>' + esc(nome || 'Projeto Aster') + ' · ' + links.join(' · ') + '</p>');
+  partes.push('<p ' + p + '><img class="logo-rodape" src="img/logo.svg" alt="" width="18" height="18" style="vertical-align:middle;margin-right:6px">' + esc(nome || 'Projeto Aster') + ' · ' + links.join(' · ') + '</p>');
   rod.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:8px">' + partes.join('') + '</div>';
 }
 

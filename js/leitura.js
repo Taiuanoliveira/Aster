@@ -39,12 +39,12 @@ export function dataHoraBonita(v){
 export function montarTopoRodape(){
   const topo=document.createElement('header');
   topo.className='topo';
-  topo.innerHTML='<a href="index.html" class="logo-aster"><span class="estrela">✦</span> Projeto Aster</a>'+
+  topo.innerHTML='<a href="index.html" class="logo-aster"><img class="logo-img" src="img/logo.svg" alt="" width="32" height="32"> Projeto Aster</a>'+
     '<nav class="nav-topo"><a href="biblia.html">Bíblia</a><a href="edicoes.html">Editorial</a><a href="artigos.html">Artigos</a><a href="estudos.html">Estudos</a><a href="biblioteca.html">Biblioteca</a><a href="apoiar.html">Apoie</a><a href="login.html">Entrar</a></nav>';
   document.body.prepend(topo);
   const rod=document.createElement('footer');
   rod.className='rodape';
-  rod.innerHTML='Projeto Aster · <a href="equipe.html">Nossa Equipe</a> · <a href="termos.html">Termos de uso</a> · <a href="privacidade.html">Privacidade</a>';
+  rod.innerHTML='<img class="logo-rodape" src="img/logo.svg" alt="" width="18" height="18" style="vertical-align:middle;margin-right:6px"> Projeto Aster · <a href="equipe.html">Nossa Equipe</a> · <a href="termos.html">Termos de uso</a> · <a href="privacidade.html">Privacidade</a>';
   document.body.append(rod);
   import('./site-config.js').then(m=>m.aplicarConfigSite()).catch(()=>{});
 }

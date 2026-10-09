@@ -18,7 +18,7 @@ try {
       c.textContent = '';
     } else {
       c.style.cssText += ';display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:14px;background:linear-gradient(160deg,#0C3B5C,#1F5A82)';
-      c.innerHTML = '<span style="font-size:26px;color:#E8A33D">✦</span><span style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#E8A33D;font-weight:700">' +
+      c.innerHTML = '<img src="img/logo.svg" alt="" style="width:40px;height:40px;border-radius:9px"><span style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#E8A33D;font-weight:700">' +
         esc(e.especial ? 'Especial' : (e.numero ? 'Nº ' + e.numero : 'Edição')) + '</span><strong style="font-size:16px;color:#fff;font-weight:600">' + esc(e.nome) + '</strong>';
     }
     $('edLink').href = 'edicao.html?id=' + encodeURIComponent(e.id);

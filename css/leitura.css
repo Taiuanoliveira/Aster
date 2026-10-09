@@ -265,3 +265,6 @@ html[data-tema="escuro"] .ouvir-bar{background:#1b2430;border-color:#2a3442}
 html[data-tema="escuro"] .ouvir-play{background:#E8A33D;color:#0C3B5C}
 html[data-tema="escuro"] .ouvir-sec{color:#8cc4ea;border-color:#3b5368}
 html[data-tema="escuro"] .ouvir-st{color:#9fb0bd}
+
+/* logo-aster-img */
+.ed-capa.sem-capa img.est{width:46px;height:46px;border-radius:10px}

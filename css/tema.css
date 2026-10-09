@@ -102,3 +102,8 @@ html[data-tema="escuro"] .gate a.sec2{color:#8cc4ea}
 
 .nav-topo a[href="apoiar.html"]{background:#E8A33D;color:#0C3B5C!important;padding:6px 14px;border-radius:999px;font-weight:700}
 .nav-topo a[href="apoiar.html"]:hover{background:#d8922f;color:#0C3B5C!important}
+
+/* logo-aster-img */
+.logo-aster{gap:10px!important}
+.logo-aster .logo-img{width:32px;height:32px;border-radius:8px;display:block;flex-shrink:0}
+@media(max-width:520px){.logo-aster .logo-img{width:28px;height:28px}}

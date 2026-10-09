@@ -510,3 +510,7 @@
   display: block;
   margin-top: 16px;
 }
+
+/* logo-aster-img */
+.admin-logo{display:flex;align-items:center;gap:10px}
+.admin-logo img{width:30px;height:30px;border-radius:7px;flex-shrink:0}

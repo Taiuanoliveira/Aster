@@ -85,6 +85,7 @@
 </footer>
 
 <script type="module">
+  import { iconesPessoa } from './js/redes.js';
   import { db } from "./js/firebase-config.js";
   import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -112,7 +113,7 @@
         div.innerHTML = `${avatar}<h3>${esc(m.nome)}</h3><span>${esc(m.cargo || '')}</span>` +
           (FUNCOES[m.funcao] ? `<small class="funcao">${FUNCOES[m.funcao]}</small>` : '') +
           (m.bio ? `<p class="bio">${esc(m.bio)}</p>` : '') +
-          (links.length ? `<div class="contatos">${links.join(' · ')}</div>` : '');
+          (iconesPessoa(c) ? `<div class="contatos">${iconesPessoa(c)}</div>` : '');
         grid.appendChild(div);
       });
     }

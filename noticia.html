@@ -155,20 +155,18 @@ async function montarNavMateria(n, dm) {
 
 async function carregarFotoAutor(autorUid, autorNome) {
   try {
-    let foto = '';
-    if (autorUid) {
-      const s = await getDoc(doc(db, 'equipe', autorUid));
-      if (s.exists() && s.data().fotoUrl) foto = s.data().fotoUrl;
-    }
-    if (!foto && autorNome) {
+    let m = null;
+    if (autorUid) { const s = await getDoc(doc(db, 'equipe', autorUid)); if (s.exists()) m = s.data(); }
+    if (!m && autorNome) {
       const q = await getDocs(query(collection(db, 'equipe'), where('nome', '==', autorNome)));
-      const m = q.docs.map(d => d.data()).find(x => x.fotoUrl);
-      if (m) foto = m.fotoUrl;
+      m = q.docs.map(d => d.data()).find(x => x.fotoUrl || x.contatos) || null;
     }
-    if (foto) {
-      const av = document.getElementById('bylineAv');
-      if (av) av.outerHTML = '<img class="av" id="bylineAv" src="' + esc(foto) + '" alt="">';
-    }
+    if (!m) return;
+    if (m.fotoUrl) { const av = document.getElementById('bylineAv'); if (av) av.outerHTML = '<img class="av" id="bylineAv" src="' + esc(m.fotoUrl) + '" alt="">'; }
+    const { iconesPessoa } = await import('./js/redes.js');
+    const ic = iconesPessoa(m.contatos || {});
+    const info = document.querySelector('#byline .info');
+    if (ic && info) info.insertAdjacentHTML('beforeend', '<div class="contatos-icones">' + ic + '</div>');
   } catch (e) {}
 }
 

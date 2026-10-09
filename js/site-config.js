@@ -2,6 +2,7 @@
 // logo, rodapé, contatos, redes sociais, links institucionais e a lista "Em alta".
 // Se o banco falhar ou estiver vazio, o site continua com os textos padrão.
 import { db } from './firebase-config.js';
+import { iconesSite } from './redes.js';
 import { doc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const limite = (p, ms = 4000) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('tempo esgotado')), ms))]);
@@ -36,8 +37,8 @@ export async function aplicarConfigSite() {
   const p = 'style="margin:0"';
   const partes = [];
   if (c && c.footerDescricao) partes.push('<p style="margin:0;max-width:560px;line-height:1.6">' + esc(c.footerDescricao) + '</p>');
-  const redes = [['instagram', 'Instagram'], ['facebook', 'Facebook'], ['youtube', 'YouTube'], ['whatsapp', 'WhatsApp']].filter(r => c && https(c[r[0]]));
-  if (redes.length) partes.push('<p ' + p + '>' + redes.map(r => '<a href="' + esc(c[r[0]]) + '" target="_blank" rel="noopener noreferrer">' + r[1] + '</a>').join(' · ') + '</p>');
+    const redesHTML = c ? iconesSite(c) : '';
+    if (redesHTML) partes.push('<div class="redes-rodape">' + redesHTML + '</div>');
   const contato = [];
   if (c && c.emailContato) contato.push('<a href="mailto:' + esc(c.emailContato) + '">' + esc(c.emailContato) + '</a>');
   if (c && c.telefoneContato) contato.push(esc(c.telefoneContato));

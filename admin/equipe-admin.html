@@ -33,12 +33,23 @@
         <input type="text" id="nome" placeholder="Ex: João Silva">
         <label>Cargo</label>
         <input type="text" id="cargo" placeholder="Ex: Editor-chefe">
+        <label>Bio (opcional)</label>
+        <textarea id="bio" rows="3" placeholder="Uma ou duas frases sobre a pessoa"></textarea>
+        <label>Instagram (só o usuário, sem @)</label>
+        <input type="text" id="insta" placeholder="ex: nomedapessoa">
+        <label>WhatsApp (só números, com DDD)</label>
+        <input type="text" id="zap" placeholder="ex: 75999990000">
+        <label>E-mail</label>
+        <input type="email" id="emailm" placeholder="ex: pessoa@email.com">
+        <label>Site</label>
+        <input type="text" id="sitem" placeholder="ex: https://site.com">
         <label>Ordem de exibição</label>
         <input type="number" id="ordem" value="1" min="1">
         <label>Foto</label>
         <input type="file" id="foto" accept="image/*">
         <div class="form-acoes">
-          <button class="btn-primario" onclick="adicionarMembro()">Adicionar à equipe</button>
+          <button class="btn-primario" id="btnMembro" onclick="adicionarMembro()">Adicionar à equipe</button>
+          <button type="button" id="btnCancelarMembro" onclick="cancelarMembro()" style="display:none;margin-left:10px;padding:10px 18px;background:none;border:1px solid #ccc;cursor:pointer;">Cancelar</button>
         </div>
       </section>
       <section class="admin-bloco">
@@ -97,9 +108,11 @@
         div.innerHTML = `
           ${m.fotoUrl ? `<img src="${esc(m.fotoUrl)}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">` : '<div style="width:44px;height:44px;border-radius:50%;background:#eee;"></div>'}
           <div style="flex-grow:1;"><strong>${esc(m.nome)}</strong><div style="font-size:12px;color:#777;">${esc(m.cargo)} — posição ${esc(m.ordem)}</div></div>
-          <button data-id="${d.id}" style="background:none;border:none;color:#b3261e;font-weight:700;font-size:12px;text-transform:uppercase;cursor:pointer;">Remover</button>
+          <button class="ed" style="background:none;border:none;color:#E8A33D;font-weight:700;font-size:12px;text-transform:uppercase;cursor:pointer;">Editar</button>
+          <button class="rm" data-id="${d.id}" style="background:none;border:none;color:#b3261e;font-weight:700;font-size:12px;text-transform:uppercase;cursor:pointer;">Remover</button>
         `;
-        div.querySelector('button').onclick = async () => {
+        div.querySelector('button.ed').onclick = () => editarMembro(d.id, m);
+        div.querySelector('button.rm').onclick = async () => {
           if (confirm('Remover ' + m.nome + ' da equipe?')) {
             await deleteDoc(doc(db, 'equipe', d.id));
             carregarMembros();
@@ -126,21 +139,37 @@
       } catch (e) { msg('msgErro', 'Erro: ' + e.message); }
     };
 
-    window.adicionarMembro = async function() {
-      const nome = document.getElementById('nome').value.trim();
-      const cargo = document.getElementById('cargo').value.trim();
-      const ordem = parseInt(document.getElementById('ordem').value) || 1;
-      const foto = document.getElementById('foto').files[0];
+    let editandoId = null;
+    const gv = id => document.getElementById(id);
+    window.cancelarMembro = function () {
+      editandoId = null;
+      ['nome', 'cargo', 'bio', 'insta', 'zap', 'emailm', 'sitem'].forEach(i => gv(i).value = '');
+      gv('ordem').value = 1; gv('foto').value = '';
+      gv('btnMembro').textContent = 'Adicionar à equipe'; gv('btnCancelarMembro').style.display = 'none';
+    };
+    window.editarMembro = function (id, m) {
+      editandoId = id; const c = m.contatos || {};
+      gv('nome').value = m.nome || ''; gv('cargo').value = m.cargo || ''; gv('ordem').value = m.ordem || 1; gv('bio').value = m.bio || '';
+      gv('insta').value = c.instagram || ''; gv('zap').value = c.whatsapp || ''; gv('emailm').value = c.email || ''; gv('sitem').value = c.site || '';
+      gv('btnMembro').textContent = 'Salvar alterações'; gv('btnCancelarMembro').style.display = 'inline-block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.adicionarMembro = async function () {
+      const nome = gv('nome').value.trim(), cargo = gv('cargo').value.trim();
+      const ordem = parseInt(gv('ordem').value) || 1, foto = gv('foto').files[0];
       if (!nome || !cargo) { msg('msgErro', 'Preencha nome e cargo.'); return; }
+      const contatos = {};
+      const ig = gv('insta').value.trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/^@/, '').replace(/[^A-Za-z0-9._]/g, '');
+      const zap = gv('zap').value.replace(/\D/g, ''), em = gv('emailm').value.trim();
+      let site = gv('sitem').value.trim();
+      if (site) site = 'https://' + site.replace(/^https?:\/\//i, '');
+      if (ig) contatos.instagram = ig; if (zap) contatos.whatsapp = zap; if (em) contatos.email = em; if (site) contatos.site = site;
       try {
-        let fotoUrl = null;
-        if (foto) fotoUrl = await enviarImagemCloudinary(foto);
-        await addDoc(collection(db, 'equipe'), { nome, cargo, ordem, fotoUrl });
-        msg('msgSucesso', nome + ' adicionado à equipe!');
-        document.getElementById('nome').value = '';
-        document.getElementById('cargo').value = '';
-        document.getElementById('foto').value = '';
-        carregarMembros();
+        const dados = { nome, cargo, ordem, bio: gv('bio').value.trim(), contatos, atualizadoEm: new Date().toISOString() };
+        if (foto) dados.fotoUrl = await enviarImagemCloudinary(foto);
+        if (editandoId) { await setDoc(doc(db, 'equipe', editandoId), dados, { merge: true }); msg('msgSucesso', nome + ' atualizado(a)!'); }
+        else { if (!dados.fotoUrl) dados.fotoUrl = null; await addDoc(collection(db, 'equipe'), dados); msg('msgSucesso', nome + ' adicionado(a) à equipe!'); }
+        window.cancelarMembro(); carregarMembros();
       } catch (e) { msg('msgErro', 'Erro: ' + e.message); }
     };
 

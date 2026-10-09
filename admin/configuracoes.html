@@ -75,6 +75,14 @@
 
           <label for="whatsapp">WhatsApp (link)</label>
           <input type="url" id="whatsapp" placeholder="https://wa.me/5575999990000">
+        <label for="tiktok">TikTok (link)</label>
+        <input type="url" id="tiktok" placeholder="https://tiktok.com/@seuusuario">
+
+        <label for="x">X / Twitter (link)</label>
+        <input type="url" id="x" placeholder="https://x.com/seuusuario">
+
+        <label for="telegram">Telegram (link)</label>
+        <input type="url" id="telegram" placeholder="https://t.me/seucanal">
 
           <button type="submit" class="btn-auth">Salvar redes sociais</button>
         </form>
@@ -165,7 +173,7 @@
       const snap = await getDoc(doc(db, 'configuracoes', 'geral'));
       if (!snap.exists()) return;
       const c = snap.data();
-      ['logoTexto', 'emailContato', 'telefoneContato', 'enderecoContato', 'facebook', 'instagram', 'youtube', 'whatsapp', 'footerDescricao']
+      ['logoTexto', 'emailContato', 'telefoneContato', 'enderecoContato', 'facebook', 'instagram', 'youtube', 'whatsapp', 'tiktok', 'x', 'telegram', 'footerDescricao']
         .forEach(id => { if (c[id]) $(id).value = c[id]; });
     }
 
@@ -191,9 +199,11 @@
       telefoneContato: $('telefoneContato').value.trim(),
       enderecoContato: $('enderecoContato').value.trim()
     }));
+    const normUrl = v => { v = (v || '').trim(); if (!v) return ''; return /^https:\/\//i.test(v) ? v : 'https://' + v.replace(/^https?:\/\//i, ''); };
     aoEnviar('formRedes', 'Redes sociais salvas!', () => ({
-      instagram: $('instagram').value.trim(), youtube: $('youtube').value.trim(),
-      facebook: $('facebook').value.trim(), whatsapp: $('whatsapp').value.trim()
+      instagram: normUrl($('instagram').value), youtube: normUrl($('youtube').value),
+      facebook: normUrl($('facebook').value), whatsapp: normUrl($('whatsapp').value),
+      tiktok: normUrl($('tiktok').value), x: normUrl($('x').value), telegram: normUrl($('telegram').value)
     }));
     aoEnviar('formRodape', 'Rodapé salvo!', () => ({ footerDescricao: $('footerDescricao').value.trim() }));
 

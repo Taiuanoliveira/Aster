@@ -107,3 +107,13 @@ html[data-tema="escuro"] .gate a.sec2{color:#8cc4ea}
 .logo-aster{gap:10px!important}
 .logo-aster .logo-img{width:32px;height:32px;border-radius:8px;display:block;flex-shrink:0}
 @media(max-width:520px){.logo-aster .logo-img{width:28px;height:28px}}
+
+/* redes-aster */
+.redes-rodape{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.rede{width:38px;height:38px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff!important;border:1px solid rgba(255,255,255,.4);text-decoration:none!important;transition:background .2s,color .2s,border-color .2s}
+.rede:hover{background:#E8A33D;border-color:#E8A33D;color:#0C3B5C!important}
+.contatos,.contatos-icones{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.contatos-icones{justify-content:flex-start;margin-top:6px}
+.contatos .rede,.contatos-icones .rede{width:32px;height:32px;color:#0C3B5C!important;border-color:#c9c3b2}
+.contatos .rede svg,.contatos-icones .rede svg{width:17px;height:17px}
+html[data-tema="escuro"] .contatos .rede,html[data-tema="escuro"] .contatos-icones .rede{color:#e7edf3!important;border-color:#3b5368}

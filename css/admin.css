@@ -209,6 +209,26 @@
 .status-aprovado { background: #d4edda; color: #1a5c2a; }
 .status-publicado { background: #E8A33D; color: #fff; }
 .status-devolvido { background: #fdecea; color: #b3261e; }
+.status-indexado { background: #5c4a00; color: #fff; }
+
+.admin-badge {
+  display: inline-block;
+  background: #b3261e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.admin-motivo-devolucao {
+  font-size: 12px;
+  color: #b3261e;
+  margin-top: 4px;
+  font-style: italic;
+}
 
 /* --- BOTÕES MINI --- */
 .btn-mini {

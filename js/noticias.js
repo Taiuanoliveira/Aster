@@ -113,6 +113,19 @@ export async function listarPorStatus(status) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
+// --- REGRA DE EDIÇÃO: quem pode editar um artigo, dado o status atual e o cargo ---
+// administrador/editor: sempre podem editar (inclusive artigos já publicados, para corrigir erros).
+// revisor: só edita (correções mínimas de texto) enquanto o artigo está "em_revisao" (fila de aprovação).
+// colunista: só edita enquanto está "rascunho" ou foi "devolvido" (reprovado) — depois de enviar para
+//            revisão, perde o acesso de edição até que seja aprovado (não edita mais) ou devolvido
+//            (aí pode corrigir e reenviar).
+export function podeEditarArtigo(noticia, cargo) {
+  if (cargo === "administrador" || cargo === "editor") return true;
+  if (cargo === "revisor") return noticia.status === STATUS.EM_REVISAO;
+  if (cargo === "colunista") return noticia.status === STATUS.RASCUNHO || noticia.status === STATUS.DEVOLVIDO;
+  return false;
+}
+
 // --- BUSCA SIMPLES POR TÍTULO (busca local após carregar publicadas) ---
 // Observação: Firestore não tem busca textual nativa. Para um portal deste porte,
 // carregamos as publicadas e filtramos no navegador. Se o volume de notícias crescer

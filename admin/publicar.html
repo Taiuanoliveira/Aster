@@ -106,7 +106,7 @@
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
     import { protegerPagina, sair, CARGOS } from "../js/auth.js";
-    import { criarNoticia, atualizarNoticia, obterNoticia, enviarImagem, STATUS } from "../js/noticias.js";
+    import { criarNoticia, atualizarNoticia, obterNoticia, enviarImagem, STATUS, podeEditarArtigo } from "../js/noticias.js";
     import { db } from "../js/firebase-config.js";
     import { enviarImagemCloudinary } from "../js/cloudinary.js";
     import { ativarAutoNegrito } from "../js/versiculos.js";
@@ -256,9 +256,20 @@
     let cargoAtual = null;
     let noticiaIdEdicao = null;
     let imagemAtualUrl = null;
+    let noticiaStatusAtual = STATUS.RASCUNHO;
 
     const params = new URLSearchParams(window.location.search);
     const idParaEditar = params.get('id');
+
+    function bloquearCampos(ids) {
+      ids.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
+    }
+
+    function mostrarAvisoBloqueio(texto) {
+      document.getElementById('formNoticia').style.display = 'none';
+      document.querySelector('.admin-bloco').insertAdjacentHTML('afterbegin',
+        '<div class="auth-msg erro" style="display:block;">' + texto + ' <a href="gerenciar-noticias.html">← Voltar para Gerenciar Artigos</a></div>');
+    }
 
     protegerPagina([CARGOS.ADMIN, CARGOS.EDITOR, CARGOS.COLUNISTA, CARGOS.REVISOR], async (user, cargo) => {
       usuarioAtual = user;
@@ -266,7 +277,6 @@
       if (cargo === CARGOS.REVISOR && !idParaEditar) { window.location.href = 'gerenciar-noticias.html'; return; }
       document.getElementById('cargoAtual').textContent = formatarCargo(cargo);
       montarMenu(cargo);
-      montarBotoesAcao(cargo);
       await carregarEdicoesNoSelect();
       await carregarCategoriasCheckboxes([]);
       await carregarTagsCheckboxes([]);
@@ -275,9 +285,30 @@
       if (idParaEditar) {
         noticiaIdEdicao = idParaEditar;
         document.getElementById('tituloPagina').textContent = 'Editar Artigo';
-        await carregarNoticia(idParaEditar);
+        const noticia = await obterNoticia(idParaEditar);
+        if (!noticia) { mostrarAvisoBloqueio('Artigo não encontrado.'); return; }
+        noticiaStatusAtual = noticia.status || STATUS.RASCUNHO;
+        if (!podeEditarArtigo(noticia, cargoAtual)) {
+          mostrarAvisoBloqueio('Este artigo não pode mais ser editado por você no estado atual (' +
+            { rascunho: 'rascunho', em_revisao: 'aguardando aprovação', aprovado: 'aprovado', indexado: 'indexado', publicado: 'publicado', devolvido: 'devolvido' }[noticiaStatusAtual] + ').');
+          return;
+        }
+        await carregarNoticia(idParaEditar, noticia);
+        if (cargoAtual === CARGOS.REVISOR) {
+          bloquearCampos(['titulo', 'edicao', 'ordemEdicao', 'coautor1', 'coautor2', 'imagem']);
+        } else if ((cargoAtual === CARGOS.ADMIN || cargoAtual === CARGOS.EDITOR) && (noticiaStatusAtual === STATUS.PUBLICADO || noticiaStatusAtual === 'indexado')) {
+          bloquearCampos(['edicao', 'ordemEdicao', 'gratuito', 'paywallOverride']);
+        }
+        if (noticiaStatusAtual === STATUS.DEVOLVIDO && noticia.motivoDevolucao) {
+          document.querySelector('.admin-bloco').insertAdjacentHTML('afterbegin',
+            '<div class="auth-msg erro" style="display:block;"><strong>Artigo devolvido pelo revisor/editor.</strong><br>Motivo: ' +
+            String(noticia.motivoDevolucao).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) +
+            '<br>Corrija o que foi apontado e envie novamente para revisão.</div>');
+        }
+        montarBotoesAcao(cargo);
       } else {
         await carregarCategoriasCheckboxes([]);
+        montarBotoesAcao(cargo);
       }
     });
 
@@ -312,14 +343,21 @@
       function desenhar() {
         const temEdicao = document.getElementById('edicao').value !== '';
         let h = '';
-        if (cargo === CARGOS.REVISOR) {
+        if (ehChefe && (noticiaStatusAtual === STATUS.PUBLICADO || noticiaStatusAtual === 'indexado')) {
+          // Artigo já publicado/indexado: só corrige erros, não muda status nem posição/edição.
+          h = '<button type="button" class="btn-auth" data-acao="corrigir">Salvar correção</button>' +
+              '<p style="font-size:12px;color:#888;margin-top:8px;">Este artigo já está ' +
+              (noticiaStatusAtual === 'indexado' ? 'indexado na edição' : 'publicado') +
+              '. Salvar aqui só corrige o conteúdo — não altera o status nem a posição/edição.</p>';
+        } else if (cargo === CARGOS.REVISOR) {
           h = '<button type="button" class="btn-auth" data-acao="aprovar_rev">Salvar correções e aprovar</button>' +
               '<button type="button" class="btn-auth btn-secundario" data-acao="devolver_rev">Devolver ao autor</button>';
         } else {
+          const reenvio = noticiaStatusAtual === STATUS.DEVOLVIDO;
           h = '<button type="button" class="btn-auth btn-secundario" data-acao="rascunho">Salvar rascunho</button>';
           if (temEdicao) h += '<button type="button" class="btn-auth" data-acao="indexar" style="background:#5c4a00;">Indexar na edição</button>';
           else h += ehChefe ? '<button type="button" class="btn-auth" data-acao="publicar">Publicar</button>'
-                            : '<button type="button" class="btn-auth" data-acao="enviar_revisao">Enviar para revisão</button>';
+                            : '<button type="button" class="btn-auth" data-acao="enviar_revisao">' + (reenvio ? 'Reenviar para revisão' : 'Enviar para revisão') + '</button>';
         }
         acoes.innerHTML = h;
         acoes.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => salvarNoticia(btn.dataset.acao)));
@@ -331,8 +369,8 @@
       });
     }
 
-    async function carregarNoticia(id) {
-      const noticia = await obterNoticia(id);
+    async function carregarNoticia(id, noticiaJaCarregada) {
+      const noticia = noticiaJaCarregada || await obterNoticia(id);
       if (!noticia) return;
       document.getElementById('titulo').value = noticia.titulo || '';
       document.getElementById('categoria').value = noticia.categoria || '';
@@ -428,7 +466,14 @@
       if (acao === 'publicar') status = STATUS.PUBLICADO;
       if (acao === 'indexar') status = (cargoAtual === CARGOS.ADMIN || cargoAtual === CARGOS.EDITOR) ? 'indexado' : STATUS.EM_REVISAO;
       if (acao === 'aprovar_rev') status = STATUS.APROVADO;
-      if (acao === 'devolver_rev') status = STATUS.DEVOLVIDO;
+      if (acao === 'corrigir') status = noticiaStatusAtual;
+
+      let motivoDevolucao = null;
+      if (acao === 'devolver_rev') {
+        motivoDevolucao = (prompt('Motivo da devolução (o autor vai ver este texto — obrigatório):') || '').trim();
+        if (!motivoDevolucao) { mostrarErro('É obrigatório informar um motivo para devolver o artigo.'); return; }
+        status = STATUS.DEVOLVIDO;
+      }
 
       try {
         let idNoticia = noticiaIdEdicao;
@@ -448,7 +493,10 @@
         let imagemUrl = imagemAtualUrl;
         if (arquivoImagem) imagemUrl = await enviarImagem(arquivoImagem, idNoticia);
 
-        await atualizarNoticia(idNoticia, { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, coautores, coautoresUids, coautoresPares: pares, imagemUrl, imagemLegenda: (document.getElementById('imagemLegenda') || {}).value || '', edicao, gratuito, paywallOverride, ordemEdicao });
+        const dadosAtualizar = { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, coautores, coautoresUids, coautoresPares: pares, imagemUrl, imagemLegenda: (document.getElementById('imagemLegenda') || {}).value || '', edicao, gratuito, paywallOverride, ordemEdicao };
+        if (motivoDevolucao) dadosAtualizar.motivoDevolucao = motivoDevolucao;
+        if (acao === 'enviar_revisao') dadosAtualizar.motivoDevolucao = null; // reenvio limpa o motivo anterior
+        await atualizarNoticia(idNoticia, dadosAtualizar);
 
         if (status === STATUS.PUBLICADO) {
         }
@@ -467,7 +515,8 @@
           const textos = {
             indexar: status === 'indexado' ? 'Artigo indexado na edição "' + edicao + '".' : 'Artigo indexado na edição "' + edicao + '" e enviado para aprovação.',
             enviar_revisao: 'Artigo enviado para revisão.', publicar: 'Artigo publicado.',
-            aprovar_rev: 'Correções salvas e artigo aprovado.', devolver_rev: 'Artigo devolvido ao autor.'
+            aprovar_rev: 'Correções salvas e artigo aprovado.', devolver_rev: 'Artigo devolvido ao autor.',
+            corrigir: 'Correção salva.'
           };
           mostrarSucesso('✓ ' + (textos[acao] || 'Artigo salvo.'));
           window.scrollTo({ top: 0, behavior: 'smooth' });

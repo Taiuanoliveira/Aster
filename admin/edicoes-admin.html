@@ -390,14 +390,21 @@
 
           div.querySelector('.publicar')?.addEventListener('click', async () => {
             const avisos = [];
+            const ROTULO_STATUS = { rascunho: 'rascunho', em_revisao: 'aguardando aprovação', aprovado: 'aprovado (falta indexar)', devolvido: 'devolvido', indexado: 'indexado', publicado: 'publicado' };
             try {
               const vinc = await getDocs(query(collection(db, 'noticias'), where('edicao', '==', ed.nome)));
-              if (vinc.empty) avisos.push('Nenhum artigo está ligado a esta edição.');
-              else if (!vinc.docs.some(m => ['publicado', 'indexado'].includes(m.data().status))) avisos.push('Nenhum artigo desta edição está pronto (indexado ou publicado): os leitores verão a edição vazia.');
-            } catch (err) {}
+              if (vinc.empty) { alert('Nenhum artigo está ligado à edição "' + ed.nome + '" ainda. Adicione e aprove ao menos um artigo antes de publicar.'); return; }
+              const pendentes = vinc.docs.map(m => m.data()).filter(m => !['indexado', 'publicado'].includes(m.status));
+              if (pendentes.length) {
+                alert('Não é possível publicar a edição "' + ed.nome + '" ainda. Os seguintes artigos não estão aprovados/indexados:\n\n' +
+                  pendentes.map(m => '• ' + (m.titulo || '(sem título)') + ' — ' + (ROTULO_STATUS[m.status] || m.status)).join('\n') +
+                  '\n\nTodo artigo da edição precisa estar aprovado e indexado antes de publicar a edição inteira.');
+                return;
+              }
+            } catch (err) { alert('Erro ao verificar os artigos da edição: ' + err.message); return; }
             if (!ed.capaUrl) avisos.push('A edição está sem capa (o site vai mostrar uma capa simples).');
             if (!String(ed.cartaLeitor || '').replace(/<[^>]*>/g, '').trim()) avisos.push('A edição está sem carta ao leitor.');
-            const texto = 'Publicar a edição "' + ed.nome + '"?' + (avisos.length ? '\n\nAtenção:\n• ' + avisos.join('\n• ') : '') +
+            const texto = 'Publicar a edição "' + ed.nome + '"? Todos os artigos dela já estão aprovados e indexados.' + (avisos.length ? '\n\nAtenção:\n• ' + avisos.join('\n• ') : '') +
               '\n\nDepois de publicada, ela trava: não será mais possível vincular novas matérias a ela diretamente na tela de Novo Artigo.';
             if (confirm(texto)) {
               await updateDoc(doc(db, 'edicoes', d.id), { status: 'publicada', publicadaEm: new Date().toISOString() });

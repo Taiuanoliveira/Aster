@@ -132,7 +132,11 @@
       `;
       if (cargo === CARGOS.ADMIN || cargo === CARGOS.EDITOR || cargo === CARGOS.REVISOR) {
         const emRevisao = await listarPorStatus(STATUS.EM_REVISAO);
-        cardsHtml += `<div class="admin-card"><span class="admin-card-num">${emRevisao.length}</span><span class="admin-card-label">Em revisão</span></div>`;
+        cardsHtml += `<a href="gerenciar-noticias.html?aba=em_revisao" style="text-decoration:none;color:inherit;"><div class="admin-card"><span class="admin-card-num">${emRevisao.length}</span><span class="admin-card-label">${emRevisao.length} aguardando sua revisão</span></div></a>`;
+        if (emRevisao.length) {
+          const link = document.querySelector('#menuAdmin a[href="gerenciar-noticias.html"]');
+          if (link) link.insertAdjacentHTML('beforeend', ' <span class="admin-badge">' + emRevisao.length + '</span>');
+        }
       }
       cardsResumo.innerHTML = cardsHtml;
 

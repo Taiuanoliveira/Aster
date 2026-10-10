@@ -25,12 +25,6 @@ export async function aplicarConfigSite() {
   const [c, inst] = await Promise.all([lerGeral(), lerLista('institucional')]);
   const nome = c && c.logoTexto ? String(c.logoTexto).trim() : '';
 
-  if (c) {
-    document.querySelectorAll('.logo-aster').forEach(a => {
-      if (https(c.logoUrl)) a.innerHTML = '<img src="' + esc(c.logoUrl) + '" alt="" style="height:30px;width:auto;border-radius:4px"> ' + esc(nome || 'Projeto Aster');
-      else if (nome) a.innerHTML = '<img class="logo-img" src="img/logo.svg" alt="" width="32" height="32"> ' + esc(nome);
-    });
-  }
 
   const rod = document.querySelector('body > footer');
   if (!rod || (!c && !inst.length)) return;

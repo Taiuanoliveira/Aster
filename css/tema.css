@@ -117,3 +117,35 @@ html[data-tema="escuro"] .gate a.sec2{color:#8cc4ea}
 .contatos .rede,.contatos-icones .rede{width:32px;height:32px;color:#0C3B5C!important;border-color:#c9c3b2}
 .contatos .rede svg,.contatos-icones .rede svg{width:17px;height:17px}
 html[data-tema="escuro"] .contatos .rede,html[data-tema="escuro"] .contatos-icones .rede{color:#e7edf3!important;border-color:#3b5368}
+
+/* ===== Banner (logo) no canto superior esquerdo ===== */
+.logo-aster .logo-banner{height:36px;width:auto;display:block;border-radius:0}
+@media(max-width:520px){.logo-aster .logo-banner{height:28px}}
+
+/* ===== Texto de leitura: tema claro = preto absoluto | tema escuro = branco absoluto =====
+   (links e citações bíblicas, como "João 1:1", continuam com a cor de link) */
+html body .corpo,
+html body .corpo p,
+html body .corpo li,
+html body .corpo blockquote,
+html body .artigo .resumo,
+html body #art .resumo,
+html body .card-dia p:not(.ref),
+html body .estudo p,
+html body .ref-texto,
+html body.biblia-pag{color:#000}
+html[data-tema="escuro"] body .corpo,
+html[data-tema="escuro"] body .corpo p,
+html[data-tema="escuro"] body .corpo li,
+html[data-tema="escuro"] body .corpo blockquote,
+html[data-tema="escuro"] body .artigo .resumo,
+html[data-tema="escuro"] body #art .resumo,
+html[data-tema="escuro"] body .card-dia p:not(.ref),
+html[data-tema="escuro"] body .estudo p,
+html[data-tema="escuro"] body .ref-texto,
+html[data-tema="escuro"] body.biblia-pag{color:#fff}
+
+/* citações e links no tema escuro: azul claro, para dar leitura sobre o fundo escuro */
+html[data-tema="escuro"] .corpo a,
+html[data-tema="escuro"] .ref-biblica{color:#8cc4ea}
+html[data-tema="escuro"] .ref-biblica:hover{background:#243447;color:#fff}

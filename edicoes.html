@@ -50,7 +50,7 @@ function capa(e) {
   if (e.capaUrl) d.style.backgroundImage = "url('" + String(e.capaUrl).replace(/['"\\()]/g, '') + "')";
   else {
     d.classList.add('sem-capa');
-    d.innerHTML = '<img class="est" src="img/logo.svg" alt=""><span class="num">' + esc(e.especial ? 'Especial' : (e.numero ? 'Nº ' + e.numero : 'Edição')) + '</span><strong>' + esc(e.nome) + '</strong>' + (e.tema ? '<em>' + esc(e.tema) + '</em>' : '');
+    d.innerHTML = '<img class="est" src="img/logo.svg" alt=""><span class="num">' + esc((e.numero ? 'Nº ' + e.numero : 'Edição') + (e.especial ? ' · Especial' : '')) + '</span><strong>' + esc(e.nome) + '</strong>' + (e.tema ? '<em>' + esc(e.tema) + '</em>' : '');
   }
   return d;
 }

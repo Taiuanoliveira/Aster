@@ -39,7 +39,7 @@ export function dataHoraBonita(v){
 export function montarTopoRodape(){
   const topo=document.createElement('header');
   topo.className='topo';
-  topo.innerHTML='<a href="index.html" class="logo-aster"><img class="logo-banner" src="img/aster-logo.png" alt="Projeto Aster" width="156" height="36"></a>'+
+  topo.innerHTML='<a href="index.html" class="logo-aster"><img class="logo-banner" src="img/aster-banner.png" alt="Projeto Aster" width="156" height="36"></a>'+
     '<nav class="nav-topo"><a href="biblia.html">Bíblia</a><a href="edicoes.html">Editorial</a><a href="artigos.html">Artigos</a><a href="estudos.html">Estudos</a><a href="biblioteca.html">Biblioteca</a><a href="apoiar.html">Apoie</a><a href="login.html">Entrar</a></nav>';
   document.body.prepend(topo);
   const rod=document.createElement('footer');

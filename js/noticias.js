@@ -30,10 +30,7 @@ const COL = "noticias";
 // --- CRIAR NOTÍCIA ---
 export async function criarNoticia(dados, autorUid, autorNome) {
   const docRef = await addDoc(collection(db, COL), {
-    titulo: dados.titulo,
-    resumo: dados.resumo,
-    conteudo: dados.conteudo,
-    categoria: dados.categoria,
+    ...dados,
     imagemUrl: dados.imagemUrl || null,
     autorUid,
     autorNome,

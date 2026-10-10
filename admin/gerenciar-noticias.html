@@ -40,37 +40,26 @@
 
   <script type="module">
     import { protegerPagina, sair, CARGOS } from "../js/auth.js";
-    import { listarPorAutor, listarPorStatus, listarPublicadas, atualizarNoticia, excluirNoticia, STATUS, podeEditarArtigo } from "../js/noticias.js";
-    import { db } from "../js/firebase-config.js";
-    import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { listarPorAutor, listarPorStatus, listarPublicadas, atualizarNoticia, excluirNoticia, STATUS } from "../js/noticias.js";
 
-    let usuarioAtual = null, cargoAtual = null, filtroAtual = 'todas', listaAtual = [];
-    const ROTULO = { rascunho: 'Rascunho', em_revisao: 'Aguardando aprovação', aprovado: 'Aprovado', devolvido: 'Reprovado', indexado: 'Indexado', publicado: 'Publicado' };
+    let usuarioAtual = null, cargoAtual = null, filtroAtual = 'todas', listaAtual = [], rotulos = {};
+    const ROTULO = { rascunho: 'Rascunho', em_revisao: 'Aguardando aprovação', devolvido: 'Reprovado', aprovado: 'Aprovado', indexado: 'Indexado', publicado: 'Publicado' };
     const VAZIO = {
       rascunho: 'Nenhum rascunho. Use "Salvar rascunho" no editor (basta o título) e ele aparece aqui.',
       em_revisao: 'Nada aguardando aprovação no momento.', aprovado: 'Nenhum artigo aprovado esperando publicação.',
-      devolvido: 'Nenhum artigo reprovado.', indexado: 'Nenhum artigo indexado em edição.', publicado: 'Nenhum artigo publicado.',
-      aprovados_todos: 'Nenhum artigo aprovado ainda.'
+      devolvido: 'Nenhum artigo reprovado.', indexado: 'Nenhum artigo indexado (formato antigo).', publicado: 'Nenhum artigo publicado.'
     };
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const quemSou = () => usuarioAtual.displayName || usuarioAtual.email;
+    const ehChefe = () => cargoAtual === CARGOS.ADMIN || cargoAtual === CARGOS.EDITOR;
 
     protegerPagina([CARGOS.ADMIN, CARGOS.EDITOR, CARGOS.COLUNISTA, CARGOS.REVISOR], async (user, cargo) => {
       usuarioAtual = user; cargoAtual = cargo;
       document.getElementById('cargoAtual').textContent = { administrador: 'Administrador', editor: 'Editor', colunista: 'Colunista', revisor: 'Revisor' }[cargo] || cargo;
       montarMenu(cargo); montarFiltros(cargo);
       await carregarLista();
-      await montarBadgePendentes(cargo);
+      atualizarContagens();
     });
-
-    async function montarBadgePendentes(cargo) {
-      if (cargo !== CARGOS.ADMIN && cargo !== CARGOS.EDITOR && cargo !== CARGOS.REVISOR) return;
-      try {
-        const pendentes = await listarPorStatus(STATUS.EM_REVISAO);
-        if (!pendentes.length) return;
-        const link = document.querySelector('#menuAdmin a[href="gerenciar-noticias.html"]');
-        if (link) link.insertAdjacentHTML('beforeend', ' <span class="admin-badge">' + pendentes.length + '</span>');
-      } catch (e) {}
-    }
 
     function montarMenu(cargo) {
       const itens = [
@@ -81,7 +70,6 @@
         { href: 'tags-admin.html', label: '🔖 Tags e Destaques', cargos: ['administrador','editor'] },
         { href: 'edicoes-admin.html', label: '📚 Edições', cargos: ['administrador','editor'] },
         { href: 'conteudo-admin.html', label: '🧩 Conteúdo do site', cargos: ['administrador','editor'] },
-        { href: 'conteudo-admin.html?aba=biblioteca', label: '📚 Biblioteca', cargos: ['administrador','editor'] },
         { href: 'estatisticas-admin.html', label: '📈 Estatísticas', cargos: ['administrador','editor'] },
         { href: 'equipe-admin.html', label: '👥 Equipe', cargos: ['administrador'] },
         { href: 'usuarios.html', label: '👤 Usuários', cargos: ['administrador'] },
@@ -93,9 +81,10 @@
 
     function montarFiltros(cargo) {
       let opcoes;
-      if (cargo === CARGOS.REVISOR) opcoes = [['em_revisao','Aguardando aprovação'],['aprovado','Aprovadas'],['devolvido','Devolvidas'],['indexado','Indexadas']];
-      else if (cargo === CARGOS.COLUNISTA) opcoes = [['rascunho','Rascunhos'],['em_revisao','Aguardando aprovação'],['devolvido','Reprovados'],['aprovados_todos','Aprovados']];
-      else opcoes = [['todas','Publicadas'],['rascunho','Rascunhos'],['em_revisao','Aguardando aprovação'],['aprovado','Aprovadas'],['devolvido','Devolvidas'],['indexado','Indexadas']];
+      if (cargo === CARGOS.REVISOR) opcoes = [['em_revisao','Aguardando aprovação'],['devolvido','Reprovados'],['aprovado','Aprovados']];
+      else if (cargo === CARGOS.COLUNISTA) opcoes = [['todas','Meus artigos'],['rascunho','Rascunhos'],['em_revisao','Aguardando aprovação'],['devolvido','Reprovados'],['aprovado','Aprovados'],['publicado','Publicados']];
+      else opcoes = [['todas','Publicados'],['rascunho','Rascunhos'],['em_revisao','Aguardando aprovação'],['devolvido','Reprovados'],['aprovado','Aprovados'],['indexado','Indexados']];
+      opcoes.forEach(o => rotulos[o[0]] = o[1]);
       const aba = new URLSearchParams(location.search).get('aba');
       filtroAtual = opcoes.some(o => o[0] === aba) ? aba : opcoes[0][0];
       const div = document.getElementById('filtros');
@@ -106,14 +95,23 @@
       }));
     }
 
+    async function atualizarContagens() {
+      try {
+        let chave = 'em_revisao', n = 0;
+        if (cargoAtual === CARGOS.COLUNISTA) { chave = 'devolvido'; n = (await listarPorAutor(usuarioAtual.uid)).filter(x => x.status === 'devolvido').length; }
+        else n = (await listarPorStatus('em_revisao')).length;
+        const b = document.querySelector('#filtros [data-filtro="' + chave + '"]');
+        if (b) b.textContent = rotulos[chave] + (n ? ' (' + n + ')' : '');
+      } catch (e) {}
+    }
+
     async function carregarLista() {
       const lista = document.getElementById('listaGerenciar');
       lista.innerHTML = '<p class="admin-carregando">Carregando...</p>';
       try {
         if (cargoAtual === CARGOS.COLUNISTA) {
           const todas = await listarPorAutor(usuarioAtual.uid);
-          if (filtroAtual === 'aprovados_todos') listaAtual = todas.filter(n => ['aprovado', 'indexado', 'publicado'].includes(n.status));
-          else listaAtual = todas.filter(n => n.status === filtroAtual);
+          listaAtual = filtroAtual === 'todas' ? todas : todas.filter(n => n.status === filtroAtual);
         } else if (cargoAtual === CARGOS.REVISOR) listaAtual = await listarPorStatus(filtroAtual);
         else listaAtual = filtroAtual === 'todas' ? await listarPublicadas(50) : await listarPorStatus(filtroAtual);
       } catch (e) { console.error(e); lista.innerHTML = '<p class="admin-vazio">Não foi possível carregar. Se o erro mencionar "index", abra o link que aparece no console (F12) para criar o índice no Firebase.</p>'; return; }
@@ -123,56 +121,49 @@
     }
 
     function montarLinha(n) {
-      const chefe = cargoAtual === CARGOS.ADMIN || cargoAtual === CARGOS.EDITOR, revisor = cargoAtual === CARGOS.REVISOR;
+      const chefe = ehChefe(), revisor = cargoAtual === CARGOS.REVISOR, autor = cargoAtual === CARGOS.COLUNISTA;
+      const st = n.status, dono = n.autorUid === usuarioAtual.uid;
+      const b = (acao, rotulo, cls) => '<button class="btn-mini ' + cls + '" data-id="' + n.id + '" data-acao="' + acao + '">' + rotulo + '</button>';
       let botoes = '';
-      if ((chefe || revisor) && n.status === STATUS.EM_REVISAO)
-        botoes = '<button class="btn-mini btn-aprovar" data-id="' + n.id + '" data-acao="aprovar">Aprovar</button><button class="btn-mini btn-devolver" data-id="' + n.id + '" data-acao="devolver">Devolver</button>';
-      else if (chefe && n.status === STATUS.APROVADO)
-        botoes = '<button class="btn-mini btn-publicar" data-id="' + n.id + '" data-acao="publicar">' + (n.edicao ? 'Indexar na edição' : 'Publicar') + '</button>' +
-                 '<button class="btn-mini btn-devolver" data-id="' + n.id + '" data-acao="devolver">Reprovar</button>';
-      else if (chefe && n.status === 'indexado')
-        botoes = '<button class="btn-mini btn-devolver" data-id="' + n.id + '" data-acao="devolver">Reprovar</button>';
-      const podeEditar = podeEditarArtigo(n, cargoAtual);
-      const emAndamento = n.status !== STATUS.PUBLICADO && n.status !== 'indexado';
-      const podeExcluir = cargoAtual === CARGOS.ADMIN || (cargoAtual === CARGOS.COLUNISTA && emAndamento && n.autorUid === usuarioAtual.uid);
+      if ((chefe || revisor) && st === 'em_revisao') botoes += b('aprovar', 'Aprovar', 'btn-aprovar') + b('reprovar', 'Reprovar', 'btn-devolver btn-reprovar');
+      if ((chefe || revisor) && st === 'aprovado') botoes += b('reprovar', 'Reprovar', 'btn-devolver btn-reprovar');
+      if (chefe && st === 'aprovado') botoes += n.edicao
+        ? '<span class="admin-autor-pequeno">sai quando a edição "' + esc(n.edicao) + '" for publicada</span>'
+        : b('publicar', 'Publicar', 'btn-publicar');
+      const editavelAutor = autor && (st === 'rascunho' || st === 'devolvido');
+      const podeEditar = chefe || (revisor && ['em_revisao', 'aprovado', 'devolvido'].includes(st)) || editavelAutor;
+      const podeExcluir = cargoAtual === CARGOS.ADMIN || (autor && dono && editavelAutor);
       const autores = [n.autorNome || 'desconhecido'].concat(n.coautores || []).join(', ');
-      const motivo = (n.status === STATUS.DEVOLVIDO && n.motivoDevolucao) ? '<div class="admin-motivo-devolucao">Motivo: ' + esc(n.motivoDevolucao) + '</div>' : '';
+      const motivo = (st === 'devolvido' && n.motivoReprovacao) ? '<div style="margin-top:6px;font-size:13px;color:#8a1c14;background:#fdecea;padding:6px 10px;border-radius:6px;">Motivo da reprovação: ' + esc(n.motivoReprovacao) + '</div>' : '';
       return '<div class="admin-item-noticia"><div><strong>' + esc(n.titulo) + '</strong> ' +
-        '<span class="admin-status status-' + esc(n.status) + '">' + esc(ROTULO[n.status] || n.status) + '</span> ' +
-        '<span class="admin-autor-pequeno">por ' + esc(autores) + (n.edicao ? ' · ' + esc(n.edicao) : '') + '</span>' + motivo + '</div>' +
+        '<span class="admin-status status-' + esc(st) + '">' + esc(ROTULO[st] || st) + '</span> ' +
+        '<span class="admin-autor-pequeno">por ' + esc(autores) + (n.edicao ? ' · ' + esc(n.edicao) : '') + (n.materiaCapa ? ' · ⭐ capa' : '') + '</span>' + motivo + '</div>' +
         '<div class="admin-acoes-linha">' + botoes +
         (podeEditar ? '<a href="publicar.html?id=' + n.id + '" class="btn-mini">' + (revisor ? 'Corrigir' : 'Editar') + '</a>' : '') +
+        ((autor && !editavelAutor) ? '<span class="admin-autor-pequeno">🔒 bloqueado (' + esc((ROTULO[st] || st).toLowerCase()) + ')</span>' : '') +
         (podeExcluir ? '<button class="btn-mini btn-excluir" data-id="' + n.id + '" data-acao="excluir">Excluir</button>' : '') +
         '</div></div>';
-    }
-
-    async function edicaoAberta(nome) {
-      const s = await getDocs(query(collection(db, 'edicoes'), where('nome', '==', nome)));
-      return s.docs.some(d => d.data().status === 'aberta');
     }
 
     function ligarBotoes() {
       document.querySelectorAll('[data-acao]').forEach(btn => btn.addEventListener('click', async () => {
         const id = btn.dataset.id, acao = btn.dataset.acao;
+        btn.disabled = true;
         try {
-          if (acao === 'aprovar') await atualizarNoticia(id, { status: STATUS.APROVADO });
-          else if (acao === 'devolver') {
-            const motivo = (prompt('Motivo da devolução (o autor vai ver este texto — obrigatório):') || '').trim();
-            if (!motivo) { alert('É obrigatório informar um motivo para devolver o artigo.'); return; }
-            await atualizarNoticia(id, { status: STATUS.DEVOLVIDO, motivoDevolucao: motivo });
+          const quem = { revisadoPor: quemSou(), revisadoEm: new Date().toISOString() };
+          if (acao === 'aprovar') await atualizarNoticia(id, Object.assign({ status: STATUS.APROVADO, motivoReprovacao: '' }, quem));
+          else if (acao === 'reprovar') {
+            const motivo = (prompt('Explique o que o autor precisa corrigir. Ele verá esta mensagem:') || '').trim();
+            if (!motivo) { alert('Para reprovar é preciso escrever o motivo.'); btn.disabled = false; return; }
+            await atualizarNoticia(id, Object.assign({ status: STATUS.DEVOLVIDO, motivoReprovacao: motivo }, quem));
           }
-          else if (acao === 'publicar') {
-            const alvo = listaAtual.find(x => x.id === id);
-            if (alvo && alvo.edicao) {
-              if (!(await edicaoAberta(alvo.edicao))) { alert('A edição "' + alvo.edicao + '" não está aberta (já foi publicada ou ainda não foi aberta). Clique em Editar e escolha uma edição aberta.'); return; }
-              await atualizarNoticia(id, { status: 'indexado' });
-            } else await atualizarNoticia(id, { status: STATUS.PUBLICADO });
-          } else if (acao === 'excluir') {
-            if (!confirm('Tem certeza que deseja excluir este artigo? Essa ação não pode ser desfeita.')) return;
+          else if (acao === 'publicar') await atualizarNoticia(id, { status: STATUS.PUBLICADO });
+          else if (acao === 'excluir') {
+            if (!confirm('Tem certeza que deseja excluir este artigo? Essa ação não pode ser desfeita.')) { btn.disabled = false; return; }
             await excluirNoticia(id);
           }
-          await carregarLista();
-        } catch (err) { alert('Não foi possível concluir essa ação. Verifique sua permissão.'); console.error(err); }
+          await carregarLista(); atualizarContagens();
+        } catch (err) { btn.disabled = false; alert('Não foi possível concluir essa ação. Verifique sua permissão.'); console.error(err); }
       }));
     }
 

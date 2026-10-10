@@ -21,7 +21,6 @@ import { db } from './js/firebase-config.js';
 import { doc, getDoc, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { montarTopoRodape, esc, sanitizar } from './js/leitura.js';
 import { marcarReferencias } from './js/versiculos.js';
-import { ordenarMaterias } from './js/fluxo-edicao.js';
 montarTopoRodape();
 const $=id=>document.getElementById(id), c=$('conteudo');
 try{
@@ -35,16 +34,15 @@ try{
     const e=s.data();document.title=e.nome+' – Projeto Aster';
     $('tema').textContent=(e.numero?'Edição nº '+e.numero:'Edição')+(e.especial?' · Especial':'')+(e.tema?' · '+e.tema:'');$('nome').textContent=e.nome;$('desc').textContent=e.descricao||'';
     let h='';
-    const cartaHtml=(e.cartaLeitor&&e.cartaLeitor.replace(/<[^>]*>/g,'').trim())?'<div class="carta"><h2>Carta ao leitor</h2><div class="corpo">'+sanitizar(e.cartaLeitor)+'</div></div>':'';
+    if(e.cartaLeitor&&e.cartaLeitor.replace(/<[^>]*>/g,'').trim())h+='<div class="carta"><h2>Carta ao leitor</h2><div class="corpo">'+sanitizar(e.cartaLeitor)+'</div></div>';
     const porStatus=st=>getDocs(query(collection(db,'noticias'),where('edicao','==',e.nome),where('status','==',st)));
     const [qa,qb]=dm?[{docs:[]},{docs:[]}]:await Promise.all([porStatus('publicado'),porStatus('indexado')]);
     const q=dm?{docs:dm.artigosDaEdicao(id).map(a=>{const {id:i,...r}=a;return {id:i,data:()=>r};})}:{docs:[...qa.docs,...qb.docs]};
-    const m=ordenarMaterias(q.docs.map(d=>({id:d.id,...d.data()})).filter(n=>n.status==='publicado'||n.status==='indexado'));
-    const cartao=(n,i)=>'<a class="of-card'+(i===0?' of-capa':'')+'" href="noticia.html?id='+encodeURIComponent(n.id)+'"><div class="of-img">'+(n.imagemUrl?'<img src="'+esc(n.imagemUrl)+'" alt="">':'<div class="sem-img">✦</div>')+'</div><div class="of-txt"><small class="selo">'+(n.materiaCapa?'Matéria de capa':esc(n.categoria||''))+'</small><h3>'+esc(n.titulo)+'</h3><p>'+esc(n.resumo||'')+'</p><span class="of-aut">'+esc([n.autorNome].concat(n.coautores||[]).filter(Boolean).join(', '))+'</span></div></a>';
-    if(m.length){
-      h+='<h2 class="sec">Nesta edição</h2><div class="of-grade">'+cartao(m[0],0)+'</div>'+cartaHtml;
-      if(m.length>1)h+='<div class="of-grade" style="margin-top:34px">'+m.slice(1).map((n,i)=>cartao(n,i+1)).join('')+'</div>';
-    }else h+=cartaHtml+'<h2 class="sec">Nesta edição</h2><p class="vazio">Os artigos desta edição serão publicados em breve.</p>';
+    const acesso=n=>'';
+    const m=q.docs.map(d=>({id:d.id,...d.data()})).filter(n=>n.status==='publicado'||n.status==='indexado').sort((a,b)=>(a.ordemEdicao ?? 99)-(b.ordemEdicao ?? 99));
+    h+='<h2 class="sec">Nesta edição</h2>';
+    const cartao=(n,i)=>'<a class="of-card'+(i===0?' of-capa':'')+'" href="noticia.html?id='+encodeURIComponent(n.id)+'"><div class="of-img">'+(n.imagemUrl?'<img src="'+esc(n.imagemUrl)+'" alt="">':'<div class="sem-img">✦</div>')+'</div><div class="of-txt"><small class="selo">'+(i===0?'Matéria de capa':esc(n.categoria||''))+'</small><h3>'+esc(n.titulo)+acesso(n)+'</h3><p>'+esc(n.resumo||'')+'</p><span class="of-aut">'+esc([n.autorNome].concat(n.coautores||[]).filter(Boolean).join(', '))+'</span></div></a>';
+    h+=m.length?'<div class="of-grade">'+m.map(cartao).join('')+'</div>':'<p class="vazio">Os artigos desta edição serão publicados em breve.</p>';
     c.innerHTML=h;
     try{
       const todas=(dm?dm.edicoes.slice():(await getDocs(query(collection(db,'edicoes'),where('status','==','publicada')))).docs.map(x=>({id:x.id,...x.data()})))

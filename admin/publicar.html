@@ -65,13 +65,12 @@
           <input type="text" id="coautor2" list="listaEquipe" maxlength="80" placeholder="Nome do 3º autor" style="margin-top:8px">
           <datalist id="listaEquipe"></datalist>
 
-          <label for="edicao">Edição (só aparecem edições abertas)</label>
+          <label for="edicao">Edição (só aparecem edições ainda não publicadas)</label>
           <select id="edicao">
             <option value="">Nenhum (artigo avulso)</option>
           </select>
 
           <div id="edicaoOpcoes" style="display:none;margin-top:12px;">
-            <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><input type="checkbox" id="materiaCapa" style="width:auto;"> ⭐ Esta é a matéria de capa da edição <small style="color:#888;font-weight:400;">(só uma por edição; vai sempre em primeiro lugar)</small></label>
             <label for="ordemEdicao">Ordem na edição</label>
             <input type="number" id="ordemEdicao" value="1" min="1" style="width:80px;padding:6px;border:1px solid #ddd;">
             <p style="font-size:11px;color:#888;margin-top:4px;">Posição do artigo dentro da edição (1 = primeiro)</p>
@@ -111,7 +110,7 @@
     import { db } from "../js/firebase-config.js";
     import { enviarImagemCloudinary } from "../js/cloudinary.js";
     import { ativarAutoNegrito } from "../js/versiculos.js";
-    import { collection, getDocs, orderBy, query, doc, getDoc, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { collection, getDocs, orderBy, query, doc, getDoc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     let quillEditor = null;
 
@@ -244,7 +243,7 @@
         const snap = await getDocs(query(collection(db, 'edicoes'), orderBy('criadoEm', 'desc')));
         snap.forEach(d => {
           const ed = d.data();
-          if (ed.status === 'publicada') return; // só edições ainda não publicadas aceitam artigos
+          if (ed.status === 'publicada') return; // edição aberta = ainda não publicada
           const opt = document.createElement('option');
           opt.value = ed.nome;
           opt.textContent = ed.nome;
@@ -307,7 +306,6 @@
             '<br>Corrija o que foi apontado e envie novamente para revisão.</div>');
         }
         montarBotoesAcao(cargo);
-      document.head.insertAdjacentHTML('beforeend', '<style>' + ((cargo === CARGOS.ADMIN || cargo === CARGOS.EDITOR) ? '' : '#edicaoOpcoes{display:none!important}') + ' #paywallOverride,label[for="paywallOverride"],label:has(#gratuito){display:none!important}</style>');
       } else {
         await carregarCategoriasCheckboxes([]);
         montarBotoesAcao(cargo);
@@ -342,28 +340,28 @@
     function montarBotoesAcao(cargo) {
       const acoes = document.getElementById('formAcoes');
       const ehChefe = cargo === CARGOS.ADMIN || cargo === CARGOS.EDITOR;
-      const btn = (acao, rotulo, cls, estilo) => '<button type="button" class="btn-auth ' + (cls || '') + '" data-acao="' + acao + '"' + (estilo ? ' style="' + estilo + '"' : '') + '>' + rotulo + '</button>';
       function desenhar() {
-        const atual = window.__statusAtual || '';
         const temEdicao = document.getElementById('edicao').value !== '';
         let h = '';
-        if (cargo === CARGOS.REVISOR) {
-          h = btn('manter', 'Salvar correções', 'btn-secundario');
-          if (atual === 'em_revisao') h += btn('aprovar_rev', 'Salvar e aprovar');
-          if (atual === 'em_revisao' || atual === 'aprovado') h += btn('devolver_rev', 'Reprovar', 'btn-secundario');
-        } else if (ehChefe && atual && !['rascunho', 'devolvido'].includes(atual)) {
-          h = btn('manter', 'Salvar alterações', 'btn-secundario');
-          if (atual === 'em_revisao') h += btn('aprovar_rev', 'Salvar e aprovar');
-          if (atual === 'em_revisao' || atual === 'aprovado') h += btn('devolver_rev', 'Reprovar', 'btn-secundario');
-        } else if (!atual || atual === 'rascunho' || atual === 'devolvido') {
-          h = btn('rascunho', 'Salvar rascunho', 'btn-secundario');
-          if (temEdicao) h += btn('indexar', 'Indexar na edição', '', 'background:#5c4a00;');
-          else h += ehChefe ? btn('publicar', 'Publicar') : btn('enviar_revisao', 'Enviar para revisão');
+        if (ehChefe && (noticiaStatusAtual === STATUS.PUBLICADO || noticiaStatusAtual === 'indexado')) {
+          // Artigo já publicado/indexado: só corrige erros, não muda status nem posição/edição.
+          h = '<button type="button" class="btn-auth" data-acao="corrigir">Salvar correção</button>' +
+              '<p style="font-size:12px;color:#888;margin-top:8px;">Este artigo já está ' +
+              (noticiaStatusAtual === 'indexado' ? 'indexado na edição' : 'publicado') +
+              '. Salvar aqui só corrige o conteúdo — não altera o status nem a posição/edição.</p>';
+        } else if (cargo === CARGOS.REVISOR) {
+          h = '<button type="button" class="btn-auth" data-acao="aprovar_rev">Salvar correções e aprovar</button>' +
+              '<button type="button" class="btn-auth btn-secundario" data-acao="devolver_rev">Devolver ao autor</button>';
+        } else {
+          const reenvio = noticiaStatusAtual === STATUS.DEVOLVIDO;
+          h = '<button type="button" class="btn-auth btn-secundario" data-acao="rascunho">Salvar rascunho</button>';
+          if (temEdicao) h += '<button type="button" class="btn-auth" data-acao="indexar" style="background:#5c4a00;">Indexar na edição</button>';
+          else h += ehChefe ? '<button type="button" class="btn-auth" data-acao="publicar">Publicar</button>'
+                            : '<button type="button" class="btn-auth" data-acao="enviar_revisao">' + (reenvio ? 'Reenviar para revisão' : 'Enviar para revisão') + '</button>';
         }
         acoes.innerHTML = h;
-        acoes.querySelectorAll('button').forEach(b => b.addEventListener('click', () => salvarNoticia(b.dataset.acao)));
+        acoes.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => salvarNoticia(btn.dataset.acao)));
       }
-      window.__redesenharBotoes = desenhar;
       desenhar();
       document.getElementById('edicao').addEventListener('change', function () {
         document.getElementById('edicaoOpcoes').style.display = this.value !== '' ? 'block' : 'none';
@@ -431,28 +429,17 @@
     ativarAutoNegrito(quillEditor);
 
 
-    async function salvarComoRevisor(acao) {
-      const titulo = document.getElementById('titulo').value.trim();
-      if (!titulo) { mostrarErro('O artigo precisa ter título.'); return; }
-      if (!quillEditor.getText().trim()) { mostrarErro('O artigo não pode ficar sem texto.'); return; }
-      const dados = { titulo, resumo: document.getElementById('resumo').value.trim(), conteudo: quillEditor.root.innerHTML, imagemLegenda: (document.getElementById('imagemLegenda') || { value: '' }).value.trim() };
-      let aviso = 'Correções salvas.', proxima = window.__statusAtual || 'em_revisao';
-      if (acao === 'aprovar_rev') { dados.status = STATUS.APROVADO; dados.motivoReprovacao = ''; aviso = 'Correções salvas e artigo aprovado.'; proxima = STATUS.APROVADO; }
-      if (acao === 'devolver_rev') {
-        const motivo = (prompt('Explique o que o autor precisa corrigir. Ele verá esta mensagem:') || '').trim();
-        if (!motivo) { mostrarErro('Para reprovar é preciso escrever o motivo.'); return; }
-        dados.status = STATUS.DEVOLVIDO; dados.motivoReprovacao = motivo; aviso = 'Artigo reprovado e devolvido ao autor.'; proxima = STATUS.DEVOLVIDO;
+    async function subirImagensColadas() {
+      const imgs = Array.from(quillEditor.root.querySelectorAll('img[src^="data:"]'));
+      for (const img of imgs) {
+        const blob = await (await fetch(img.getAttribute('src'))).blob();
+        const ext = (blob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+        img.setAttribute('src', await enviarImagemCloudinary(new File([blob], 'imagem-colada.' + ext, { type: blob.type || 'image/png' })));
       }
-      if (dados.status) { dados.revisadoPor = usuarioAtual.displayName || usuarioAtual.email; dados.revisadoEm = new Date().toISOString(); }
-      try {
-        await atualizarNoticia(noticiaIdEdicao, dados);
-        mostrarSucesso('✓ ' + aviso); window.scrollTo({ top: 0, behavior: 'smooth' });
-        setTimeout(() => window.location.href = 'gerenciar-noticias.html?aba=' + proxima, 1500);
-      } catch (err) { mostrarErro('Não foi possível salvar. Verifique sua permissão.'); console.error(err); }
+      return quillEditor.root.innerHTML;
     }
 
     async function salvarNoticia(acao) {
-      if (cargoAtual === CARGOS.REVISOR) { return salvarComoRevisor(acao); }
       const titulo = document.getElementById('titulo').value.trim();
       const resumo = document.getElementById('resumo').value.trim();
       const conteudoHtml = quillEditor.root.innerHTML;
@@ -506,24 +493,24 @@
           if (snapUsuario.exists()) cargoEditorialAutor = snapUsuario.data().cargoEditorial || '';
         } catch (e) {}
 
-        if (!idNoticia) {
-          idNoticia = await criarNoticia(
-            { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status: STATUS.RASCUNHO, imagemUrl: imagemAtualUrl, edicao, gratuito, paywallOverride, ordemEdicao, cargoEditorialAutor },
-            usuarioAtual.uid, usuarioAtual.displayName || usuarioAtual.email
-          );
-        }
+        const conteudoFinal = await subirImagensColadas();
 
         let imagemUrl = imagemAtualUrl;
         if (arquivoImagem) imagemUrl = await enviarImagem(arquivoImagem, idNoticia);
 
-        const dadosAtualizar = { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo, status, ...extra, coautores, coautoresUids, coautoresPares: pares, imagemUrl, imagemLegenda: (document.getElementById('imagemLegenda') || {}).value || '', edicao, gratuito, paywallOverride, ordemEdicao };
-        if (motivoDevolucao) dadosAtualizar.motivoDevolucao = motivoDevolucao;
-        if (acao === 'enviar_revisao') dadosAtualizar.motivoDevolucao = null; // reenvio limpa o motivo anterior
-        await atualizarNoticia(idNoticia, dadosAtualizar);
+        const dadosCompletos = { titulo, categoria, categorias: categoriasSelecionadas, destaque, tags: tagsSelecionadas, resumo, conteudo: conteudoFinal, status, coautores, coautoresUids, coautoresPares: pares, imagemUrl, imagemLegenda: (document.getElementById('imagemLegenda') || {}).value || '', edicao, gratuito, paywallOverride, ordemEdicao };
+        if (motivoDevolucao) dadosCompletos.motivoDevolucao = motivoDevolucao;
+        if (acao === 'enviar_revisao') dadosCompletos.motivoDevolucao = null;
 
-        if (extra.materiaCapa && edicao) {
-          const outros = await getDocs(query(collection(db, 'noticias'), where('edicao', '==', edicao), where('materiaCapa', '==', true)));
-          for (const o of outros.docs) if (o.id !== idNoticia) await updateDoc(doc(db, 'noticias', o.id), { materiaCapa: false });
+        if (!idNoticia) {
+          idNoticia = await criarNoticia({ ...dadosCompletos, cargoEditorialAutor }, usuarioAtual.uid, usuarioAtual.displayName || usuarioAtual.email);
+        } else {
+          await atualizarNoticia(idNoticia, dadosCompletos);
+        }
+        imagemAtualUrl = imagemUrl;
+        document.getElementById('imagem').value = '';
+
+        if (status === STATUS.PUBLICADO) {
         }
 
         noticiaIdEdicao = idNoticia;
@@ -538,16 +525,17 @@
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           const textos = {
-            indexar: status === STATUS.APROVADO ? 'Artigo indexado na edição "' + edicao + '" e já aprovado.' : 'Artigo indexado na edição "' + edicao + '". Agora ele aguarda a aprovação.',
-            enviar_revisao: 'Artigo enviado para aprovação.', publicar: 'Artigo publicado.',
-            aprovar_rev: 'Artigo aprovado.', devolver_rev: 'Artigo reprovado e devolvido ao autor.', manter: 'Alterações salvas.'
+            indexar: status === 'indexado' ? 'Artigo indexado na edição "' + edicao + '".' : 'Artigo indexado na edição "' + edicao + '" e enviado para aprovação.',
+            enviar_revisao: 'Artigo enviado para revisão.', publicar: 'Artigo publicado.',
+            aprovar_rev: 'Correções salvas e artigo aprovado.', devolver_rev: 'Artigo devolvido ao autor.',
+            corrigir: 'Correção salva.'
           };
           mostrarSucesso('✓ ' + (textos[acao] || 'Artigo salvo.'));
           window.scrollTo({ top: 0, behavior: 'smooth' });
           setTimeout(() => window.location.href = 'gerenciar-noticias.html?aba=' + status, 1800);
         }
       } catch (err) {
-        mostrarErro('Erro ao salvar o artigo. Verifique sua permissão e tente novamente.');
+        mostrarErro('Erro ao salvar o artigo: ' + ((err && err.message) || 'tente novamente'));
         console.error(err);
       }
     }

@@ -26,8 +26,13 @@ export async function aplicarConfigSite() {
   const nome = c && c.logoTexto ? String(c.logoTexto).trim() : '';
 
 
-  const rod = document.querySelector('body > footer');
-  if (!rod || (!c && !inst.length)) return;
+  let rod = document.querySelector('body > footer');
+  if (!c && !inst.length) return;
+  if (!rod) {
+    const pag = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    if (['login.html', 'cadastro.html', 'biblia.html'].includes(pag)) return;
+    rod = document.createElement('footer'); rod.className = 'rodape-aster'; document.body.appendChild(rod);
+  }
   const p = 'style="margin:0"';
   const partes = [];
   if (c && c.footerDescricao) partes.push('<p style="margin:0;max-width:560px;line-height:1.6">' + esc(c.footerDescricao) + '</p>');

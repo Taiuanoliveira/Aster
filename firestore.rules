@@ -49,18 +49,22 @@ service cloud.firestore {
             || (ehColunista() && request.resource.data.status in ['rascunho', 'em_revisao']));
 
       allow update: if ehEditor()
-        || (ehRevisor() && request.resource.data.status in ['aprovado', 'devolvido'])
+        || (ehRevisor()
+            && resource.data.status in ['em_revisao', 'aprovado', 'devolvido']
+            && request.resource.data.status in ['em_revisao', 'aprovado', 'devolvido']
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['titulo', 'resumo', 'conteudo', 'imagemLegenda', 'status', 'motivoReprovacao', 'revisadoPor', 'revisadoEm', 'atualizadoEm']))
         || (ehColunista()
             && (resource.data.autorUid == request.auth.uid
                 || (request.auth.uid in resource.data.get('coautoresUids', [])
                     && request.resource.data.get('coautoresUids', []) == resource.data.get('coautoresUids', [])))
-            && resource.data.status != 'publicado' && resource.data.status != 'indexado'
+            && resource.data.status in ['rascunho', 'devolvido']  // depois de indexar, o autor não mexe mais
             && request.resource.data.autorUid == resource.data.autorUid
             && request.resource.data.status in ['rascunho', 'em_revisao']);
 
       allow delete: if ehAdmin()
         || (ehColunista() && resource.data.autorUid == request.auth.uid
-            && resource.data.status != 'publicado' && resource.data.status != 'indexado');
+            && resource.data.status in ['rascunho', 'devolvido']);
 
       match /comentarios/{cid} {
         allow read: if true;

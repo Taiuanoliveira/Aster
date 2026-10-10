@@ -111,13 +111,13 @@ html[data-tema="escuro"] .gate a.sec2{color:#8cc4ea}
 /* redes-aster */
 .redes-rodape{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 .rede{width:38px;height:38px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff!important;border:1px solid rgba(255,255,255,.4);text-decoration:none!important;transition:background .2s,color .2s,border-color .2s}
-.rede:hover{background:#E8A33D;border-color:#E8A33D;color:#0C3B5C!important}
+.rede:hover{background:var(--amar,#E8A33D);border-color:var(--amar,#E8A33D);color:var(--esc,#0C3B5C)!important}
 .contatos,.contatos-icones{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
 .contatos-icones{justify-content:flex-start;margin-top:6px}
-.contatos .rede,.contatos-icones .rede{width:32px;height:32px;color:#0C3B5C!important;border-color:#c9c3b2}
+.contatos .rede,.contatos-icones .rede{width:32px;height:32px;color:var(--esc,#0C3B5C)!important;border-color:#c9c3b2}
 .contatos .rede svg,.contatos-icones .rede svg{width:17px;height:17px}
 html[data-tema="escuro"] .contatos .rede,html[data-tema="escuro"] .contatos-icones .rede{color:#e7edf3!important;border-color:#3b5368}
-
+/* redes-cores */
 /* ===== Banner (logo) no canto superior esquerdo ===== */
 .logo-aster .logo-banner{height:36px;width:auto;display:block;border-radius:0}
 @media(max-width:520px){.logo-aster .logo-banner{height:28px}}
@@ -149,3 +149,7 @@ html[data-tema="escuro"] body.biblia-pag{color:#fff}
 html[data-tema="escuro"] .corpo a,
 html[data-tema="escuro"] .ref-biblica{color:#8cc4ea}
 html[data-tema="escuro"] .ref-biblica:hover{background:#243447;color:#fff}
+
+/* rodape-aster */
+footer.rodape-aster{background:var(--esc,#0C3B5C);color:#cfe0ea;text-align:center;padding:24px 20px;font-size:13px;margin-top:40px}
+footer.rodape-aster a:not(.rede){color:#cfe0ea;text-decoration:underline}

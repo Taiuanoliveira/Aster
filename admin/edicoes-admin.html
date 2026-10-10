@@ -76,8 +76,8 @@
           </div>
 
           <div id="campoEspecial" style="display:none;margin-top:14px;">
-            <label>Nome da edição especial</label>
-            <input type="text" id="nomeEspecial" placeholder="Ex: Edição Especial de Natal">
+            <label>Subtítulo da edição especial (opcional)</label>
+            <input type="text" id="nomeEspecial" placeholder="Ex: Especial de Natal">
           </div>
 
           <input type="hidden" id="nomeEdicao">
@@ -103,7 +103,11 @@
           <label for="descricaoEdicao">Descrição resumida (aparece na lista de edições)</label>
           <textarea id="descricaoEdicao" rows="2" placeholder="Breve descrição desta edição"></textarea>
 
-          <label for="cartaLeitor">Carta ao leitor <small style="color:#888;font-weight:400;">(sempre gratuita, aparece antes dos artigos)</small></label>
+          <label for="lancamentoEdicao">Data de lançamento (opcional)</label>
+          <input type="date" id="lancamentoEdicao">
+          <p style="font-size:12px;color:#888;margin:4px 0 0;">A edição especial também é numerada na mesma sequência e pode sair em outro dia.</p>
+
+          <label for="cartaLeitor">Carta ao leitor <small style="color:#888;font-weight:400;">(aparece logo depois da matéria de capa)</small></label>
           <div id="editorCartaLeitor" style="background:#fff;"></div>
 
           <label style="display:flex;align-items:center;gap:8px;margin-top:16px;">
@@ -140,9 +144,10 @@
 
     import { protegerPagina, sair, CARGOS } from "../js/auth.js";
     import { db } from "../js/firebase-config.js";
-    import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, orderBy, query, where, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { enviarImagemCloudinary } from "../js/cloudinary.js";
     import { ativarAutoNegrito } from "../js/versiculos.js";
+    import { ordenarMaterias, proximoNumero as proxNum, nomeEdicao as nomeDaEdicao, avaliarPublicacao, mover, renumerar, ROTULO_FASE } from "../js/fluxo-edicao.js";
 
     // Editor rico da Carta ao Leitor: negrito, itálico, subtítulo, citação, link e imagens no meio do texto.
     const editorCartaLeitor = new Quill('#editorCartaLeitor', {
@@ -254,24 +259,28 @@
     let edicoesCache = [];
     let editandoId = null;
     const tipoAtual = () => document.querySelector('input[name="tipoEdicao"]:checked').value;
-    function proximoNumero() {
-      const nums = edicoesCache.filter(e => e.numero && !e.especial).map(e => e.numero);
-      return (nums.length ? Math.max(...nums) : 0) + 1;
-    }
+    function proximoNumero() { return proxNum(edicoesCache); }
     function montarNome() {
       const especial = tipoAtual() === 'especial';
-      let nome = '';
-      if (especial) nome = el('nomeEspecial').value.trim();
-      else { if (!el('numeroEdicao').value) el('numeroEdicao').value = proximoNumero(); nome = 'Edição ' + el('numeroEdicao').value; }
+      let nome;
+      if (editandoId) {   // ao editar, o nome não muda sozinho (os artigos se ligam a ele)
+        const atual = edicoesCache.find(e => e.id === editandoId);
+        nome = atual ? atual.nome : '';
+      } else {
+        if (!el('numeroEdicao').value) el('numeroEdicao').value = proximoNumero();
+        nome = nomeDaEdicao(el('numeroEdicao').value, especial);
+      }
       el('nomeEdicao').value = nome;
-      el('previewNomeEdicao').textContent = especial ? '' : 'Nome da edição: ' + nome;
+      el('previewNomeEdicao').textContent = 'Nome da edição: ' + nome;
     }
     function atualizarTipo() {
       const especial = tipoAtual() === 'especial';
-      el('campoNumerada').style.display = especial ? 'none' : 'block';
+      el('campoNumerada').style.display = 'block';
       el('campoEspecial').style.display = especial ? 'block' : 'none';
+      if (!editandoId) el('numeroEdicao').value = proximoNumero();
       montarNome();
     }
+    document.head.insertAdjacentHTML('beforeend', '<style>label:has(#edicaoGratuita){display:none!important}</style>');
     document.querySelectorAll('input[name="tipoEdicao"]').forEach(r => r.addEventListener('change', atualizarTipo));
     el('nomeEspecial').addEventListener('input', montarNome);
 
@@ -290,10 +299,10 @@
     window.editarEdicao = function(id) {
       const ed = edicoesCache.find(e => e.id === id); if (!ed) return;
       editandoId = id;
-      const comoEspecial = ed.especial || !ed.numero;   // edição antiga sem número: o nome fica editável
+      const comoEspecial = !!ed.especial;
       document.querySelector('input[name="tipoEdicao"][value="' + (comoEspecial ? 'especial' : 'numerada') + '"]').checked = true;
-      el('numeroEdicao').value = comoEspecial ? '' : ed.numero;
-      el('nomeEspecial').value = comoEspecial ? ed.nome : '';
+      el('numeroEdicao').value = ed.numero || '';
+      el('nomeEspecial').value = ed.subtitulo || ''; el('lancamentoEdicao').value = ed.lancamento || '';
       const sel = el('temaEdicao');
       if (ed.tema && !Array.from(sel.options).some(o => o.value === ed.tema)) sel.add(new Option(ed.tema, ed.tema));
       sel.value = ed.tema || '';
@@ -316,7 +325,7 @@
       const tema = el('temaEdicao').value;
       const descricao = el('descricaoEdicao').value.trim();
       const cartaLeitor = editorCartaLeitor.root.innerHTML.trim();
-      if (!nome || !tema) { mostrarErro('Preencha o nome (edição especial) e o tema da edição.'); return; }
+      if (!nome || !tema) { mostrarErro('Escolha o tema da edição.'); return; }
       if (edicoesCache.some(e => e.nome === nome && e.id !== editandoId)) { mostrarErro('Já existe uma edição chamada "' + nome + '".'); return; }
       try {
         const antiga = editandoId ? edicoesCache.find(e => e.id === editandoId) : null;
@@ -325,8 +334,8 @@
         const dados = {
           nome, tema, descricao, cartaLeitor, capaUrl,
           edicaoGratuita: el('edicaoGratuita').checked,
-          numero: especial ? null : (parseInt(el('numeroEdicao').value) || null),
-          especial
+          numero: parseInt(el('numeroEdicao').value) || (antiga && antiga.numero) || null,
+          especial, subtitulo: el('nomeEspecial').value.trim(), lancamento: el('lancamentoEdicao').value || ''
         };
         if (antiga) {
           await updateDoc(doc(db, 'edicoes', editandoId), dados);
@@ -371,9 +380,9 @@
             <div class="edicao-cabecalho">
               ${ed.capaUrl ? `<img src="${esc(ed.capaUrl)}">` : ''}
               <div class="edicao-cabecalho-textos">
-                <span class="tag-status ${status}">${status === 'publicada' ? 'Publicada' : 'Rascunho'}</span>
-                <div><strong>${esc(ed.nome)}</strong>${ed.numero ? ' · nº ' + ed.numero : ''}${ed.especial ? ' · ESPECIAL' : ''}${ed.edicaoGratuita ? ' · grátis' : ''}</div>
-                <div style="font-size:12px;color:#777;">${esc(ed.tema)}${esc(ed.descricao ? ' — ' + ed.descricao : '')}</div>
+                <span class="tag-status ${status}">${status === 'publicada' ? 'Publicada' : 'Em preparação'}</span>
+                <div><strong>${esc(ed.nome)}</strong>${ed.numero ? ' · nº ' + ed.numero : ''}${ed.especial ? ' · ESPECIAL' : ''}${ed.lancamento ? ' · lançamento ' + esc(String(ed.lancamento).split('-').reverse().join('/')) : ''}</div>
+                <div style="font-size:12px;color:#777;">${esc(ed.subtitulo ? ed.subtitulo + ' · ' : '')}${esc(ed.tema)}${esc(ed.descricao ? ' — ' + ed.descricao : '')}</div>
               </div>
             </div>
             <div class="edicao-acoes">
@@ -384,40 +393,12 @@
               <button class="editar" data-id="${d.id}">Editar</button>
               <button class="excluir" data-id="${d.id}" data-nome="${esc(ed.nome)}">Excluir</button>
             </div>
-            <span class="toggle-materias" data-id="${d.id}" data-nome="${esc(ed.nome)}">▾ Ver / ordenar matérias desta edição</span>
+            <span class="toggle-materias" data-id="${d.id}" data-nome="${esc(ed.nome)}">▾ Artigos desta edição (fases, capa e ordem)</span>
             <div class="lista-materias-edicao" id="materias-${d.id}"></div>
           `;
 
-          div.querySelector('.publicar')?.addEventListener('click', async () => {
-            const avisos = [];
-            const ROTULO_STATUS = { rascunho: 'rascunho', em_revisao: 'aguardando aprovação', aprovado: 'aprovado (falta indexar)', devolvido: 'devolvido', indexado: 'indexado', publicado: 'publicado' };
-            try {
-              const vinc = await getDocs(query(collection(db, 'noticias'), where('edicao', '==', ed.nome)));
-              if (vinc.empty) { alert('Nenhum artigo está ligado à edição "' + ed.nome + '" ainda. Adicione e aprove ao menos um artigo antes de publicar.'); return; }
-              const pendentes = vinc.docs.map(m => m.data()).filter(m => !['indexado', 'publicado'].includes(m.status));
-              if (pendentes.length) {
-                alert('Não é possível publicar a edição "' + ed.nome + '" ainda. Os seguintes artigos não estão aprovados/indexados:\n\n' +
-                  pendentes.map(m => '• ' + (m.titulo || '(sem título)') + ' — ' + (ROTULO_STATUS[m.status] || m.status)).join('\n') +
-                  '\n\nTodo artigo da edição precisa estar aprovado e indexado antes de publicar a edição inteira.');
-                return;
-              }
-            } catch (err) { alert('Erro ao verificar os artigos da edição: ' + err.message); return; }
-            if (!ed.capaUrl) avisos.push('A edição está sem capa (o site vai mostrar uma capa simples).');
-            if (!String(ed.cartaLeitor || '').replace(/<[^>]*>/g, '').trim()) avisos.push('A edição está sem carta ao leitor.');
-            const texto = 'Publicar a edição "' + ed.nome + '"? Todos os artigos dela já estão aprovados e indexados.' + (avisos.length ? '\n\nAtenção:\n• ' + avisos.join('\n• ') : '') +
-              '\n\nDepois de publicada, ela trava: não será mais possível vincular novas matérias a ela diretamente na tela de Novo Artigo.';
-            if (confirm(texto)) {
-              await updateDoc(doc(db, 'edicoes', d.id), { status: 'publicada', publicadaEm: new Date().toISOString() });
-              carregarEdicoes();
-            }
-          });
-
-          div.querySelector('.despublicar')?.addEventListener('click', async () => {
-            if (confirm('Voltar a edição "' + ed.nome + '" para rascunho? Ela deixará de aparecer publicamente até ser publicada de novo.')) {
-              await updateDoc(doc(db, 'edicoes', d.id), { status: 'rascunho' });
-              carregarEdicoes();
-            }
-          });
+          div.querySelector('.publicar')?.addEventListener('click', () => publicarEdicao(d.id, ed));
+          div.querySelector('.despublicar')?.addEventListener('click', () => despublicarEdicao(d.id, ed));
 
           div.querySelector('.editar').addEventListener('click', () => editarEdicao(d.id));
 
@@ -442,53 +423,98 @@
       }
     }
 
-    async function abrirOuFecharMaterias(edicaoId, nomeEdicao) {
+    const FASE_COR = { em_revisao: ['#fff8e1', '#6f5a10'], devolvido: ['#fdecea', '#8a1c14'], aprovado: ['#e8f5e9', '#1b5e20'], indexado: ['#e8f5e9', '#1b5e20'], publicado: ['#dff0e2', '#14501a'], rascunho: ['#eee', '#555'] };
+    async function materiasDaEdicao(nome) {
+      const snap = await getDocs(query(collection(db, 'noticias'), where('edicao', '==', nome)));
+      return snap.docs.map(x => ({ id: x.id, ...x.data() }));
+    }
+
+    async function abrirOuFecharMaterias(edicaoId, nomeEd, forcarAbrir) {
       const container = document.getElementById('materias-' + edicaoId);
-      const aberta = container.classList.contains('aberta');
-      if (aberta) {
-        container.classList.remove('aberta');
-        return;
-      }
+      if (!forcarAbrir && container.classList.contains('aberta')) { container.classList.remove('aberta'); return; }
       container.classList.add('aberta');
       container.innerHTML = '<p class="aviso-sem-materias">Carregando matérias...</p>';
-
       try {
-        const q = query(collection(db, 'noticias'), where('edicao', '==', nomeEdicao));
-        const snap = await getDocs(q);
-
-        if (snap.empty) {
-          container.innerHTML = '<p class="aviso-sem-materias">Nenhuma matéria vinculada a esta edição ainda. Crie uma em "Novo Artigo" e selecione esta edição.</p>';
-          return;
-        }
-
-        const materias = snap.docs
-          .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
-          .sort((a, b) => (a.ordemEdicao || 0) - (b.ordemEdicao || 0));
-
-        container.innerHTML = materias.map(m => `
-          <div class="materia-ordem-item" data-id="${m.id}">
-            <input type="number" class="input-ordem" value="${m.ordemEdicao || 0}" min="0">
-            <span class="materia-titulo">${esc(m.titulo || '(sem título)')}</span>
-            <span class="materia-status-mini">${esc(m.status || '')}</span>
-          </div>
-        `).join('') + '<button type="button" class="btn-salvar-ordem">Salvar ordem desta edição</button>';
-
-        container.querySelector('.btn-salvar-ordem').addEventListener('click', async () => {
-          const itens = container.querySelectorAll('.materia-ordem-item');
-          try {
-            for (const item of itens) {
-              const id = item.dataset.id;
-              const ordem = parseInt(item.querySelector('.input-ordem').value) || 0;
-              await updateDoc(doc(db, 'noticias', id), { ordemEdicao: ordem });
-            }
-            mostrarSucesso('Ordem das matérias atualizada com sucesso!');
-          } catch (err) {
-            mostrarErro('Erro ao salvar ordem: ' + err.message);
-          }
+        const ed = edicoesCache.find(e => e.id === edicaoId) || {};
+        const todas = await materiasDaEdicao(nomeEd);
+        if (!todas.length) { container.innerHTML = '<p class="aviso-sem-materias">Nenhum artigo ligado a esta edição ainda. Em "Novo Artigo", escolha esta edição e clique em "Indexar na edição".</p>'; return; }
+        const indexadas = ordenarMaterias(todas.filter(m => m.status && m.status !== 'rascunho'));
+        const rascunhos = todas.filter(m => !m.status || m.status === 'rascunho');
+        const av = avaliarPublicacao(todas, ed);
+        const cont = f => indexadas.filter(f).length;
+        let h = '<div style="font-size:13px;margin:8px 0 10px;line-height:1.6;"><strong>' + indexadas.length + ' artigo(s) indexado(s):</strong> ' +
+          cont(m => m.status === 'aprovado' || m.status === 'indexado') + ' aprovado(s), ' + cont(m => m.status === 'em_revisao') + ' aguardando, ' + cont(m => m.status === 'devolvido') + ' reprovado(s)' +
+          (cont(m => m.status === 'publicado') ? ', ' + cont(m => m.status === 'publicado') + ' publicado(s)' : '') + '.<br>' +
+          (av.bloqueios.length ? '<span style="color:#8a1c14;">⛔ Ainda não dá para publicar: há artigos pendentes, reprovados ou nenhum aprovado.</span>' : '<span style="color:#1b5e20;">✅ Pronta para publicar.</span>') +
+          (av.avisos.length ? '<br><span style="color:#6f5a10;">⚠ ' + esc(av.avisos.join('; ')) + '.</span>' : '') + '</div>';
+        h += indexadas.map((m, i) => {
+          const c = FASE_COR[m.status] || FASE_COR.rascunho;
+          return '<div class="materia-ordem-item" data-id="' + m.id + '" style="gap:8px;flex-wrap:wrap;">' +
+            '<strong style="width:22px;text-align:center;">' + (i + 1) + '</strong>' +
+            '<button type="button" class="btn-capa" title="Definir como matéria de capa" style="border:1px solid #E8A33D;background:' + (m.materiaCapa ? '#E8A33D' : '#fff') + ';border-radius:6px;cursor:pointer;padding:2px 8px;">⭐</button>' +
+            '<span class="materia-titulo">' + esc(m.titulo || '(sem título)') + '<small style="color:#888;"> — ' + esc(m.autorNome || '') + '</small></span>' +
+            '<span class="materia-status-mini" style="background:' + c[0] + ';color:' + c[1] + ';padding:2px 8px;border-radius:10px;">' + esc(ROTULO_FASE[m.status] || m.status) + '</span>' +
+            '<button type="button" class="btn-sobe" title="Subir" style="cursor:pointer;">↑</button><button type="button" class="btn-desce" title="Descer" style="cursor:pointer;">↓</button>' +
+            '<a href="publicar.html?id=' + m.id + '" style="font-size:12px;">abrir</a></div>';
+        }).join('');
+        if (rascunhos.length) h += '<p style="font-size:12px;color:#777;margin-top:8px;">Rascunhos ligados a esta edição (ainda não indexados; não entram na publicação): ' + esc(rascunhos.map(m => m.titulo || '(sem título)').join('; ')) + '</p>';
+        container.innerHTML = h;
+        const reabrir = () => abrirOuFecharMaterias(edicaoId, nomeEd, true);
+        container.querySelectorAll('.materia-ordem-item').forEach(linha => {
+          const id = linha.dataset.id;
+          linha.querySelector('.btn-capa').addEventListener('click', async () => {
+            try {
+              const lote = writeBatch(db);
+              indexadas.forEach(m => { const quer = m.id === id && !m.materiaCapa; if (!!m.materiaCapa !== quer) lote.update(doc(db, 'noticias', m.id), { materiaCapa: quer }); });
+              await lote.commit(); reabrir();
+            } catch (err) { mostrarErro('Erro ao definir a capa: ' + err.message); }
+          });
+          [['.btn-sobe', -1], ['.btn-desce', 1]].forEach(([sel, dir]) => linha.querySelector(sel).addEventListener('click', async () => {
+            try {
+              const mudancas = renumerar(mover(indexadas, id, dir));
+              if (mudancas.length) { const lote = writeBatch(db); mudancas.forEach(x => lote.update(doc(db, 'noticias', x.id), { ordemEdicao: x.ordemEdicao })); await lote.commit(); }
+              reabrir();
+            } catch (err) { mostrarErro('Erro ao reordenar: ' + err.message); }
+          }));
         });
-      } catch (err) {
-        container.innerHTML = '<p style="color:#b3261e;font-size:13px;">Erro ao carregar matérias: ' + err.message + '</p>';
-      }
+      } catch (err) { container.innerHTML = '<p style="color:#b3261e;font-size:13px;">Erro ao carregar matérias: ' + esc(err.message) + '</p>'; }
+    }
+
+    // Publica a edição inteira de uma vez: ou vai tudo, ou não vai nada.
+    async function publicarEdicao(id, ed) {
+      try {
+        const todas = await materiasDaEdicao(ed.nome);
+        const av = avaliarPublicacao(todas, ed);
+        if (av.bloqueios.length) { alert('Ainda não dá para publicar "' + ed.nome + '".\n\n' + av.bloqueios.join('\n\n')); abrirOuFecharMaterias(id, ed.nome, true); return; }
+        const total = av.aprovadas.length + av.jaPublicadas.length;
+        const texto = 'Publicar "' + ed.nome + '" agora?\n\n• ' + total + ' artigo(s) vão ao ar de uma vez.' +
+          (av.avisos.length ? '\n\nAtenção:\n• ' + av.avisos.join('\n• ') : '') +
+          (av.rascunhos.length ? '\n\n• ' + av.rascunhos.length + ' rascunho(s) ligado(s) a esta edição não serão publicados.' : '') +
+          '\n\nDepois disso os autores não podem mais editar. Só administrador e editor corrigem.';
+        if (!confirm(texto)) return;
+        const lote = writeBatch(db);
+        av.aprovadas.forEach(m => lote.update(doc(db, 'noticias', m.id), { status: 'publicado', publicadoEm: serverTimestamp(), atualizadoEm: serverTimestamp() }));
+        lote.update(doc(db, 'edicoes', id), { status: 'publicada', publicadaEm: new Date().toISOString() });
+        await lote.commit();
+        const depois = await materiasDaEdicao(ed.nome);
+        const noAr = depois.filter(m => m.status === 'publicado' || m.status === 'indexado').length;
+        mostrarSucesso('✓ Edição publicada! ' + noAr + ' artigo(s) no ar. Para conferir, abra: edicao.html?id=' + id);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        await carregarEdicoes();
+      } catch (err) { mostrarErro('Não foi possível publicar. Nada foi alterado. Motivo: ' + err.message); }
+    }
+
+    async function despublicarEdicao(id, ed) {
+      if (!confirm('Voltar "' + ed.nome + '" para preparação?\n\nEla some do site e os artigos dela voltam para "Aprovado" (deixam de ser públicos até você publicar de novo).')) return;
+      try {
+        const todas = await materiasDaEdicao(ed.nome);
+        const lote = writeBatch(db);
+        todas.filter(m => m.status === 'publicado' || m.status === 'indexado').forEach(m => lote.update(doc(db, 'noticias', m.id), { status: 'aprovado', atualizadoEm: serverTimestamp() }));
+        lote.update(doc(db, 'edicoes', id), { status: 'rascunho' });
+        await lote.commit();
+        mostrarSucesso('Edição voltou para preparação. Os artigos ficaram como "Aprovado".');
+        await carregarEdicoes();
+      } catch (err) { mostrarErro('Não foi possível voltar a edição para preparação. Nada foi alterado. Motivo: ' + err.message); }
     }
   </script>
 <script src="../js/dica-imagem.js"></script>

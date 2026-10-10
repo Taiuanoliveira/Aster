@@ -32,10 +32,11 @@ export function montarAudio({ titulo, autor, resumo, corpo }) {
   bar.innerHTML = '<button type="button" class="ouvir-play">🔊 Ouvir este artigo</button>' +
     '<button type="button" class="ouvir-sec ouvir-stop" hidden>⏹ Parar</button>' +
     '<button type="button" class="ouvir-sec ouvir-vel" title="Velocidade da leitura" aria-label="Velocidade da leitura"></button>' +
+    '<button type="button" class="ouvir-sec ouvir-voz" hidden></button>' +
     '<span class="ouvir-st" aria-live="polite"></span>';
   ancora.after(bar);
   const bPlay = bar.querySelector('.ouvir-play'), bStop = bar.querySelector('.ouvir-stop'),
-        bVel = bar.querySelector('.ouvir-vel'), st = bar.querySelector('.ouvir-st');
+        bVel = bar.querySelector('.ouvir-vel'), bVoz = bar.querySelector('.ouvir-voz'), st = bar.querySelector('.ouvir-st');
 
   function montarPartes() {
     const blocos = [titulo];
@@ -65,17 +66,42 @@ export function montarAudio({ titulo, autor, resumo, corpo }) {
     return saida;
   }
 
+  // Voz: escolhe a mais natural disponível no aparelho (vozes "Natural/Online" do Edge, "Google" do Chrome/Android,
+  // "Aprimorada/Premium" da Apple) e deixa o leitor alternar entre feminina e masculina.
+  const CHAVE_VOZ = 'aster_audio_voz';
+  let generoVoz = 'f';
+  try { const g = localStorage.getItem(CHAVE_VOZ); if (g === 'f' || g === 'm') generoVoz = g; } catch (e) {}
+  const MASC = /antonio|antônio|felipe|daniel|ricardo|donato|humberto|val[eé]rio|cristiano|duarte|fernando|jorge|male|masculin/i;
+  const generoDe = v => MASC.test(v.name || '') ? 'm' : 'f';
+  function pontuar(v) {
+    const n = v.name || ''; let p = 0;
+    if (/natural|neural|online/i.test(n)) p += 100;
+    if (/google/i.test(n)) p += 80;
+    if (/premium|enhanced|aprimorad/i.test(n)) p += 70;
+    if (v.localService === false) p += 40;
+    if (/compact/i.test(n)) p -= 50;
+    p += /^pt[-_]br$/i.test(v.lang) ? 30 : -20;
+    return p;
+  }
+  function vozes() {
+    try { return (sy.getVoices() || []).filter(v => /^pt/i.test(v.lang)); } catch (e) { return []; }
+  }
   function voz() {
-    try {
-      const vs = sy.getVoices() || [];
-      return vs.find(v => /^pt[-_]br$/i.test(v.lang)) || vs.find(v => /^pt/i.test(v.lang)) || null;
-    } catch (e) { return null; }
+    const todas = vozes().sort((a, b) => pontuar(b) - pontuar(a));
+    return todas.find(v => generoDe(v) === generoVoz) || todas[0] || null;
+  }
+  function atualizarBotaoVoz() {
+    const t = vozes();
+    bVoz.hidden = !(t.some(v => generoDe(v) === 'f') && t.some(v => generoDe(v) === 'm'));
+    bVoz.textContent = generoVoz === 'm' ? '👨 Voz masculina' : '👩 Voz feminina';
+    const v = voz(); bVoz.title = v ? 'Voz usada: ' + v.name : 'Trocar a voz';
   }
 
   function mostrar() {
     bPlay.textContent = estado === 'lendo' ? '⏸ Pausar' : estado === 'pausado' ? '▶ Continuar' : '🔊 Ouvir este artigo';
     bStop.hidden = estado === 'parado';
     bVel.textContent = String(vel).replace('.', ',') + '×';
+    atualizarBotaoVoz();
     st.textContent = estado === 'lendo' ? 'Lendo… ' + Math.min(i + 1, partes.length) + ' de ' + partes.length
                    : estado === 'pausado' ? 'Pausado' : '';
   }
@@ -114,6 +140,12 @@ export function montarAudio({ titulo, autor, resumo, corpo }) {
     try { localStorage.setItem(CHAVE, vel); } catch (e) {}
     if (estado === 'lendo') { geracao++; try { sy.cancel(); } catch (e) {} falar(); } else mostrar();
   });
+  bVoz.addEventListener('click', () => {
+    generoVoz = generoVoz === 'f' ? 'm' : 'f';
+    try { localStorage.setItem(CHAVE_VOZ, generoVoz); } catch (e) {}
+    if (estado === 'lendo') { geracao++; try { sy.cancel(); } catch (e) {} falar(); } else mostrar();
+  });
+  try { sy.addEventListener('voiceschanged', mostrar); } catch (e) {}
   window.addEventListener('pagehide', () => { try { sy.cancel(); } catch (e) {} });
   mostrar();
 }

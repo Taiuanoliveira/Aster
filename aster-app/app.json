@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "Projeto Aster",
+    "slug": "projeto-aster",
+    "scheme": "aster",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": { "supportsTablet": true, "bundleIdentifier": "br.com.projetoaster.app" },
+    "android": { "package": "br.com.projetoaster.app" },
+    "plugins": ["expo-router", ["expo-notifications", { "color": "#3056FF" }]]
+  }
+}

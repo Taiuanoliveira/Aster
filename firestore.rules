@@ -115,7 +115,7 @@ service cloud.firestore {
       allow write: if ehAdmin();
       // cada pessoa edita só o próprio resumo, foto e contatos
       allow update: if logado() && request.auth.uid == id
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bio', 'fotoUrl', 'contatos', 'atualizadoEm']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nome', 'bio', 'fotoUrl', 'contatos', 'atualizadoEm']);
     }
     match /emAlta/{id}        { allow read: if true; allow write: if ehAdmin(); }
     match /institucional/{id} { allow read: if true; allow write: if ehAdmin(); }

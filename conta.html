@@ -70,6 +70,10 @@
   .admin-tile{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--borda);border-radius:10px;font-size:14px;font-weight:600;text-decoration:none}
   .admin-tile:hover{border-color:var(--amar)}
   .admin-tile span{font-size:18px}
+  body{padding-bottom:0}
+  footer{margin-top:60px}
+  footer{background:var(--esc);color:#cfe0ea;text-align:center;padding:22px 20px;font-size:13px}
+  footer a{color:#cfe0ea;text-decoration:underline}
 </style>
 <link rel="stylesheet" href="css/tema.css">
 <script src="js/tema.js"></script>
@@ -193,6 +197,7 @@
     const novoNome = document.getElementById('campoNome').value.trim();
     if (!novoNome) return;
     await updateDoc(doc(db, "usuarios", usuarioAtual.uid), { nome: novoNome });
+    try { await updateDoc(doc(db, "equipe", usuarioAtual.uid), { nome: novoNome, atualizadoEm: new Date().toISOString() }); } catch (e) {}
     document.getElementById('perfilNome').textContent = novoNome;
     const msg = document.getElementById('salvoMsg');
     msg.style.display = 'block';
@@ -349,6 +354,10 @@
     }
   }
 </script>
+<footer>
+  <img class="logo-rodape" src="img/logo.svg" alt="" width="18" height="18" style="vertical-align:middle;margin-right:6px"> Projeto Aster · <a href="equipe.html">Nossa Equipe</a> · <a href="termos.html">Termos de uso</a> · <a href="privacidade.html">Privacidade</a>
+</footer>
+
 <script type="module">import('./js/site-config.js').then(m=>m.aplicarConfigSite()).catch(()=>{});</script>
 </body>
 </html>

@@ -54,6 +54,10 @@
   .livros-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
   .livro-item{background:var(--card);border:1px solid var(--borda);border-radius:8px;padding:12px 14px;font-size:14px;text-decoration:none;color:var(--texto);text-align:center}
   .livro-item:hover{border-color:var(--amar)}
+  body{padding-bottom:0}
+  footer{margin-top:60px}
+  footer{background:var(--esc);color:#cfe0ea;text-align:center;padding:22px 20px;font-size:13px}
+  footer a{color:#cfe0ea;text-decoration:underline}
 </style>
 <link rel="stylesheet" href="css/tema.css">
 <script src="js/tema.js"></script>
@@ -185,6 +189,10 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 </script>
+
+<footer>
+  <img class="logo-rodape" src="img/logo.svg" alt="" width="18" height="18" style="vertical-align:middle;margin-right:6px"> Projeto Aster · <a href="equipe.html">Nossa Equipe</a> · <a href="termos.html">Termos de uso</a> · <a href="privacidade.html">Privacidade</a>
+</footer>
 
 <script type="module">import('./js/site-config.js').then(m=>m.aplicarConfigSite()).catch(()=>{});</script>
 </body>

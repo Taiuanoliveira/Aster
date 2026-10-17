@@ -60,7 +60,12 @@
           <div id="editorQuill"></div>
           <input type="hidden" id="conteudo">
 
-          <label>Coautores (opcional, até 3 autores contando você) — escolha pessoas da Equipe para o artigo aparecer na lista delas</label>
+          <div id="blocoAutorPrincipal" style="display:none">
+            <label for="autorPrincipal">Autor principal (quem escreveu o texto) — por padrão é você; troque se o texto foi enviado por outra pessoa da Equipe</label>
+            <select id="autorPrincipal"></select>
+          </div>
+
+          <label>Coautores (opcional, até 3 autores contando o autor principal) — escolha pessoas da Equipe para o artigo aparecer na lista delas</label>
           <input type="text" id="coautor1" list="listaEquipe" maxlength="80" placeholder="Nome do 2º autor">
           <input type="text" id="coautor2" list="listaEquipe" maxlength="80" placeholder="Nome do 3º autor" style="margin-top:8px">
           <datalist id="listaEquipe"></datalist>
@@ -233,6 +238,7 @@
       try {
         const snap = await getDocs(collection(db, 'equipe'));
         window.__equipe = snap.docs.map(d => ({ nome: String(d.data().nome || ''), uid: d.data().uid || '' }));
+        window.__equipeSel = snap.docs.map(d => ({ uid: d.data().uid || d.id, nome: String(d.data().nome || '').trim(), cargo: String(d.data().cargo || '') })).filter(x => x.nome);
         document.getElementById('listaEquipe').innerHTML = snap.docs.map(d => '<option value="' + String(d.data().nome || '').replace(/"/g, '&quot;') + '">').join('');
       } catch (e) {}
     }
@@ -305,12 +311,29 @@
             String(noticia.motivoDevolucao).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) +
             '<br>Corrija o que foi apontado e envie novamente para revisão.</div>');
         }
+        await montarAutorPrincipal();
         montarBotoesAcao(cargo);
       } else {
         await carregarCategoriasCheckboxes([]);
+        await montarAutorPrincipal();
         montarBotoesAcao(cargo);
       }
     });
+
+    async function montarAutorPrincipal() {
+      if (cargoAtual !== CARGOS.ADMIN && cargoAtual !== CARGOS.EDITOR) return;
+      try { await window.__equipeP; } catch (e) {}
+      const sel = document.getElementById('autorPrincipal');
+      const atualUid = window.__autorUid || usuarioAtual.uid;
+      const atualNome = window.__autorNome || usuarioAtual.displayName || usuarioAtual.email || 'Você';
+      const lista = (window.__equipeSel || []).slice();
+      if (!lista.some(x => x.uid === atualUid)) lista.push({ uid: atualUid, nome: atualNome, cargo: '' });
+      lista.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+      sel.innerHTML = '';
+      lista.forEach(x => { const o = document.createElement('option'); o.value = x.uid; o.textContent = x.nome; o.dataset.cargo = x.cargo || ''; sel.appendChild(o); });
+      sel.value = atualUid;
+      document.getElementById('blocoAutorPrincipal').style.display = 'block';
+    }
 
     function formatarCargo(cargo) {
       const nomes = { administrador: 'Administrador', editor: 'Editor', colunista: 'Colunista', revisor: 'Revisor' };
@@ -377,6 +400,7 @@
       document.getElementById('resumo').value = noticia.resumo || '';
       document.getElementById('paywallOverride').value = noticia.paywallOverride || '';
       window.__autorUid = noticia.autorUid;
+      window.__autorNome = noticia.autorNome || '';
       window.__pares = noticia.coautoresPares || [];
       window.__uidsAntigos = noticia.coautoresUids || [];
       ['coautor1', 'coautor2'].forEach((cid, i) => { const el = document.getElementById(cid); if (el) el.value = (noticia.coautores || [])[i] || ''; });
@@ -450,9 +474,16 @@
       const tagsSelecionadas = Array.from(document.querySelectorAll('#containerTags input:checked')).map(i => i.value);
       document.getElementById('categoria').value = categoria;
       const edicao = document.getElementById('edicao').value;
-      const coautores = ['coautor1', 'coautor2'].map(i => (document.getElementById(i) || { value: '' }).value.trim()).filter(Boolean).slice(0, 2);
+      let autorSel = null;
+      if (cargoAtual === CARGOS.ADMIN || cargoAtual === CARGOS.EDITOR) {
+        const sa = document.getElementById('autorPrincipal');
+        if (sa && sa.value) { const oa = sa.options[sa.selectedIndex]; autorSel = { uid: sa.value, nome: oa.textContent, cargo: oa.dataset.cargo || '' }; }
+      }
+      const uidAutorAtual = window.__autorUid || usuarioAtual.uid;
+      const mudouAutor = !!(autorSel && autorSel.uid !== uidAutorAtual);
+      const coautores = ['coautor1', 'coautor2'].map(i => (document.getElementById(i) || { value: '' }).value.trim()).filter(Boolean).filter(nm => !autorSel || nm.toLowerCase() !== autorSel.nome.toLowerCase()).slice(0, 2);
       await window.__equipeP;
-      const autorPrincipal = window.__autorUid || usuarioAtual.uid;
+      const autorPrincipal = mudouAutor ? autorSel.uid : uidAutorAtual;
       const pares = coautores.map(nm => {
         const k = nm.toLowerCase();
         const m = (window.__pares || []).find(x => x.nome.toLowerCase() === k) || (window.__equipe || []).find(x => x.nome.toLowerCase() === k);
@@ -503,10 +534,13 @@
         if (acao === 'enviar_revisao') dadosCompletos.motivoDevolucao = null;
 
         if (!idNoticia) {
-          idNoticia = await criarNoticia({ ...dadosCompletos, cargoEditorialAutor }, usuarioAtual.uid, usuarioAtual.displayName || usuarioAtual.email);
+          idNoticia = await criarNoticia({ ...dadosCompletos, cargoEditorialAutor }, usuarioAtual.uid, (autorSel && !mudouAutor && autorSel.nome) || usuarioAtual.displayName || usuarioAtual.email);
+          if (mudouAutor) await atualizarNoticia(idNoticia, { autorUid: autorSel.uid, autorNome: autorSel.nome, cargoEditorialAutor: autorSel.cargo });
         } else {
+          if (mudouAutor) Object.assign(dadosCompletos, { autorUid: autorSel.uid, autorNome: autorSel.nome, cargoEditorialAutor: autorSel.cargo });
           await atualizarNoticia(idNoticia, dadosCompletos);
         }
+        if (mudouAutor) { window.__autorUid = autorSel.uid; window.__autorNome = autorSel.nome; }
         imagemAtualUrl = imagemUrl;
         document.getElementById('imagem').value = '';
 

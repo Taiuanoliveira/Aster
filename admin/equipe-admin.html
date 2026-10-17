@@ -167,7 +167,7 @@
       try {
         const dados = { nome, cargo, ordem, bio: gv('bio').value.trim(), contatos, atualizadoEm: new Date().toISOString() };
         if (foto) dados.fotoUrl = await enviarImagemCloudinary(foto);
-        if (editandoId) { await setDoc(doc(db, 'equipe', editandoId), dados, { merge: true }); msg('msgSucesso', nome + ' atualizado(a)!'); }
+        if (editandoId) { await setDoc(doc(db, 'equipe', editandoId), dados, { mergeFields: Object.keys(dados) }); msg('msgSucesso', nome + ' atualizado(a)!'); }
         else { if (!dados.fotoUrl) dados.fotoUrl = null; await addDoc(collection(db, 'equipe'), dados); msg('msgSucesso', nome + ' adicionado(a) à equipe!'); }
         window.cancelarMembro(); carregarMembros();
       } catch (e) { msg('msgErro', 'Erro: ' + e.message); }

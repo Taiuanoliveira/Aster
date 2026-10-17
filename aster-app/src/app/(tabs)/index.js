@@ -8,7 +8,7 @@ import { referenciaDe, consultaApi } from '../../lib/versiculos';
 import { DEVOCIONAIS_PADRAO } from '../../lib/devocionais_padrao';
 import { dataLonga, diaDoAno } from '../../lib/datas';
 import { lerPrefs, salvarPrefs } from '../../lib/prefs';
-import { pedirPermissao, reagendar } from '../../lib/notificacoes';
+import { pedirPermissao, reagendar, notificacoesDisponiveis } from '../../lib/notificacoes';
 import { Cartao, Titulo, Selo, Botao, CartaoArtigo, Carregando, estilos } from '../../components/ui';
 
 async function buscarVerso(ref) {
@@ -69,7 +69,7 @@ export default function Inicio() {
           : <Text style={{ color: '#fff', fontSize: 17, marginTop: 8 }}>{ref} — conecte-se à internet para ler o texto.</Text>}
       </Cartao>
 
-      {prefs && !prefs.perguntou ? (
+      {prefs && !prefs.perguntou && notificacoesDisponiveis() ? (
         <Cartao>
           <Text style={{ color: t.texto, fontSize: 16, fontWeight: '700' }}>Receber lembretes diários?</Text>
           <Text style={{ color: t.cinza, fontSize: 14, lineHeight: 20, marginTop: 4, marginBottom: 12 }}>O versículo do dia às 7h e o devocional às 20h. Você muda os horários quando quiser em “Mais”.</Text>

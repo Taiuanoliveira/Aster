@@ -7,8 +7,15 @@ import { lerPrefs } from '../lib/prefs';
 
 configurarNotificacoes();
 
-const usarResposta = Platform.OS === 'web' ? () => null : require('expo-notifications').useLastNotificationResponse;
-const ACAO_PADRAO = Platform.OS === 'web' ? '' : require('expo-notifications').DEFAULT_ACTION_IDENTIFIER;
+let usarResposta = () => null;
+let ACAO_PADRAO = '';
+if (Platform.OS !== 'web') {
+  try {
+    const N = require('expo-notifications');
+    usarResposta = N.useLastNotificationResponse || usarResposta;
+    ACAO_PADRAO = N.DEFAULT_ACTION_IDENTIFIER;
+  } catch (e) {}
+}
 
 export default function Raiz() {
   const router = useRouter();

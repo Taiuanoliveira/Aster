@@ -7,7 +7,13 @@ import { diaDoAno } from './datas';
 const NATIVO = Platform.OS !== 'web';
 const DIAS_A_FRENTE = 28; // 2 tipos x 28 = 56 agendadas (o iPhone aceita até 64)
 let N = null;
-function mod() { if (!NATIVO) return null; if (!N) N = require('expo-notifications'); return N; }
+function mod() {
+  if (!NATIVO) return null;
+  if (!N) { try { N = require('expo-notifications'); } catch (e) { N = false; } }
+  return N || null;
+}
+
+export function notificacoesDisponiveis() { return !!mod(); }
 
 export function configurarNotificacoes() {
   const n = mod(); if (!n) return;

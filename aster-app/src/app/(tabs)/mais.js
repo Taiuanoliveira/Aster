@@ -5,7 +5,7 @@ import { useTema, SITE } from '../../lib/tema';
 import { useDados } from '../../lib/useDados';
 import { lerConfig } from '../../lib/api';
 import { lerPrefs, salvarPrefs } from '../../lib/prefs';
-import { pedirPermissao, reagendar, avisoDeTeste } from '../../lib/notificacoes';
+import { pedirPermissao, reagendar, avisoDeTeste, notificacoesDisponiveis } from '../../lib/notificacoes';
 import { hhmm } from '../../lib/datas';
 import { redesDoSite, abrirLink } from '../../lib/redes';
 import { Cartao, Titulo, Botao, Redes, estilos } from '../../components/ui';
@@ -73,14 +73,16 @@ export default function Mais() {
     <ScrollView style={{ flex: 1, backgroundColor: t.bg }} contentContainerStyle={estilos.pagina}>
       <Titulo style={{ marginTop: 4 }}>Lembretes</Titulo>
       <Cartao>
-        {prefs ? (
+        {!notificacoesDisponiveis() ? (
+          <Text style={{ color: t.cinza, fontSize: 14, lineHeight: 21 }}>Os lembretes diários funcionam no aplicativo instalado no celular. Nesta versão de teste (Expo Go) eles ficam indisponíveis.</Text>
+        ) : prefs ? (
           <>
             <Lembrete nome="Versículo do dia" valor={prefs.verso} onMudar={v => mudar('verso', v)} />
             <Lembrete nome="Devocional do dia" valor={prefs.devocional} onMudar={v => mudar('devocional', v)} />
           </>
         ) : null}
         {aviso ? <Text style={{ color: t.cinza, fontSize: 13, lineHeight: 19, marginTop: 10 }}>{aviso}</Text> : null}
-        <Botao titulo="Testar um lembrete agora" onPress={testar} claro style={{ marginTop: 12 }} />
+        {notificacoesDisponiveis() ? <Botao titulo="Testar um lembrete agora" onPress={testar} claro style={{ marginTop: 12 }} /> : null}
       </Cartao>
 
       <Titulo>Projeto Aster</Titulo>

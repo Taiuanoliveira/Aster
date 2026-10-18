@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, Text, View, Switch, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTema, SITE } from '../../lib/tema';
+import { useTema, SITE, usePrefTema, definirTema } from '../../lib/tema';
 import { useDados } from '../../lib/useDados';
-import { lerConfig } from '../../lib/api';
+import { lerConfig, listarColecao } from '../../lib/api';
 import { lerPrefs, salvarPrefs } from '../../lib/prefs';
 import { pedirPermissao, reagendar, avisoDeTeste, notificacoesDisponiveis } from '../../lib/notificacoes';
 import { hhmm } from '../../lib/datas';
@@ -47,6 +47,8 @@ export default function Mais() {
   const [prefs, setPrefs] = useState(null);
   const [aviso, setAviso] = useState('');
   const cfg = useDados('config', lerConfig);
+  const inst = useDados('institucional', () => listarColecao('institucional'));
+  const prefTema = usePrefTema();
 
   useEffect(() => { lerPrefs().then(setPrefs); }, []);
 
@@ -71,7 +73,17 @@ export default function Mais() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: t.bg }} contentContainerStyle={estilos.pagina}>
-      <Titulo style={{ marginTop: 4 }}>Lembretes</Titulo>
+      <Titulo style={{ marginTop: 4 }}>Aparência</Titulo>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        {[['auto', 'Automático'], ['claro', 'Claro'], ['escuro', 'Escuro']].map(([id, nome]) => (
+          <Pressable key={id} onPress={() => definirTema(id)} accessibilityRole="button"
+            style={{ flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, alignItems: 'center', borderColor: prefTema === id ? t.azul : t.borda, backgroundColor: prefTema === id ? t.azul : t.card }}>
+            <Text style={{ color: prefTema === id ? '#fff' : t.texto, fontWeight: '700' }}>{nome}</Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <Titulo>Lembretes</Titulo>
       <Cartao>
         {!notificacoesDisponiveis() ? (
           <Text style={{ color: t.cinza, fontSize: 14, lineHeight: 21 }}>Os lembretes diários funcionam no aplicativo instalado no celular. Nesta versão de teste (Expo Go) eles ficam indisponíveis.</Text>
@@ -87,9 +99,13 @@ export default function Mais() {
 
       <Titulo>Projeto Aster</Titulo>
       <Cartao style={{ paddingVertical: 4 }}>
+        {link('Estudos', () => router.push('/estudos'))}
+        {link('Plano de leitura', () => router.push('/plano'))}
+        {link('Apoie o Aster', () => router.push('/apoie'))}
         {link('Nossa Equipe', () => router.push('/equipe'))}
         {link('Termos de uso', () => abrirLink(SITE + '/termos.html'))}
         {link('Política de privacidade', () => abrirLink(SITE + '/privacidade.html'))}
+        {(inst.dados || []).filter(i => /^https?:/i.test(i.link || '')).map(i => <View key={i.id}>{link(i.titulo, () => abrirLink(i.link.trim()))}</View>)}
         {link('Abrir o site', () => abrirLink(SITE))}
       </Cartao>
 

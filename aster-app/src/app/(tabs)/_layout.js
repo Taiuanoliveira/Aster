@@ -13,6 +13,7 @@ export default function Abas() {
   );
   return (
     <Tabs screenOptions={{
+      sceneStyle: { backgroundColor: t.bg },
       headerStyle: { backgroundColor: '#3056FF' }, headerTintColor: '#FFFFFF',
       headerTitle: () => <Image source={banner} style={{ width: 116, height: 27 }} resizeMode="contain" accessibilityLabel="Projeto Aster" />,
       tabBarActiveTintColor: t.link, tabBarInactiveTintColor: t.cinza,

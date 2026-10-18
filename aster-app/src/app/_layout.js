@@ -4,6 +4,7 @@ import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { configurarNotificacoes, reagendar } from '../lib/notificacoes';
 import { lerPrefs } from '../lib/prefs';
+import { useTema } from '../lib/tema';
 
 configurarNotificacoes();
 
@@ -19,6 +20,7 @@ if (Platform.OS !== 'web') {
 
 export default function Raiz() {
   const router = useRouter();
+  const tema = useTema();
   const tratada = useRef('');
   const resposta = usarResposta();
 
@@ -33,7 +35,7 @@ export default function Raiz() {
     if (rota && rota !== '/') setTimeout(() => router.push(rota), 300);
   }, [resposta]);
 
-  const cab = { headerStyle: { backgroundColor: '#3056FF' }, headerTintColor: '#FFFFFF', headerTitleStyle: { fontWeight: '700' }, headerBackTitle: 'Voltar' };
+  const cab = { contentStyle: { backgroundColor: tema.bg }, headerStyle: { backgroundColor: '#3056FF' }, headerTintColor: '#FFFFFF', headerTitleStyle: { fontWeight: '700' }, headerBackTitle: 'Voltar' };
   return (
     <>
       <StatusBar style="light" />
@@ -43,6 +45,9 @@ export default function Raiz() {
         <Stack.Screen name="edicao/[id]" options={{ title: 'Edição' }} />
         <Stack.Screen name="artigo/[id]" options={{ title: 'Artigo' }} />
         <Stack.Screen name="equipe" options={{ title: 'Nossa Equipe' }} />
+        <Stack.Screen name="estudos" options={{ title: 'Estudos' }} />
+        <Stack.Screen name="plano" options={{ title: 'Plano de leitura' }} />
+        <Stack.Screen name="apoie" options={{ title: 'Apoie o Aster' }} />
       </Stack>
     </>
   );

@@ -5,9 +5,18 @@
     "scheme": "aster",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": { "supportsTablet": true, "bundleIdentifier": "br.com.projetoaster.app" },
-    "android": { "package": "br.com.projetoaster.app" },
-    "plugins": ["expo-router", ["expo-notifications", { "color": "#3056FF" }]]
+    "android": {
+      "package": "br.com.projetoaster.app",
+      "versionCode": 1,
+      "adaptiveIcon": { "foregroundImage": "./assets/adaptive-icon.png", "backgroundColor": "#3255FF" }
+    },
+    "plugins": [
+      "expo-router",
+      ["expo-notifications", { "color": "#3056FF" }],
+      ["expo-splash-screen", { "image": "./assets/splash-icon.png", "backgroundColor": "#3255FF", "imageWidth": 160 }]
+    ]
   }
 }

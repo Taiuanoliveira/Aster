@@ -3,7 +3,9 @@ import { ScrollView, Text, View, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTema } from '../../lib/tema';
 import { useDados } from '../../lib/useDados';
-import { listarColecao, edicoesPublicadas, artigosPublicos } from '../../lib/api';
+import { listarColecao, artigosPublicos } from '../../lib/api';
+import { abrirLink } from '../../lib/redes';
+import { SITE } from '../../lib/tema';
 import { referenciaDe, consultaApi } from '../../lib/versiculos';
 import { DEVOCIONAIS_PADRAO } from '../../lib/devocionais_padrao';
 import { dataLonga, diaDoAno } from '../../lib/datas';
@@ -27,6 +29,7 @@ export default function Inicio() {
   const verso = useDados('verso:' + chave, () => buscarVerso(ref));
   const devs = useDados('devocionais', () => listarColecao('devocionais'));
   const mat = useDados('inicio:artigos', async () => (await artigosPublicos()).slice(0, 4));
+  const alta = useDados('emAlta', () => listarColecao('emAlta'));
   const [prefs, setPrefs] = useState(null);
   const [atualizando, setAtualizando] = useState(false);
 
@@ -49,7 +52,7 @@ export default function Inicio() {
 
   const atualizar = async () => {
     setAtualizando(true);
-    await Promise.all([verso.recarregar(), devs.recarregar(), mat.recarregar()]);
+    await Promise.all([verso.recarregar(), devs.recarregar(), mat.recarregar(), alta.recarregar()]);
     setAtualizando(false);
   };
 
@@ -87,6 +90,25 @@ export default function Inicio() {
         <Text style={{ color: t.cinza, fontSize: 15, lineHeight: 22, marginTop: 6 }} numberOfLines={3}>{dev.texto}</Text>
         <Text style={{ color: t.link, fontWeight: '700', marginTop: 10 }}>Ler devocional →</Text>
       </Cartao>
+
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 4 }}>
+        {[['Estudos', '/estudos'], ['Plano de leitura', '/plano'], ['Apoie', '/apoie']].map(([nome, rota]) => (
+          <Botao key={rota} titulo={nome} claro onPress={() => router.push(rota)} />
+        ))}
+      </View>
+
+      {alta.dados && alta.dados.length ? (
+        <>
+          <Titulo>Em alta</Titulo>
+          <Cartao>
+            {alta.dados.map((i, k) => {
+              const ext = /^https?:/i.test(i.link || '');
+              const url = ext ? i.link : (i.link ? SITE + '/' + String(i.link).replace(/^\//, '') : '');
+              return <Text key={k} onPress={url ? () => abrirLink(url) : undefined} style={{ color: url ? t.link : t.texto, fontSize: 16, lineHeight: 28 }}>{(k + 1) + '. ' + i.titulo}</Text>;
+            })}
+          </Cartao>
+        </>
+      ) : null}
 
       <Titulo>Últimas matérias</Titulo>
       {mat.dados && mat.dados.length

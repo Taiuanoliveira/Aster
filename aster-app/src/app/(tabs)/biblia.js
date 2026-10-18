@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ScrollView, Text, View, Pressable, FlatList } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTema } from '../../lib/tema';
 import { useDados } from '../../lib/useDados';
@@ -59,10 +60,16 @@ export default function Biblia() {
   const [pos, setPos] = useState(null);
   const [escolhido, setEscolhido] = useState(null); // livro escolhido, escolhendo capítulo
   const [lendo, setLendo] = useState(false);
+  const params = useLocalSearchParams();
 
   useEffect(() => {
     AsyncStorage.getItem(CHAVE_POS).then(s => { if (s) { try { const p = JSON.parse(s); if (LIVROS[p.l]) setPos(p); } catch (e) {} } }).catch(() => {});
   }, []);
+  useEffect(() => {
+    if (params.l === undefined) return;
+    const l = parseInt(params.l, 10), c = parseInt(params.c || '1', 10);
+    if (LIVROS[l]) { setEscolhido(null); abrir({ l, c: Math.min(Math.max(1, c || 1), LIVROS[l][2]) }); }
+  }, [params.t, params.l, params.c]);
   const abrir = p => { setPos(p); setLendo(true); AsyncStorage.setItem(CHAVE_POS, JSON.stringify(p)).catch(() => {}); };
 
   if (lendo && pos) return <Leitura pos={pos} trad={trad} onMudar={abrir} onVoltar={() => { setLendo(false); setEscolhido(null); }} />;

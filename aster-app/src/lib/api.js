@@ -57,7 +57,7 @@ export async function lerDoc(colecao, id) {
 
 const porOrdem = (a, b) => (a.ordem || 0) - (b.ordem || 0);
 const porData = (a, b) => String(b.publicadaEm || b.criadoEm || '').localeCompare(String(a.publicadaEm || a.criadoEm || ''));
-const CAMPOS_LISTA = ['titulo', 'resumo', 'categoria', 'autorNome', 'coautores', 'imagemUrl', 'status', 'edicao', 'ordemEdicao', 'criadoEm', 'publicadoEm'];
+const CAMPOS_LISTA = ['titulo', 'resumo', 'categoria', 'autorNome', 'coautores', 'imagemUrl', 'status', 'edicao', 'ordemEdicao', 'criadoEm', 'publicadoEm', 'categorias', 'tags'];
 
 export async function listarColecao(nome) { return (await consultar(nome)).sort(porOrdem); }
 export async function lerConfig() { try { return await lerDoc('configuracoes', 'geral'); } catch (e) { return null; } }

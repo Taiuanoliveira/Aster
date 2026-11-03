@@ -1,0 +1,72 @@
+/* Projeto Aster - secoes extras da home (monocromatico) */
+.hx-sec{padding:56px 0}
+.hx-sec h2{font-size:clamp(28px,3.4vw,38px)}
+.hx-peq{font-family:var(--f-ui,Manrope,sans-serif);font-size:11px;font-weight:700;letter-spacing:.16em;color:#5c5c5c}
+.hx-escuro{background:linear-gradient(135deg,#414141 0%,#1c1c1c 55%,#000 100%);color:#fff;border-radius:24px;padding:40px}
+.hx-escuro .hx-peq{color:#d0d0d0}
+
+/* girador */
+.hx-gira-box{display:grid;grid-template-columns:auto 1fr;gap:36px;align-items:center}
+#hx-gira{background:none;border:0;padding:12px;cursor:pointer;color:#fff;transition:transform 1.3s cubic-bezier(.2,.7,.2,1)}
+#hx-gira svg{display:block;width:120px;height:120px}
+#hx-gira:focus-visible{outline:3px solid #fff;outline-offset:4px}
+#hx-verso{margin:0}
+#hx-texto{font-family:var(--f-tit,'Cormorant Garamond',serif);font-size:clamp(22px,3vw,32px);line-height:1.3;margin:0 0 10px}
+#hx-ref{font-size:14px;color:#d0d0d0;margin:0}
+#hx-dica{margin:0;font-size:15px;color:#d0d0d0}
+@media(max-width:640px){.hx-gira-box{grid-template-columns:1fr;text-align:center;justify-items:center}.hx-escuro{padding:28px 22px}}
+
+/* abas e devocional */
+.hx-grupo{margin:18px 0 6px}
+.hx-abas{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.hx-aba{padding:9px 16px;border-radius:999px;border:1px solid #414141;background:#fff;color:#000;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.hx-aba.on{background:linear-gradient(135deg,#414141,#000);color:#fff;border-color:#000}
+.hx-dev{display:grid;grid-template-columns:1.2fr 1fr;border-radius:24px;overflow:hidden;border:1px solid #e2e2e2;margin-top:22px}
+.hx-dev-a{padding:40px;background:linear-gradient(160deg,#fff,#f0f0f0)}
+.hx-dev-b{padding:40px;background:linear-gradient(135deg,#414141,#000);color:#fff}
+.hx-dev-b .hx-peq{color:#d0d0d0}
+.hx-dev-a h3{font-size:clamp(28px,3.4vw,40px);margin:10px 0 14px}
+.hx-dev-a p{line-height:1.7;margin:0}
+.hx-dev-b h4{font-family:var(--f-tit,'Cormorant Garamond',serif);font-style:italic;font-weight:500;font-size:24px;line-height:1.3;margin:10px 0 24px}
+.hx-dev-b p{line-height:1.7;margin:8px 0 0}
+@media(max-width:760px){.hx-dev{grid-template-columns:1fr}.hx-dev-a,.hx-dev-b{padding:28px 22px}}
+
+/* quiz */
+.hx-quiz{max-width:720px;border:1px solid #e2e2e2;border-radius:24px;padding:32px;background:linear-gradient(160deg,#fff,#f0f0f0);margin-top:22px}
+.hx-topo{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hx-qt{font-family:var(--f-tit,'Cormorant Garamond',serif);font-size:clamp(24px,3vw,30px);margin:14px 0 18px}
+.hx-opt{display:block;width:100%;text-align:left;padding:15px 18px;margin-bottom:10px;border-radius:14px;border:2px solid #414141;background:#fff;color:#000;font:inherit;font-size:16px;font-weight:700;cursor:pointer;transition:transform .15s}
+.hx-opt:hover:not(:disabled){transform:translateX(6px)}
+.hx-opt.certa{background:#000;color:#fff;border-color:#000}
+.hx-opt.errada{border:2px dashed #000}
+.hx-opt:disabled{cursor:default}
+.hx-fb{font-weight:700;margin:12px 0}
+.hx-ref{font-weight:400;color:#5c5c5c}
+.hx-btn{padding:14px 26px;border-radius:999px;border:0;background:linear-gradient(135deg,#414141,#000);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+
+/* newsletter */
+.hx-news{display:grid;grid-template-columns:1fr 1.3fr;gap:36px;align-items:start}
+.hx-news h3{font-size:clamp(28px,3.2vw,38px);margin:0 0 12px}
+.hx-news p{line-height:1.6;margin:0}
+.hx-rot{font-size:13px;font-weight:700;margin:0 0 8px;display:block}
+.hx-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.hx-chip{padding:9px 15px;border-radius:999px;border:2px solid #fff;background:transparent;color:#fff;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.hx-chip.on{background:#fff;color:#000}
+.hx-linha{display:flex;gap:10px;flex-wrap:wrap}
+#hx-email{flex:1;min-width:200px;padding:15px 16px;border-radius:14px;border:2px solid #fff;background:#fff;color:#000;font:inherit;font-size:15px}
+#hx-news-bt{padding:15px 26px;border-radius:999px;border:2px solid #fff;background:#000;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+#hx-news-bt:disabled{opacity:.6}
+.hx-msg{margin:14px 0 0;font-weight:700}
+.hx-msg.ok{font-family:var(--f-tit,'Cormorant Garamond',serif);font-size:22px}
+@media(max-width:760px){.hx-news{grid-template-columns:1fr}}
+
+/* modo escuro */
+html[data-tema="escuro"] .hx-dev-a,html[data-tema="escuro"] .hx-quiz{background:linear-gradient(160deg,#1a1a1a,#101010);border-color:#2a2a2a;color:#fff}
+html[data-tema="escuro"] .hx-dev{border-color:#2a2a2a}
+html[data-tema="escuro"] .hx-aba{background:#1a1a1a;color:#fff;border-color:#555}
+html[data-tema="escuro"] .hx-aba.on{background:#fff;color:#000;border-color:#fff}
+html[data-tema="escuro"] .hx-opt{background:#1a1a1a;color:#fff;border-color:#777}
+html[data-tema="escuro"] .hx-opt.certa{background:#fff;color:#000;border-color:#fff}
+html[data-tema="escuro"] .hx-opt.errada{border-color:#fff}
+html[data-tema="escuro"] .hx-peq,html[data-tema="escuro"] .hx-ref{color:#b5b5b5}
+html[data-tema="escuro"] .hx-btn{background:#fff;color:#000}

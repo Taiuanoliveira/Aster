@@ -112,6 +112,7 @@
 <link rel="stylesheet" href="css/carrossel.css">
 <link rel="stylesheet" href="css/editorial.css">
 <link rel="stylesheet" href="css/aster-visual.css">
+<link rel="stylesheet" href="css/home-extras.css">
 </head>
 <body>
 
@@ -198,6 +199,47 @@
       </a>
     </div>
   </section>
+    <section class="hx-sec" id="palavra-giro">
+    <div class="hx-escuro hx-gira-box">
+      <button type="button" id="hx-gira" aria-label="Girar o asterisco para receber um versículo"><svg viewBox="190 190 340 340" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="53" stroke-linecap="round"><path d="M358.4 367.0L359.0 221.8"/><path d="M358.4 367.0L471.0 277.2"/><path d="M358.4 367.0L499.2 400.5"/><path d="M358.4 367.0L421.5 498.6"/><path d="M358.4 367.0L297.6 499.2"/><path d="M358.4 367.0L220.1 400.5"/><path d="M358.4 367.0L247.6 276.4"/></g></svg></button>
+      <div><p id="hx-dica">Toque no asterisco e gire para receber um versículo.</p><blockquote id="hx-verso" hidden><p id="hx-texto"></p><p id="hx-ref"></p></blockquote></div>
+    </div>
+  </section>
+
+  <section class="hx-sec" id="devocionais-tema">
+    <h2>Devocionais por tema</h2>
+    <p class="sub">Leituras guiadas para o seu momento.</p>
+    <div id="hx-dev">
+      <div class="hx-grupo"><span class="hx-peq">PARA O DIA A DIA</span><div class="hx-abas" id="hx-abas1"></div></div>
+      <div class="hx-grupo"><span class="hx-peq">PARA QUEM ESTÁ COMEÇANDO OU AINDA NÃO É CRISTÃO</span><div class="hx-abas" id="hx-abas2"></div></div>
+      <div class="hx-dev">
+        <div class="hx-dev-a"><span class="hx-peq" id="hx-dev-ref"></span><h3 id="hx-dev-tit"></h3><p id="hx-dev-txt"></p></div>
+        <div class="hx-dev-b"><span class="hx-peq">PARA REFLETIR</span><h4 id="hx-dev-q"></h4><span class="hx-peq" id="hx-dev-pl">ORAÇÃO</span><p id="hx-dev-p"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hx-sec" id="jogo">
+    <h2>Pausa para jogar</h2>
+    <p class="sub">Quiz bíblico · 10 perguntas por rodada.</p>
+    <div class="hx-quiz" id="hx-quiz"></div>
+  </section>
+
+  <section class="hx-sec" id="newsletter">
+    <form class="hx-escuro hx-news" id="hx-news" novalidate>
+      <div><h3>A Palavra na sua caixa de entrada</h3><p>Escolha o que quer receber e sobre o que quer ouvir. Mensagens cristãs e textos bíblicos feitos para o seu momento.</p></div>
+      <div>
+        <div class="hx-campos">
+          <span class="hx-rot">O que você quer receber</span><div class="hx-chips" id="hx-tipos"></div>
+          <span class="hx-rot">Temas do seu coração</span><div class="hx-chips" id="hx-temas"></div>
+          <label class="hx-rot" for="hx-email">Seu e-mail</label>
+          <div class="hx-linha"><input id="hx-email" type="email" autocomplete="email" placeholder="nome@exemplo.com"><button type="submit" id="hx-news-bt">Assinar</button></div>
+        </div>
+        <p id="hx-news-msg" class="hx-msg" role="alert" hidden></p>
+      </div>
+    </form>
+  </section>
+
   <section id="artigos-secao" style="display:none">
     <h2>Últimos artigos</h2>
     <div id="artigosRecentes" class="aa-grade"></div>
@@ -222,5 +264,6 @@ import { aplicarConfigSite, montarEmAlta } from './js/site-config.js';
 aplicarConfigSite(); montarEmAlta();
 </script>
 <script type="module" src="js/editorial-carrossel.js"></script>
+<script type="module" src="js/home-extras.js"></script>
 </body>
 </html>

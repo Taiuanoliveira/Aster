@@ -119,5 +119,17 @@ service cloud.firestore {
     }
     match /emAlta/{id}        { allow read: if true; allow write: if ehAdmin(); }
     match /institucional/{id} { allow read: if true; allow write: if ehAdmin(); }
+    // newsletter: qualquer pessoa assina (so cria), so o administrador le e apaga
+    match /newsletter/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['email', 'tipos', 'temas', 'criadoEm'])
+        && request.resource.data.email is string
+        && request.resource.data.email.size() < 200
+        && request.resource.data.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
+        && request.resource.data.tipos is list && request.resource.data.tipos.size() <= 3
+        && request.resource.data.temas is list && request.resource.data.temas.size() <= 5
+        && request.resource.data.criadoEm == request.time;
+      allow read, delete: if ehAdmin();
+      allow update: if false;
+    }
   }
 }

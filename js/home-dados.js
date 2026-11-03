@@ -1,5 +1,6 @@
+import { MAIS_DEV, MAIS_VERS, MAIS_BANCO } from './home-mais.js';
 // Projeto Aster - conteudo da home (devocionais por tema, versiculos do girador e banco do quiz)
-export const DEV = [
+const DEV0 = [
 { g: 0, l: "Esperança", t: "Esperança que sustenta", r: "Romanos 15:13", x: "Esperar não é fingir que está tudo bem. É escolher olhar para quem prometeu, mesmo quando o caminho ainda está escuro. A esperança cristã não depende de como o dia amanheceu, mas de quem caminha com você.", q: "Em qual área da sua vida você precisa de uma esperança nova hoje?", p: "Senhor, enche o meu coração de esperança e firma os meus passos. Que eu confie em ti mesmo quando não vejo o caminho completo." },
 { g: 0, l: "Ansiedade", t: "Entregar o peso", r: "Filipenses 4:6-7", x: "A ansiedade quer que você carregue o amanhã inteiro hoje. O convite da Escritura é outro: transformar cada preocupação em conversa com Deus, com gratidão, e receber uma paz que vai além do que conseguimos explicar.", q: "Qual preocupação você pode colocar em oração agora, em uma frase?", p: "Pai, entrego a ti o que me inquieta. Guarda o meu coração e a minha mente em paz." },
 { g: 0, l: "Família", t: "Uma casa de cuidado", r: "Josué 24:15", x: "Servir a Deus em casa começa nas coisas pequenas: uma palavra gentil, uma refeição em paz, um pedido de perdão. O lar não precisa ser perfeito para ser um lugar onde Deus é bem-vindo.", q: "Que gesto simples pode mostrar cuidado a alguém da sua casa hoje?", p: "Senhor, abençoa a minha família. Ensina-nos a falar com amor e a perdoar com generosidade." },
@@ -9,7 +10,7 @@ export const DEV = [
 { g: 1, l: "Estou procurando", t: "Sem pressa, sem cobrança", r: "Mateus 7:7-8", x: "Você não precisa ter tudo resolvido para ler esta página. A Bíblia convida quem busca a continuar buscando, com honestidade. Comece pequeno: leia o texto, guarde uma pergunta sua e siga no seu ritmo. Aqui você é bem-vindo.", q: "O que você mais gostaria de entender sobre a fé?", p: "Se existe alguém me ouvindo, quero conhecer a verdade. Mostra-me o próximo passo, no meu tempo." },
 { g: 1, l: "Tenho dúvidas", t: "A dúvida também cabe aqui", r: "Marcos 9:23-24", x: "Um pai, diante de Jesus, disse algo muito humano: creio, mas ajuda a minha falta de fé. A Bíblia não esconde a dúvida; mostra pessoas que perguntaram e foram ouvidas. Perguntar pode ser o começo da confiança.", q: "Qual dúvida você gostaria de levar a alguém de confiança?", p: "Se tu estás aí, ajuda-me a entender. Dá-me coragem para fazer as minhas perguntas." }
 ];
-export const VERS = [
+const VERS0 = [
 ["O Senhor é o meu pastor; nada me faltará.", "Salmos 23:1"],
 ["Posso todas as coisas em Cristo, que me fortalece.", "Filipenses 4:13"],
 ["Esforça-te, e tem bom ânimo; não pasmes, nem te espantes, porque o Senhor teu Deus é contigo, por onde quer que andares.", "Josué 1:9"],
@@ -20,7 +21,7 @@ export const VERS = [
 ];
 const V = 'Complete o versículo', P = 'Quem é o pai?', N = 'Livros e números', Z = 'Personagens';
 // [categoria, pergunta, resposta certa, errada 1, errada 2, referencia]
-export const BANCO = [
+const BANCO0 = [
 [V, "O Senhor é o meu _____; nada me faltará.", "pastor", "rei", "juiz", "Salmos 23:1"],
 [V, "Posso todas as coisas em _____, que me fortalece.", "Cristo", "Moisés", "Davi", "Filipenses 4:13"],
 [V, "Confia no Senhor de todo o teu _____, e não te estribes no teu próprio entendimento.", "coração", "tempo", "caminho", "Provérbios 3:5"],
@@ -56,3 +57,6 @@ export const BANCO = [
 [Z, "Em que cidade Jesus nasceu?", "Belém", "Nazaré", "Jerusalém", "Mateus 2:1"],
 [Z, "Qual discípulo negou Jesus três vezes?", "Pedro", "João", "Tomé", "Mateus 26:75"]
 ];
+export const DEV = DEV0.concat(MAIS_DEV);
+export const VERS = VERS0.concat(MAIS_VERS);
+export const BANCO = BANCO0.concat(MAIS_BANCO);

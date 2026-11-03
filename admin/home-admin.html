@@ -52,7 +52,7 @@
     import { DEV, VERS, BANCO } from "../js/home-dados.js";
 
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const CATS = ['Complete o versículo', 'Quem é o pai?', 'Livros e números', 'Personagens'];
+    const CATS = Array.from(new Set(['Complete o versículo', 'Quem é o pai?', 'Livros e números', 'Personagens'].concat(BANCO.map(b => b[0]))));
     let cargo = '', aba = 'quiz', editando = null, cache = [];
 
     const SEC = {
@@ -60,14 +60,17 @@
         campos: [['cat', 'Categoria', 'sel', CATS], ['pergunta', 'Pergunta (use _____ para a lacuna)', 'txt', 200], ['certa', 'Resposta certa', 'txt', 80], ['errada1', 'Resposta errada 1', 'txt', 80], ['errada2', 'Resposta errada 2', 'txt', 80], ['ref', 'Referência ou explicação', 'txt', 120, true]],
         resumo: d => `<b>${esc(d.pergunta)}</b><br><small>${esc(d.cat)} · certa: ${esc(d.certa)} · erradas: ${esc(d.errada1)}, ${esc(d.errada2)} · ${esc(d.ref || '')}</small>`,
         seed: () => BANCO.map(b => ({ cat: b[0], pergunta: b[1], certa: b[2], errada1: b[3], errada2: b[4], ref: b[5] })),
+        chave: d => d.pergunta,
         valida: d => (new Set([d.certa, d.errada1, d.errada2].map(x => x.toLowerCase())).size < 3 ? 'As três respostas precisam ser diferentes.' : '') },
       dev: { col: 'home_devocionais', nome: 'Devocionais por tema', nota: 'Cada um vira uma aba na home. A ordem é crescente (1, 2, 3…).',
         campos: [['grupo', 'Grupo', 'sel', ['0|Para o dia a dia', '1|Para quem está começando ou ainda não é cristão']], ['aba', 'Nome da aba (ex.: Esperança)', 'txt', 30], ['titulo', 'Título', 'txt', 80], ['leitura', 'Leitura bíblica (ex.: Romanos 15:13)', 'txt', 60], ['texto', 'Texto', 'area', 800], ['reflexao', 'Pergunta para refletir', 'txt', 220], ['oracao', 'Oração', 'area', 450], ['ordem', 'Ordem', 'num']],
         resumo: d => `<b>${esc(d.aba)}</b> — ${esc(d.titulo)}<br><small>${esc(d.leitura)} · grupo ${esc(d.grupo)} · ordem ${esc(d.ordem)}</small>`,
+        chave: d => d.aba,
         seed: () => DEV.map((d, i) => ({ grupo: String(d.g), aba: d.l, titulo: d.t, leitura: d.r, texto: d.x, reflexao: d.q, oracao: d.p, ordem: i + 1 })) },
       vers: { col: 'home_versiculos', nome: 'Versículos do girador', nota: 'Sorteados quando o leitor gira o asterisco.',
         campos: [['texto', 'Texto do versículo', 'area', 350], ['ref', 'Referência (ex.: Salmos 23:1)', 'txt', 60]],
         resumo: d => `${esc(d.texto)}<br><small>${esc(d.ref)}</small>`,
+        chave: d => d.texto,
         seed: () => VERS.map(v => ({ texto: v[0], ref: v[1] })) },
       news: { nome: 'Newsletter' }
     };
@@ -96,6 +99,8 @@
       return `<label for="f_${id}">${rot}</label>${c}`;
     }
 
+    function faltantes(S) { const ja = new Set(cache.map(S.chave)); return S.seed().filter(x => !ja.has(S.chave(x))); }
+
     async function secao() {
       const S = SEC[aba];
       const snap = await getDocs(collection(db, S.col));
@@ -107,7 +112,7 @@
       const ativas = cache.filter(x => x.ativo !== false).length;
       document.getElementById('painel').innerHTML =
         `<h2 style="font-size:18px;margin-bottom:6px">${S.nome}</h2><p class="ha-nota">${S.nota} <b>${ativas} ativo(s)</b> de ${cache.length}.</p>` +
-        (cache.length === 0 ? `<p class="ha-nota"><button class="btn-secundario" id="importar">Importar o conteúdo que já está no site (${S.seed().length})</button></p>` : '') +
+        (faltantes(S).length ? `<p class="ha-nota"><button class="btn-secundario" id="importar">${cache.length ? 'Adicionar o conteúdo novo do site' : 'Importar o conteúdo que já está no site'} (${faltantes(S).length})</button></p>` : '') +
         `<div id="hm" class="auth-msg" style="display:none"></div><div class="ha-form">${S.campos.map(c => campoHTML(c, ed ? ed[c[0]] : (c[0] === 'ordem' ? prox : ''))).join('')}</div>` +
         `<div class="form-acoes"><button class="btn-primario" id="salvar">${ed ? 'Salvar alterações' : 'Adicionar'}</button>${ed ? ' <button class="btn-secundario" id="cancelar">Cancelar</button>' : ''}</div>` +
         `<div style="margin-top:24px">${cache.map(d => `<div class="ha-item ${d.ativo === false ? 'off' : ''}"><label title="Aparece no site"><input type="checkbox" data-ativo="${d.id}" ${d.ativo === false ? '' : 'checked'}></label><div class="txt">${S.resumo(d)}</div><button data-ed="${d.id}">Editar</button><button class="ha-del" data-del="${d.id}">Remover</button></div>`).join('') || '<p class="ha-nota">Nada cadastrado ainda.</p>'}</div>`;
@@ -137,7 +142,7 @@
           editando = null; await secao(); msg('Salvo!', true);
         } else if (t.id === 'cancelar') { editando = null; await secao(); }
         else if (t.id === 'importar') {
-          const b = writeBatch(db); S.seed().forEach(x => b.set(doc(collection(db, S.col)), { ...x, ativo: true, criadoEm: serverTimestamp() }));
+          const b = writeBatch(db); faltantes(S).forEach(x => b.set(doc(collection(db, S.col)), { ...x, ativo: true, criadoEm: serverTimestamp() }));
           await b.commit(); await secao(); msg('Conteúdo importado.', true);
         } else if (t.dataset.ed) { editando = t.dataset.ed; await secao(); window.scrollTo(0, 0); }
         else if (t.dataset.del) { if (confirm('Remover este item?')) { await deleteDoc(doc(db, S.col, t.dataset.del)); await secao(); } }

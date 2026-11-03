@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz e devocionais – Painel Projeto Aster</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    .ha-abas{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+    .ha-abas button{padding:9px 16px;border:1px solid #ccc;background:#fff;border-radius:999px;font-weight:600;cursor:pointer}
+    .ha-abas button.on{background:#111;color:#fff;border-color:#111}
+    .ha-form label{display:block;font-size:13px;font-weight:600;margin:12px 0 4px}
+    .ha-form input,.ha-form select,.ha-form textarea{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #ccc;border-radius:8px;font:inherit}
+    .ha-form textarea{min-height:90px}
+    .ha-item{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #eee}
+    .ha-item .txt{flex:1;font-size:14px;line-height:1.45}
+    .ha-item .txt small{color:#777}
+    .ha-item.off{opacity:.5}
+    .ha-item button{background:none;border:0;cursor:pointer;font-weight:700;font-size:12px;text-transform:uppercase}
+    .ha-del{color:#b3261e}
+    .ha-nota{font-size:13px;color:#666;margin:0 0 14px}
+    .ha-tab{width:100%;border-collapse:collapse;font-size:13px}
+    .ha-tab th,.ha-tab td{text-align:left;padding:8px;border-bottom:1px solid #eee;vertical-align:top}
+  </style>
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-logo"><img src="../img/logo.svg" alt="" width="26" height="26" style="vertical-align:middle;margin-right:8px">Projeto Aster</div>
+      <p class="admin-cargo-label">Cargo: <strong id="cargoAtual">—</strong></p>
+      <nav class="admin-nav" id="menuAdmin"></nav>
+      <a href="../conta.html" class="admin-btn-sair" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px;">Meu Perfil</a>
+      <button id="btnSair" class="admin-btn-sair">Sair</button>
+    </aside>
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <h1>Quiz e devocionais da home</h1>
+        <a href="../index.html" class="admin-link-site">Ver site →</a>
+      </header>
+      <div class="ha-abas" id="abas"></div>
+      <section class="admin-bloco" id="painel"></section>
+    </main>
+  </div>
+  <script type="module">
+    import { protegerPagina, sair, CARGOS } from "../js/auth.js";
+    import { db } from "../js/firebase-config.js";
+    import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { DEV, VERS, BANCO } from "../js/home-dados.js";
+
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const CATS = ['Complete o versículo', 'Quem é o pai?', 'Livros e números', 'Personagens'];
+    let cargo = '', aba = 'quiz', editando = null, cache = [];
+
+    const SEC = {
+      quiz: { col: 'home_quiz', nome: 'Quiz bíblico', nota: 'Cada rodada sorteia 10 perguntas. Precisa de pelo menos 10 ativas; abaixo disso o site usa as perguntas padrão.',
+        campos: [['cat', 'Categoria', 'sel', CATS], ['pergunta', 'Pergunta (use _____ para a lacuna)', 'txt', 200], ['certa', 'Resposta certa', 'txt', 80], ['errada1', 'Resposta errada 1', 'txt', 80], ['errada2', 'Resposta errada 2', 'txt', 80], ['ref', 'Referência ou explicação', 'txt', 120, true]],
+        resumo: d => `<b>${esc(d.pergunta)}</b><br><small>${esc(d.cat)} · certa: ${esc(d.certa)} · erradas: ${esc(d.errada1)}, ${esc(d.errada2)} · ${esc(d.ref || '')}</small>`,
+        seed: () => BANCO.map(b => ({ cat: b[0], pergunta: b[1], certa: b[2], errada1: b[3], errada2: b[4], ref: b[5] })),
+        valida: d => (new Set([d.certa, d.errada1, d.errada2].map(x => x.toLowerCase())).size < 3 ? 'As três respostas precisam ser diferentes.' : '') },
+      dev: { col: 'home_devocionais', nome: 'Devocionais por tema', nota: 'Cada um vira uma aba na home. A ordem é crescente (1, 2, 3…).',
+        campos: [['grupo', 'Grupo', 'sel', ['0|Para o dia a dia', '1|Para quem está começando ou ainda não é cristão']], ['aba', 'Nome da aba (ex.: Esperança)', 'txt', 30], ['titulo', 'Título', 'txt', 80], ['leitura', 'Leitura bíblica (ex.: Romanos 15:13)', 'txt', 60], ['texto', 'Texto', 'area', 800], ['reflexao', 'Pergunta para refletir', 'txt', 220], ['oracao', 'Oração', 'area', 450], ['ordem', 'Ordem', 'num']],
+        resumo: d => `<b>${esc(d.aba)}</b> — ${esc(d.titulo)}<br><small>${esc(d.leitura)} · grupo ${esc(d.grupo)} · ordem ${esc(d.ordem)}</small>`,
+        seed: () => DEV.map((d, i) => ({ grupo: String(d.g), aba: d.l, titulo: d.t, leitura: d.r, texto: d.x, reflexao: d.q, oracao: d.p, ordem: i + 1 })) },
+      vers: { col: 'home_versiculos', nome: 'Versículos do girador', nota: 'Sorteados quando o leitor gira o asterisco.',
+        campos: [['texto', 'Texto do versículo', 'area', 350], ['ref', 'Referência (ex.: Salmos 23:1)', 'txt', 60]],
+        resumo: d => `${esc(d.texto)}<br><small>${esc(d.ref)}</small>`,
+        seed: () => VERS.map(v => ({ texto: v[0], ref: v[1] })) },
+      news: { nome: 'Newsletter' }
+    };
+
+    function msg(t, ok) { const m = document.getElementById('hm'); if (!m) return; m.textContent = t; m.className = 'auth-msg ' + (ok ? 'sucesso' : 'erro'); m.style.display = t ? 'block' : 'none'; if (t) setTimeout(() => m.style.display = 'none', 4000); }
+    function montarMenu(c) {
+      const A = ['administrador', 'editor', 'colunista', 'revisor'], E = ['administrador', 'editor'], T = ['administrador'];
+      const itens = [['dashboard.html', '📊 Dashboard', A], ['publicar.html', '✍️ Novo Artigo', ['administrador', 'editor', 'colunista']], ['gerenciar-noticias.html', '📰 Gerenciar Artigos', A], ['categorias-admin.html', '🏷️ Categorias', E], ['tags-admin.html', '🔖 Tags e Destaques', E], ['edicoes-admin.html', '📚 Edições', E], ['conteudo-admin.html', '🧩 Conteúdo do site', E], ['home-admin.html', '🏠 Quiz e devocionais', E], ['estatisticas-admin.html', '📈 Estatísticas', E], ['equipe-admin.html', '👥 Equipe', T], ['usuarios.html', '👤 Usuários', T], ['planos-admin.html', '💳 Apoio', T], ['configuracoes.html', '⚙️ Configurações', T]];
+      document.getElementById('menuAdmin').innerHTML = itens.filter(i => i[2].includes(c)).map(i => `<a href="${i[0]}">${i[1]}</a>`).join('');
+    }
+    function pintaAbas() {
+      const ks = Object.keys(SEC).filter(k => k !== 'news' || cargo === 'administrador');
+      document.getElementById('abas').innerHTML = ks.map(k => `<button data-k="${k}" class="${k === aba ? 'on' : ''}">${SEC[k].nome}</button>`).join('');
+    }
+    document.getElementById('abas').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { aba = b.dataset.k; editando = null; abrir(); } });
+
+    async function abrir() { pintaAbas(); aba === 'news' ? await newsletter() : await secao(); }
+
+    function campoHTML([id, rot, tipo, ex], v) {
+      const val = v == null ? '' : v;
+      let c;
+      if (tipo === 'sel') c = `<select id="f_${id}">${ex.map(o => { const [k, l] = String(o).split('|'); return `<option value="${esc(k)}" ${String(val) === k ? 'selected' : ''}>${esc(l || k)}</option>`; }).join('')}</select>`;
+      else if (tipo === 'area') c = `<textarea id="f_${id}" maxlength="${ex}">${esc(val)}</textarea>`;
+      else if (tipo === 'num') c = `<input id="f_${id}" type="number" min="1" value="${esc(val)}">`;
+      else c = `<input id="f_${id}" type="text" maxlength="${ex}" value="${esc(val)}">`;
+      return `<label for="f_${id}">${rot}</label>${c}`;
+    }
+
+    async function secao() {
+      const S = SEC[aba];
+      const snap = await getDocs(collection(db, S.col));
+      cache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (aba === 'dev') cache.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+      else cache.sort((a, b) => String(b.criadoEm && b.criadoEm.seconds || 0).localeCompare(String(a.criadoEm && a.criadoEm.seconds || 0)));
+      const ed = editando ? cache.find(x => x.id === editando) : null;
+      const prox = aba === 'dev' ? (cache.reduce((m, x) => Math.max(m, x.ordem || 0), 0) + 1) : null;
+      const ativas = cache.filter(x => x.ativo !== false).length;
+      document.getElementById('painel').innerHTML =
+        `<h2 style="font-size:18px;margin-bottom:6px">${S.nome}</h2><p class="ha-nota">${S.nota} <b>${ativas} ativo(s)</b> de ${cache.length}.</p>` +
+        (cache.length === 0 ? `<p class="ha-nota"><button class="btn-secundario" id="importar">Importar o conteúdo que já está no site (${S.seed().length})</button></p>` : '') +
+        `<div id="hm" class="auth-msg" style="display:none"></div><div class="ha-form">${S.campos.map(c => campoHTML(c, ed ? ed[c[0]] : (c[0] === 'ordem' ? prox : ''))).join('')}</div>` +
+        `<div class="form-acoes"><button class="btn-primario" id="salvar">${ed ? 'Salvar alterações' : 'Adicionar'}</button>${ed ? ' <button class="btn-secundario" id="cancelar">Cancelar</button>' : ''}</div>` +
+        `<div style="margin-top:24px">${cache.map(d => `<div class="ha-item ${d.ativo === false ? 'off' : ''}"><label title="Aparece no site"><input type="checkbox" data-ativo="${d.id}" ${d.ativo === false ? '' : 'checked'}></label><div class="txt">${S.resumo(d)}</div><button data-ed="${d.id}">Editar</button><button class="ha-del" data-del="${d.id}">Remover</button></div>`).join('') || '<p class="ha-nota">Nada cadastrado ainda.</p>'}</div>`;
+    }
+
+    function lerForm() {
+      const S = SEC[aba], d = {};
+      for (const [id, rot, tipo, ex, opc] of S.campos) {
+        let v = document.getElementById('f_' + id).value.trim();
+        if (tipo === 'num') v = parseInt(v, 10);
+        if ((v === '' || Number.isNaN(v)) && !opc) return { erro: `Preencha: ${rot}` };
+        if (tipo !== 'num' && typeof ex === 'number' && v.length > ex) return { erro: `${rot}: máximo de ${ex} caracteres` };
+        d[id] = v;
+      }
+      if (aba === 'quiz' && d.pergunta.indexOf('_____') < 0 && /complete/i.test(d.cat)) return { erro: 'Em "Complete o versículo", use _____ onde fica a lacuna.' };
+      const e = S.valida ? S.valida(d) : '';
+      return e ? { erro: e } : { d };
+    }
+
+    document.getElementById('painel').addEventListener('click', async e => {
+      const t = e.target, S = SEC[aba];
+      try {
+        if (t.id === 'salvar') {
+          const r = lerForm(); if (r.erro) return msg(r.erro, false);
+          if (editando) await updateDoc(doc(db, S.col, editando), r.d);
+          else await addDoc(collection(db, S.col), { ...r.d, ativo: true, criadoEm: serverTimestamp() });
+          editando = null; await secao(); msg('Salvo!', true);
+        } else if (t.id === 'cancelar') { editando = null; await secao(); }
+        else if (t.id === 'importar') {
+          const b = writeBatch(db); S.seed().forEach(x => b.set(doc(collection(db, S.col)), { ...x, ativo: true, criadoEm: serverTimestamp() }));
+          await b.commit(); await secao(); msg('Conteúdo importado.', true);
+        } else if (t.dataset.ed) { editando = t.dataset.ed; await secao(); window.scrollTo(0, 0); }
+        else if (t.dataset.del) { if (confirm('Remover este item?')) { await deleteDoc(doc(db, S.col, t.dataset.del)); await secao(); } }
+        else if (t.dataset.ativo) { await updateDoc(doc(db, S.col, t.dataset.ativo), { ativo: t.checked }); await secao(); }
+        else if (t.id === 'csv') baixarCSV();
+        else if (t.dataset.delnews) { if (confirm('Remover este e-mail da lista?')) { await deleteDoc(doc(db, 'newsletter', t.dataset.delnews)); await newsletter(); } }
+      } catch (err) { console.error(err); msg('Erro: ' + err.message, false); }
+    });
+
+    let assinantes = [];
+    const dataBR = d => d && d.seconds ? new Date(d.seconds * 1000).toLocaleString('pt-BR') : '';
+    async function newsletter() {
+      const snap = await getDocs(collection(db, 'newsletter'));
+      assinantes = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => ((b.criadoEm && b.criadoEm.seconds) || 0) - ((a.criadoEm && a.criadoEm.seconds) || 0));
+      document.getElementById('painel').innerHTML = `<h2 style="font-size:18px;margin-bottom:6px">Newsletter</h2><p class="ha-nota"><b>${assinantes.length}</b> pessoa(s) na lista. <button class="btn-secundario" id="csv">Baixar planilha (CSV)</button></p><div id="hm" class="auth-msg" style="display:none"></div>` +
+        `<table class="ha-tab"><tr><th>E-mail</th><th>Quer receber</th><th>Temas</th><th>Quando</th><th></th></tr>${assinantes.map(a => `<tr><td>${esc(a.email)}</td><td>${esc((a.tipos || []).join(', '))}</td><td>${esc((a.temas || []).join(', '))}</td><td>${esc(dataBR(a.criadoEm))}</td><td><button class="ha-del" style="background:none;border:0;cursor:pointer;font-weight:700" data-delnews="${a.id}">Remover</button></td></tr>`).join('')}</table>`;
+    }
+    function baixarCSV() {
+      const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+      const linhas = [['email', 'quer_receber', 'temas', 'data'].map(q).join(';')].concat(assinantes.map(a => [a.email, (a.tipos || []).join(', '), (a.temas || []).join(', '), dataBR(a.criadoEm)].map(q).join(';')));
+      const url = URL.createObjectURL(new Blob(['\uFEFF' + linhas.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+      const a = document.createElement('a'); a.href = url; a.download = 'newsletter-aster.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    protegerPagina([CARGOS.ADMIN, CARGOS.EDITOR], async (user, c) => {
+      cargo = c; document.getElementById('cargoAtual').textContent = c; montarMenu(c); await abrir();
+    });
+    document.getElementById('btnSair').addEventListener('click', async () => { await sair(); window.location.href = '../index.html'; });
+  </script>
+</body>
+</html>

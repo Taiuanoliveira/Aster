@@ -131,5 +131,9 @@ service cloud.firestore {
       allow read, delete: if ehAdmin();
       allow update: if false;
     }
+    // conteudo da home editavel pelo painel: todo mundo le, so administrador/editor escreve
+    match /home_quiz/{id}        { allow read: if true; allow write: if ehEditor(); }
+    match /home_devocionais/{id} { allow read: if true; allow write: if ehEditor(); }
+    match /home_versiculos/{id}  { allow read: if true; allow write: if ehEditor(); }
   }
 }

@@ -1,5 +1,6 @@
 // Projeto Aster - secoes extras da home: girador de versiculo, devocionais por tema, quiz e newsletter
-import { DEV, VERS, BANCO } from './home-dados.js';
+import { DEV as DEV0, VERS as VERS0, BANCO as BANCO0 } from './home-dados.js';
+const dados = { DEV: DEV0, VERS: VERS0, BANCO: BANCO0 };
 const $ = (id) => document.getElementById(id);
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const emb = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -10,12 +11,12 @@ const emb = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { con
   let ang = 0, ult = -1, ocupado = false;
   btn.addEventListener('click', () => {
     if (ocupado) return; ocupado = true;
-    let i; do { i = Math.floor(Math.random() * VERS.length); } while (i === ult && VERS.length > 1); ult = i;
+    let i; do { i = Math.floor(Math.random() * dados.VERS.length); } while (i === ult && dados.VERS.length > 1); ult = i;
     ang += 720 + Math.floor(Math.random() * 360);
     btn.style.transform = 'rotate(' + ang + 'deg)';
     $('hx-dica').textContent = 'Girando…'; $('hx-verso').hidden = true;
     setTimeout(() => {
-      $('hx-texto').textContent = '“' + VERS[i][0] + '”'; $('hx-ref').textContent = VERS[i][1];
+      $('hx-texto').textContent = '“' + dados.VERS[i][0] + '”'; $('hx-ref').textContent = dados.VERS[i][1];
       $('hx-verso').hidden = false; $('hx-dica').textContent = 'Toque no asterisco para girar de novo.'; ocupado = false;
     }, 1300);
   });
@@ -26,11 +27,11 @@ const emb = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { con
   const caixa = $('hx-dev'); if (!caixa) return;
   let atual = 0;
   function abas(g) {
-    return DEV.map((d, i) => ({ d, i })).filter((o) => o.d.g === g).map((o) =>
+    return dados.DEV.map((d, i) => ({ d, i })).filter((o) => o.d.g === g).map((o) =>
       '<button type="button" class="hx-aba' + (o.i === atual ? ' on' : '') + '" data-i="' + o.i + '">' + esc(o.d.l) + '</button>').join('');
   }
   function pinta() {
-    const d = DEV[atual];
+    const d = dados.DEV[atual];
     $('hx-abas1').innerHTML = abas(0); $('hx-abas2').innerHTML = abas(1);
     $('hx-dev-ref').textContent = 'LEITURA · ' + d.r.toUpperCase();
     $('hx-dev-tit').textContent = d.t; $('hx-dev-txt').textContent = d.x;
@@ -39,6 +40,7 @@ const emb = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { con
   }
   caixa.addEventListener('click', (e) => { const b = e.target.closest('.hx-aba'); if (b) { atual = +b.dataset.i; pinta(); } });
   pinta();
+  document.addEventListener('hx-dados', () => { atual = 0; pinta(); });
 })();
 
 // ---------- quiz biblico ----------
@@ -46,9 +48,9 @@ const emb = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { con
   const cx = $('hx-quiz'); if (!cx) return;
   let baralho = [], rodada = [], qi = 0, pontos = 0, marcada = -1;
   function nova() {
-    if (baralho.length < 10) baralho = emb(BANCO.map((_, i) => i));
+    if (baralho.length < 10) baralho = emb(dados.BANCO.map((_, i) => i));
     rodada = baralho.splice(0, 10).map((i) => {
-      const b = BANCO[i], o = emb([b[2], b[3], b[4]]);
+      const b = dados.BANCO[i], o = emb([b[2], b[3], b[4]]);
       return { c: b[0], t: b[1], r: b[5], o, a: o.indexOf(b[2]) };
     });
     qi = 0; pontos = 0; marcada = -1;
@@ -76,6 +78,7 @@ const emb = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { con
     if (e.target.id === 'hx-de-novo') { nova(); pinta(); }
   });
   nova(); pinta();
+  document.addEventListener('hx-dados', () => { const livre = qi === 0 && marcada < 0; baralho = []; if (livre) { nova(); pinta(); } });
 })();
 
 // ---------- newsletter ----------
@@ -111,4 +114,18 @@ const emb = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { con
     form.querySelector('.hx-campos').hidden = true;
   });
   pinta();
+})();
+
+// ---------- conteudo vindo do painel (Firestore); se estiver vazio, vale o conteudo padrao ----------
+(async function () {
+  try {
+    const { db } = await import('./firebase-config.js');
+    const fs = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    const ler = async (n) => (await fs.getDocs(fs.collection(db, n))).docs.map((d) => d.data()).filter((d) => d.ativo !== false);
+    const [q, dv, vs] = await Promise.all([ler('home_quiz'), ler('home_devocionais'), ler('home_versiculos')]);
+    if (q.length >= 10) dados.BANCO = q.map((d) => [d.cat, d.pergunta, d.certa, d.errada1, d.errada2, d.ref || '']);
+    if (dv.length) dados.DEV = dv.sort((a, b) => (a.ordem || 0) - (b.ordem || 0)).map((d) => ({ g: +d.grupo, l: d.aba, t: d.titulo, r: d.leitura, x: d.texto, q: d.reflexao, p: d.oracao }));
+    if (vs.length) dados.VERS = vs.map((d) => [d.texto, d.ref]);
+    document.dispatchEvent(new Event('hx-dados'));
+  } catch (e) { console.warn('home: usando conteudo padrao', e); }
 })();

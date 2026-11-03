@@ -7,7 +7,7 @@
   border-top: 1px solid #eee;
 }
 .secao-categoria-titulo {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Cormorant Garamond', serif;
   font-size: 26px;
   font-weight: 900;
   margin-bottom: 22px;
@@ -21,7 +21,7 @@
   bottom: -8px;
   width: 100%;
   height: 3px;
-  background: #E8A33D;
+  background: #8a8a8a;
 }
 .secao-categoria-corpo {
   display: grid;
@@ -43,7 +43,7 @@
   margin-bottom: 14px;
 }
 .secao-cat-destaque h3 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Cormorant Garamond', serif;
   font-size: 21px;
   line-height: 1.3;
   margin-bottom: 8px;
@@ -88,7 +88,7 @@
   margin-top: 22px;
   font-size: 13px;
   font-weight: 700;
-  color: #E8A33D;
+  color: #8a8a8a;
   text-decoration: none;
   letter-spacing: 0.3px;
 }

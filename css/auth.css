@@ -115,7 +115,7 @@
 .google-icon {
   font-family: 'Arial', sans-serif;
   font-weight: 700;
-  color: #4285F4;
+  color: #7e7e7e;
   font-size: 16px;
 }
 
@@ -155,7 +155,7 @@
 }
 
 .auth-msg.erro {
-  background: #fdecea;
+  background: #f1f1f1;
   color: #b3261e;
   border-left-color: #b3261e;
 }

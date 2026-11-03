@@ -59,7 +59,7 @@ function gerar() {
   CATS.forEach(c => { cats[c[0]] = { nome: c[1], emoji: '' }; tags[c[0]] = { nome: c[1] }; });
   artigos.sort((a, b) => b.criadoEm.localeCompare(a.criadoEm));
   return {
-    edicoes, artigos, tx: { cats, tags, dest: { 'Destaque': { emoji: '⭐', cor: '#E8A33D' } } },
+    edicoes, artigos, tx: { cats, tags, dest: { 'Destaque': { emoji: '⭐', cor: '#8a8a8a' } } },
     edicao: id => edicoes.find(e => e.id === id) || null,
     edicaoPorNome: nome => edicoes.find(e => e.nome === nome) || null,
     artigo: id => artigos.find(a => a.id === id) || null,
@@ -70,7 +70,7 @@ function gerar() {
 function mostrarAviso() {
   if (document.getElementById('aviso-demo')) return;
   const b = document.createElement('div'); b.id = 'aviso-demo';
-  b.style.cssText = 'background:#fff3cd;color:#664d03;font:600 13px Inter,sans-serif;text-align:center;padding:8px 14px;border-bottom:1px solid #f0d9a8';
+  b.style.cssText = 'background:#f2f2f2;color:#4c4c4c;font:600 13px Manrope,sans-serif;text-align:center;padding:8px 14px;border-bottom:1px solid #dadada';
   b.textContent = 'Conteúdo de exemplo: prévia do visual do site. Ele é substituído quando a primeira edição ou o primeiro artigo for publicado.';
   document.body.prepend(b);
 }

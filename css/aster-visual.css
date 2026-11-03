@@ -1,0 +1,99 @@
+/* Projeto Aster - visual monocromatico (branco #fff, cinza #414141, preto #000) */
+:root{--esc:#000;--med:#414141;--azul:#ececec;--amar:#5a5a5a;--bg:#fff;--texto:#111;--cinza:#5c5c5c;--cor-titulo:#000;--preto:#000;--borda:#e2e2e2;
+--f-tit:'Cormorant Garamond',Georgia,serif;--f-ui:'Manrope',Arial,sans-serif;
+--g-claro:linear-gradient(160deg,#fff 0%,#ebebeb 100%);--g-escuro:linear-gradient(145deg,#414141 0%,#000 100%)}
+html body{font-family:var(--f-ui);background:var(--bg);color:var(--texto);-webkit-font-smoothing:antialiased}
+body h1,body h2,body h3{font-family:var(--f-tit);font-weight:600;letter-spacing:-.01em}
+
+/* cabecalho */
+html body header,html body header.topo{background:#fff;border-bottom:1px solid #e5e5e5;color:#000}
+.logo-aster{color:#000!important;gap:8px!important;text-decoration:none}
+.logo-aster .logo-marca{display:block;flex-shrink:0}
+.logo-aster .logo-nome{font-family:var(--f-ui);font-weight:700;font-size:23px;letter-spacing:-.03em;line-height:1}
+html body nav.nav-topo a,html body .nav-topo a,html body header a.volta{color:#414141;font-family:var(--f-ui);font-size:13.5px;font-weight:500}
+html body nav.nav-topo a:hover,html body .nav-topo a:hover{color:#000}
+html body .nav-topo a[href="apoiar.html"],html body nav.nav-topo a[href="apoiar.html"]{background:#000;color:#fff!important;padding:8px 16px;border-radius:999px;font-weight:600}
+html body .nav-topo a[href="apoiar.html"]:hover{background:#414141}
+html body .tema-toggle{border-color:#bdbdbd;color:#000}
+html body .tema-toggle:hover{background:#f0f0f0}
+
+/* botoes */
+.btn{border-radius:999px;font-family:var(--f-ui);font-weight:600;padding:13px 26px}
+.btn-amar{background:linear-gradient(145deg,#414141,#000);color:#fff}
+.btn-amar:hover{background:#000}
+.btn-outline{background:transparent;color:#000;border:1px solid #000}
+.btn-outline:hover{background:#000;color:#fff}
+.pill{font-family:var(--f-ui)}
+.pill.ativa{background:#000;color:#fff;border-color:#000}
+.chip.on{background:#000;color:#fff;border-color:#000}
+
+/* capa (versiculo do dia) */
+.hero{background:var(--g-claro);color:#000;text-align:left;max-width:1120px;margin:32px auto 0;padding:68px 60px 72px;border:1px solid #e2e2e2;border-radius:28px}
+.hero .estrela-dec,.hero .ponto-dec{display:none}
+.hero-label{color:#414141;letter-spacing:.2em;font-family:var(--f-ui)}
+.hero h1{font-family:var(--f-tit);font-weight:500;color:#000;font-size:clamp(30px,4.6vw,54px);line-height:1.18;max-width:860px;margin:0 0 20px}
+.hero .ref{color:#414141;font-size:14px}
+.hero-botoes{justify-content:flex-start}
+@media(max-width:720px){.hero{margin:20px 14px 0;padding:42px 26px 46px;border-radius:22px}}
+
+/* secoes */
+main section h2{font-size:clamp(28px,3.4vw,38px);color:#000}
+main section .sub{color:#5c5c5c}
+.editorial-card{background:var(--g-claro);border:1px solid #e2e2e2;border-radius:24px}
+.editorial-capa{background:var(--g-escuro);color:#fff;border-radius:6px;box-shadow:0 14px 30px rgba(0,0,0,.28)}
+.editorial-info .tag{color:#414141;letter-spacing:.16em}
+.editorial-info p{color:#414141}
+.biblia-card,.explore-item{background:linear-gradient(160deg,#fff,#f4f4f4);border:1px solid #e2e2e2;border-radius:20px}
+.explore-item{transition:background .25s,color .25s,transform .25s}
+.explore-item:hover{background:var(--g-escuro);transform:translateY(-2px)}
+.explore-item:hover h4,.explore-item:hover p,.explore-item:hover .explore-icone{color:#fff}
+.explore-icone{background:none;width:auto;height:auto;justify-content:flex-start;font-family:var(--f-ui);font-size:11px;font-weight:700;letter-spacing:.16em;color:#8a8a8a;margin-bottom:22px}
+.explore-item h4{font-size:22px;color:#000}
+.biblia-card .abrir,a.abrir{color:#000;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+
+/* paginas de leitura: faixa de titulo */
+.faixa{background:var(--g-claro);color:#000;border-bottom:1px solid #e5e5e5}
+.faixa h1{font-weight:500;color:#000;font-size:clamp(30px,4.4vw,46px)}
+.faixa p.rot{color:#414141;letter-spacing:.2em}
+.faixa p.sub{color:#414141}
+.ed-card,.mat.capa-mat{border-radius:18px;border-color:#e2e2e2}
+.ed-capa{background:var(--g-escuro) center/cover;color:#fff}
+.carta{background:var(--g-claro);border:1px solid #e2e2e2;border-radius:18px}
+.mat .n{color:#8a8a8a}
+.corpo blockquote{border-left-color:#000;color:#414141}
+.corpo a,.ref-biblica{color:#000;text-decoration:underline;text-underline-offset:3px}
+
+/* rodape */
+html body footer,html body footer.rodape{background:#fff;color:#414141;border-top:1px solid #e5e5e5;font-family:var(--f-ui)}
+html body footer a{color:#000}
+html body .rede{color:#000!important;border-color:#bdbdbd}
+html body .rede:hover{background:#000;border-color:#000;color:#fff!important}
+.logo-rodape{border-radius:5px}
+
+/* modo escuro */
+html[data-tema="escuro"] body header,html[data-tema="escuro"] body header.topo,html[data-tema="escuro"] body footer,html[data-tema="escuro"] body footer.rodape{background:#0a0a0a;border-color:#262626;color:#eee}
+html[data-tema="escuro"] .logo-aster,html[data-tema="escuro"] body footer a{color:#fff!important}
+html[data-tema="escuro"] body nav.nav-topo a,html[data-tema="escuro"] body .nav-topo a,html[data-tema="escuro"] body header a.volta{color:#cfcfcf}
+html[data-tema="escuro"] body .nav-topo a:hover{color:#fff}
+html[data-tema="escuro"] body .nav-topo a[href="apoiar.html"]{background:#fff;color:#000!important}
+html[data-tema="escuro"] body .tema-toggle{border-color:#555;color:#fff}
+html[data-tema="escuro"] .hero,html[data-tema="escuro"] .editorial-card,html[data-tema="escuro"] .faixa,html[data-tema="escuro"] .carta{background:linear-gradient(160deg,#1c1c1c,#0b0b0b);border-color:#2a2a2a;color:#fff}
+html[data-tema="escuro"] .hero h1,html[data-tema="escuro"] .faixa h1,html[data-tema="escuro"] .hero-label,html[data-tema="escuro"] .hero .ref,html[data-tema="escuro"] .faixa p,html[data-tema="escuro"] .editorial-info .tag{color:#fff}
+html[data-tema="escuro"] .biblia-card,html[data-tema="escuro"] .explore-item{background:linear-gradient(160deg,#1a1a1a,#101010);border-color:#2a2a2a}
+html[data-tema="escuro"] .btn-amar{background:#fff;color:#000}
+html[data-tema="escuro"] .btn-outline{color:#fff;border-color:#fff}
+html[data-tema="escuro"] .btn-outline:hover{background:#fff;color:#000}
+html[data-tema="escuro"] .pill.ativa,html[data-tema="escuro"] .chip.on{background:#fff;color:#000;border-color:#fff}
+html[data-tema="escuro"] .corpo a,html[data-tema="escuro"] .ref-biblica{color:#fff}
+
+/* botoes e destaques que eram amarelos: agora pretos */
+html body .btn-amar,html body .ap-btn,html body .btn-ler,html body .tab.ativa,html body .btn-acao.ativo,html body .form-comentario button,html body .gate a,html body .apoie-box a,html body .avatar-editar,html body .switch.on,html body .barra-fill,html body .edc-capa .ler,html body .ouvir-play,html body .toolbar-art .redes a:hover,html body .toolbar-art .redes button:hover,html body .edc-setas button:hover:not(:disabled),html body #artigosRecentes .aa-mais{background:#000;color:#fff;border-color:#000}
+html body .btn-amar:hover,html body .ap-btn:hover,html body .btn-ler:hover,html body .gate a:hover{background:#414141}
+html body .btn-ler,html body .ap-btn,html body .gate a,html body .apoie-box a{border-radius:999px}
+html body .tab{font-family:var(--f-ui)}
+html body.biblioteca-pag .btn,html body .card .btn{background:#000;color:#fff}
+html[data-tema="escuro"]{--amar:#bdbdbd}
+html[data-tema="escuro"] body .btn-amar,html[data-tema="escuro"] body .ap-btn,html[data-tema="escuro"] body .btn-ler,html[data-tema="escuro"] body .tab.ativa,html[data-tema="escuro"] body .btn-acao.ativo,html[data-tema="escuro"] body .form-comentario button,html[data-tema="escuro"] body .gate a,html[data-tema="escuro"] body .apoie-box a,html[data-tema="escuro"] body .avatar-editar,html[data-tema="escuro"] body .switch.on,html[data-tema="escuro"] body .barra-fill,html[data-tema="escuro"] body .edc-capa .ler,html[data-tema="escuro"] body .ouvir-play{background:#fff;color:#000;border-color:#fff}
+html[data-tema="escuro"] .biblia-card .abrir,html[data-tema="escuro"] a.abrir{color:#fff}
+html[data-tema="escuro"] main section .sub{color:#a8a8a8}
+html[data-tema="escuro"] body .logo-rodape{filter:invert(1)}

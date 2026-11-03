@@ -7,11 +7,11 @@ html .tema-toggle{
   display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
 }
 html .tema-toggle:hover{background:rgba(255,255,255,.14)}
-html .tema-toggle.flutuante{position:fixed;right:16px;bottom:16px;z-index:60;background:#0C3B5C;margin:0}
+html .tema-toggle.flutuante{position:fixed;right:16px;bottom:16px;z-index:60;background:#111111;margin:0}
 
 html[data-tema="escuro"]{
   color-scheme:dark;
-  --bg:#0f1720;--texto:#e7edf3;--cinza:#9fb0bd;--card:#1b2430;--borda:#2a3442;--azul:#163049;
+  --bg:#161616;--texto:#ececec;--cinza:#acacac;--card:#232323;--borda:#333333;--azul:#2b2b2b;
 }
 html[data-tema="escuro"] body{background:var(--bg);color:var(--texto)}
 
@@ -29,7 +29,7 @@ html[data-tema="escuro"] .carta h2,
 html[data-tema="escuro"] .carta h3,
 html[data-tema="escuro"] .ant strong,
 html[data-tema="escuro"] .col strong{color:#fff}
-html[data-tema="escuro"] h2.sec{border-bottom-color:#2f4a60}
+html[data-tema="escuro"] h2.sec{border-bottom-color:#444444}
 html[data-tema="escuro"] .mat:hover h3{color:var(--amar)}
 
 /* textos em azul médio */
@@ -40,10 +40,10 @@ html[data-tema="escuro"] .card-dia .ref,
 html[data-tema="escuro"] .voltar,
 html[data-tema="escuro"] .salvo-msg,
 html[data-tema="escuro"] .esqueci a,
-html[data-tema="escuro"] .carta a{color:#8cc4ea}
+html[data-tema="escuro"] .carta a{color:#cfcfcf}
 html[data-tema="escuro"] .editorial-info p,
 html[data-tema="escuro"] .ed-info .desc,
-html[data-tema="escuro"] .carta blockquote{color:#b9cfdd}
+html[data-tema="escuro"] .carta blockquote{color:#cacaca}
 html[data-tema="escuro"] .carta{color:var(--texto)}
 
 /* cartões e áreas que eram brancas */
@@ -59,29 +59,29 @@ html[data-tema="escuro"] .divisor::after{background:var(--borda)}
 html[data-tema="escuro"] input[type=text],
 html[data-tema="escuro"] input[type=email],
 html[data-tema="escuro"] input[type=password],
-html[data-tema="escuro"] select{background:#0f1720;color:var(--texto);border-color:var(--borda)}
-html[data-tema="escuro"] input::placeholder{color:#6f8394}
-html[data-tema="escuro"] body.biblia-pag button:not(.tema-toggle){background:var(--card);color:var(--texto);border-color:#3b5368}
-html[data-tema="escuro"] .switch:not(.on){background:#3b4a5a}
+html[data-tema="escuro"] select{background:#161616;color:var(--texto);border-color:var(--borda)}
+html[data-tema="escuro"] input::placeholder{color:#7f7f7f}
+html[data-tema="escuro"] body.biblia-pag button:not(.tema-toggle){background:var(--card);color:var(--texto);border-color:#4e4e4e}
+html[data-tema="escuro"] .switch:not(.on){background:#474747}
 
 /* avisos */
-html[data-tema="escuro"] .aviso{background:#3a2d10;border-color:#8a6a1f;color:#f0d9a0}
+html[data-tema="escuro"] .aviso{background:#2e2e2e;border-color:#6b6b6b;color:#d9d9d9}
 
 /* Bíblia: leitura e versículos marcados */
 html[data-tema="escuro"] body.biblia-pag{color:var(--texto)}
-html[data-tema="escuro"] .ver sup{color:#f0a64a}
+html[data-tema="escuro"] .ver sup{color:#b2b2b2}
 html[data-tema="escuro"] .ver.sel{outline-color:var(--amar)}
 html[data-tema="escuro"] .ver[style*="background"]{color:#1a1a1a}
 
 /* Editorial: avatares e fotos com fundo claro */
 html[data-tema="escuro"] .av,
-html[data-tema="escuro"] .col .foto{background:#163049;color:#cfe6f3}
+html[data-tema="escuro"] .col .foto{background:#2b2b2b;color:#e1e1e1}
 
 /* Ações do artigo e comentários */
 html[data-tema="escuro"] .acoes-art{border-color:var(--borda)}
 html[data-tema="escuro"] .btn-acao{background:var(--card);border-color:var(--borda);color:var(--texto)}
 html[data-tema="escuro"] .comentarios h2{color:#fff}
-html[data-tema="escuro"] .form-comentario textarea{background:#0f1720;color:var(--texto);border-color:var(--borda)}
+html[data-tema="escuro"] .form-comentario textarea{background:#161616;color:var(--texto);border-color:var(--borda)}
 html[data-tema="escuro"] .comentario-login{background:var(--card);border-color:var(--borda)}
 html[data-tema="escuro"] .comentario{border-color:var(--borda)}
 html[data-tema="escuro"] .comentario .autor{color:#fff}
@@ -90,18 +90,18 @@ html[data-tema="escuro"] .comentario .autor{color:#fff}
 html[data-tema="escuro"] .ed-card{background:var(--card);border-color:var(--borda)}
 html[data-tema="escuro"] .ed-corpo h3,html[data-tema="escuro"] .artigo h1,html[data-tema="escuro"] .corpo h2,
 html[data-tema="escuro"] .corpo h3,html[data-tema="escuro"] .ref-titulo,html[data-tema="escuro"] .gate h3{color:#fff}
-html[data-tema="escuro"] .artigo .resumo,html[data-tema="escuro"] .corpo blockquote,html[data-tema="escuro"] .ref-texto{color:#b9cfdd}
+html[data-tema="escuro"] .artigo .resumo,html[data-tema="escuro"] .corpo blockquote,html[data-tema="escuro"] .ref-texto{color:#cacaca}
 html[data-tema="escuro"] .corpo,html[data-tema="escuro"] .ref-texto{color:var(--texto)}
 html[data-tema="escuro"] .mat{border-color:var(--borda)}
-html[data-tema="escuro"] .mat.capa-mat{background:#2a2412;border-color:#5c4a1a}
+html[data-tema="escuro"] .mat.capa-mat{background:#242424;border-color:#4a4a4a}
 html[data-tema="escuro"] .ref-painel{background:var(--card)}
-html[data-tema="escuro"] .gate{background:linear-gradient(180deg,rgba(15,23,32,0),#2a2412 38%);border-color:#5c4a1a}
+html[data-tema="escuro"] .gate{background:linear-gradient(180deg,rgba(22,22,22,0),#242424 38%);border-color:#4a4a4a}
 html[data-tema="escuro"] .tag-acesso.livre{background:#173a25;color:#8fd6a5}
 html[data-tema="escuro"] .tag-acesso.pago{background:#44201d;color:#f2b3ad}
-html[data-tema="escuro"] .gate a.sec2{color:#8cc4ea}
+html[data-tema="escuro"] .gate a.sec2{color:#cfcfcf}
 
-.nav-topo a[href="apoiar.html"]{background:#E8A33D;color:#0C3B5C!important;padding:6px 14px;border-radius:999px;font-weight:700}
-.nav-topo a[href="apoiar.html"]:hover{background:#d8922f;color:#0C3B5C!important}
+.nav-topo a[href="apoiar.html"]{background:#8a8a8a;color:#111111!important;padding:6px 14px;border-radius:999px;font-weight:700}
+.nav-topo a[href="apoiar.html"]:hover{background:#6b6b6b;color:#111111!important}
 
 /* logo-aster-img */
 .logo-aster{gap:10px!important}
@@ -111,12 +111,12 @@ html[data-tema="escuro"] .gate a.sec2{color:#8cc4ea}
 /* redes-aster */
 .redes-rodape{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 .rede{width:38px;height:38px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff!important;border:1px solid rgba(255,255,255,.4);text-decoration:none!important;transition:background .2s,color .2s,border-color .2s}
-.rede:hover{background:var(--amar,#E8A33D);border-color:var(--amar,#E8A33D);color:var(--esc,#0C3B5C)!important}
+.rede:hover{background:var(--amar,#8a8a8a);border-color:var(--amar,#8a8a8a);color:var(--esc,#111111)!important}
 .contatos,.contatos-icones{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
 .contatos-icones{justify-content:flex-start;margin-top:6px}
-.contatos .rede,.contatos-icones .rede{width:32px;height:32px;color:var(--esc,#0C3B5C)!important;border-color:#c9c3b2}
+.contatos .rede,.contatos-icones .rede{width:32px;height:32px;color:var(--esc,#111111)!important;border-color:#c3c3c3}
 .contatos .rede svg,.contatos-icones .rede svg{width:17px;height:17px}
-html[data-tema="escuro"] .contatos .rede,html[data-tema="escuro"] .contatos-icones .rede{color:#e7edf3!important;border-color:#3b5368}
+html[data-tema="escuro"] .contatos .rede,html[data-tema="escuro"] .contatos-icones .rede{color:#ececec!important;border-color:#4e4e4e}
 /* redes-cores */
 /* ===== Banner (logo) no canto superior esquerdo ===== */
 .logo-aster .logo-banner{height:36px;width:auto;display:block;border-radius:0}
@@ -147,9 +147,9 @@ html[data-tema="escuro"] body.biblia-pag{color:#fff}
 
 /* citações e links no tema escuro: azul claro, para dar leitura sobre o fundo escuro */
 html[data-tema="escuro"] .corpo a,
-html[data-tema="escuro"] .ref-biblica{color:#8cc4ea}
-html[data-tema="escuro"] .ref-biblica:hover{background:#243447;color:#fff}
+html[data-tema="escuro"] .ref-biblica{color:#cfcfcf}
+html[data-tema="escuro"] .ref-biblica:hover{background:#313131;color:#fff}
 
 /* rodape-aster */
-footer.rodape-aster{background:var(--esc,#0C3B5C);color:#cfe0ea;text-align:center;padding:24px 20px;font-size:13px;margin-top:40px}
-footer.rodape-aster a:not(.rede){color:#cfe0ea;text-decoration:underline}
+footer.rodape-aster{background:var(--esc,#111111);color:#d4d4d4;text-align:center;padding:24px 20px;font-size:13px;margin-top:40px}
+footer.rodape-aster a:not(.rede){color:#d4d4d4;text-decoration:underline}

@@ -5,7 +5,7 @@ import { collection, getDocs, query, where } from 'https://www.gstatic.com/fireb
 export const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ms = v => { try { return v && v.toMillis ? v.toMillis() : (new Date(v).getTime() || 0); } catch (e) { return 0; } };
 const slugDe = nome => String(nome || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
-const corOk = c => /^#[0-9a-f]{3,8}$/i.test(c || '') ? c : '#0C3B5C';
+const corOk = c => /^#[0-9a-f]{3,8}$/i.test(c || '') ? c : '#111111';
 const lerOpcional = async nome => { try { return (await getDocs(collection(db, nome))).docs.map(d => d.data()); } catch (e) { return []; } };
 
 export function dataCurta(v) {
@@ -42,21 +42,21 @@ export function injetarEstilos() {
   if (document.getElementById('aa-estilos')) return;
   const s = document.createElement('style'); s.id = 'aa-estilos';
   s.textContent = `.aa-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px}
-.aa-card{display:flex;flex-direction:column;background:#fff;border:1px solid #e6e2d8;border-radius:12px;overflow:hidden;text-decoration:none;color:#1a1a1a}
-.aa-card:hover{border-color:#E8A33D}
-.aa-img{aspect-ratio:16/9;background:#0C3B5C center/cover;display:flex;align-items:center;justify-content:center;color:#E8A33D;font-size:28px}
+.aa-card{display:flex;flex-direction:column;background:#fff;border:1px solid #e2e2e2;border-radius:12px;overflow:hidden;text-decoration:none;color:#1a1a1a}
+.aa-card:hover{border-color:#8a8a8a}
+.aa-img{aspect-ratio:16/9;background:#111111 center/cover;display:flex;align-items:center;justify-content:center;color:#8a8a8a;font-size:28px}
 .aa-corpo{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px}
-.aa-cat{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#1F5A82}
-.aa-card h3{font-family:'Playfair Display',serif;font-size:19px;line-height:1.3;color:#0C3B5C;margin:0}
+.aa-cat{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#414141}
+.aa-card h3{font-family:'Cormorant Garamond',serif;font-size:19px;line-height:1.3;color:#111111;margin:0}
 .aa-card p{font-size:14px;color:#666;margin:0}
 .aa-meta{font-size:12px;color:#888}
 .aa-badge{display:inline-block;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-right:6px}
 .aa-chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}
-.aa-chip{padding:6px 14px;border-radius:999px;border:1px solid #d8d3c4;background:#fff;font-size:13px;color:#0C3B5C;text-decoration:none;cursor:pointer}
-.aa-chip.on{background:#0C3B5C;color:#fff;border-color:#0C3B5C}
-.aa-busca{width:100%;padding:11px 14px;border:1px solid #d8d3c4;border-radius:10px;font:inherit;margin-bottom:16px;background:#fff}
+.aa-chip{padding:6px 14px;border-radius:999px;border:1px solid #d3d3d3;background:#fff;font-size:13px;color:#111111;text-decoration:none;cursor:pointer}
+.aa-chip.on{background:#111111;color:#fff;border-color:#111111}
+.aa-busca{width:100%;padding:11px 14px;border:1px solid #d3d3d3;border-radius:10px;font:inherit;margin-bottom:16px;background:#fff}
 .aa-tags{margin-top:28px;display:flex;gap:8px;flex-wrap:wrap}
-.aa-tags a{font-size:13px;color:#1F5A82;background:#eef6fb;padding:4px 10px;border-radius:999px;text-decoration:none}`;
+.aa-tags a{font-size:13px;color:#414141;background:#f4f4f4;padding:4px 10px;border-radius:999px;text-decoration:none}`;
   document.head.appendChild(s);
 }
 

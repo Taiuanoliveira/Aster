@@ -71,23 +71,26 @@ function criarCaixa() {
   caixa.querySelector('.ref-fechar').onclick = fechar;
   document.addEventListener('keydown', e => { if (e.key === 'Escape') fechar(); });
 }
+function biblia() {
+  if (window.AsterBiblia) return Promise.resolve(window.AsterBiblia);
+  return new Promise(function (ok, no) {
+    const s = document.createElement('script'); s.src = 'js/biblia-local.js';
+    s.onload = function () { ok(window.AsterBiblia); }; s.onerror = no; document.head.appendChild(s);
+  });
+}
 async function abrir(ref) {
   if (!caixa) criarCaixa();
   const t = caixa.querySelector('.ref-texto');
-  caixa.querySelector('.ref-titulo').textContent = ref.bonito + ' (Almeida)';
+  caixa.querySelector('.ref-titulo').textContent = ref.bonito + ' (Bíblia Livre)';
   t.textContent = 'Carregando…'; caixa.classList.add('aberta');
-  const chave = 'aster_ref_' + ref.consulta;
   try {
-    let d = sessionStorage.getItem(chave); d = d ? JSON.parse(d) : null;
-    if (!d) {
-      const r = await fetch('https://bible-api.com/' + ref.consulta.replace(/ /g, '+') + '?translation=almeida');
-      if (!r.ok) throw 0; d = await r.json();
-      try { sessionStorage.setItem(chave, JSON.stringify(d)); } catch (e) {}
-    }
+    const B = await biblia();
+    const m = /^(.+) (\d+)(?::(\d+)(?:-(\d+))?)?$/.exec(ref.consulta);
+    const vs = await B.versiculos('pt-livre', m[1], +m[2], m[3] ? +m[3] : 0, m[4] ? +m[4] : 0);
     t.textContent = '';
-    (d.verses || []).forEach(v => {
+    vs.forEach(v => {
       const p = document.createElement('p'), s = document.createElement('sup');
-      s.textContent = v.verse + ' '; p.append(s, (v.text || '').trim()); t.append(p);
+      s.textContent = v.n + ' '; p.append(s, v.t); t.append(p);
     });
     if (!t.firstChild) throw 0;
   } catch (e) { t.textContent = 'Não foi possível carregar este texto agora.'; }

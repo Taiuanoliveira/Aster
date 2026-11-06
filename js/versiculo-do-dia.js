@@ -1,7 +1,7 @@
 // Projeto Aster – Versículo do dia automático.
 // Todo dia, às 6h (horário do leitor), o site passa a mostrar o versículo daquele dia.
 // Cada mês tem um tema e cada dia do ano tem um versículo próprio (366, sem repetir).
-// O texto vem da Bíblia Almeida (bible-api.com) e fica guardado no aparelho para não buscar de novo.
+// O texto vem da Bíblia Livre (arquivos do próprio site, em data/biblia) e fica guardado no aparelho.
 (function () {
   var HORA_TROCA = 6;
   var TRADUCAO = 'almeida';
@@ -59,19 +59,26 @@
     if (r) r.textContent = ref;
   }
 
+function biblia() {
+    if (window.AsterBiblia) return Promise.resolve(window.AsterBiblia);
+    return new Promise(function (ok, no) {
+      var s = document.createElement('script'); s.src = 'js/biblia-local.js';
+      s.onload = function () { ok(window.AsterBiblia); }; s.onerror = no; document.head.appendChild(s);
+    });
+  }
   function atualizar() {
     var h = referenciaDe();
     var cache = lerCache();
-    if (cache && cache.chave === h.chave && cache.texto) { mostrar(h.ref, cache.texto); return; }
+    if (cache && cache.chave === h.chave && cache.texto && cache.v === 2) { mostrar(h.ref, cache.texto); return; }
     mostrar(h.ref, '');
     var t = document.getElementById('versiculoTexto');
     if (t) t.textContent = 'Carregando o versículo de hoje…';
-    var url = consultaApi(h.ref);
-    if (!url || typeof fetch !== 'function') { mostrar(h.ref, ''); return; }
-    fetch(url).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
-      var texto = (d.text || '').replace(/\s+/g, ' ').trim();
+    var m = /^(.+) (\d+):(\d+)(?:-(\d+))?$/.exec(h.ref);
+    if (!m) { mostrar(h.ref, ''); return; }
+    biblia().then(function (B) { return B.versiculos('pt-livre', m[1], +m[2], +m[3], m[4] ? +m[4] : +m[3]); }).then(function (vs) {
+      var texto = vs.map(function (v) { return v.t; }).join(' ').replace(/\s+/g, ' ').trim();
       if (!texto) throw 0;
-      salvarCache({ chave: h.chave, ref: h.ref, texto: texto });
+      salvarCache({ chave: h.chave, ref: h.ref, texto: texto, v: 2 });
       mostrar(h.ref, texto);
     }).catch(function () { mostrar(h.ref, ''); });
   }

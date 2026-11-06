@@ -1,0 +1,46 @@
+/* Projeto Aster - ajuste fino dos tons (claro e escuro): superficies em camadas, bordas visiveis, sombras suaves. Nao muda layout. */
+
+/* ===== CLARO: mais suave ===== */
+html body{background:#fbfbfa}
+html body header,html body header.topo{background:rgba(255,255,255,.92);border-bottom-color:#e6e6e4}
+html body .hero,html body .editorial-card,html body .carta,html body .faixa{background:linear-gradient(160deg,#ffffff 0%,#f4f4f3 100%);border-color:#e3e3e1;box-shadow:0 1px 2px rgba(0,0,0,.04),0 14px 34px rgba(0,0,0,.05)}
+html body .faixa{box-shadow:none;border-radius:0}
+html body .biblia-card,html body .explore-item,html body .hx-quiz,html body .hx-dev{background:linear-gradient(160deg,#ffffff,#f5f5f4);border-color:#e3e3e1;box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 26px rgba(0,0,0,.04)}
+html body .hx-dev{background:none}
+html body .hx-dev-a{background:linear-gradient(160deg,#ffffff,#f3f3f2)}
+html body .hx-escuro,html body .hx-dev-b{background:linear-gradient(135deg,#3d3d3d 0%,#222 55%,#101010 100%)}
+html body .editorial-capa{background:linear-gradient(145deg,#3d3d3d,#0e0e0e);box-shadow:0 12px 26px rgba(0,0,0,.22)}
+
+/* ===== ESCURO: grafite em camadas (nada de preto chapado) ===== */
+html[data-tema="escuro"]{--bg:#181818;--texto:#ececec;--cinza:#b0b0b0;--card:#242424;--borda:#3a3a3a;--azul:#2e2e2e}
+html[data-tema="escuro"] body{background:radial-gradient(1200px 600px at 50% -120px,#262626 0%,#181818 62%);background-color:#181818;background-attachment:fixed;color:#ececec}
+html[data-tema="escuro"] body header,html[data-tema="escuro"] body header.topo{background:rgba(26,26,26,.94);border-bottom:1px solid #353535;color:#eee}
+html[data-tema="escuro"] body footer,html[data-tema="escuro"] body footer.rodape{background:#141414;border-top:1px solid #353535;color:#b8b8b8}
+
+/* superficies principais */
+html[data-tema="escuro"] .hero,html[data-tema="escuro"] .editorial-card,html[data-tema="escuro"] .carta{background:linear-gradient(160deg,#303030 0%,#232323 55%,#1c1c1c 100%);border:1px solid #444;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 16px 40px rgba(0,0,0,.4);color:#f2f2f2}
+html[data-tema="escuro"] .faixa{background:linear-gradient(160deg,#2c2c2c 0%,#1f1f1f 100%);border-bottom:1px solid #3a3a3a;box-shadow:none;color:#f2f2f2}
+/* superficies secundarias */
+html[data-tema="escuro"] .biblia-card,html[data-tema="escuro"] .explore-item,html[data-tema="escuro"] .hx-quiz,html[data-tema="escuro"] .hx-dev-a,html[data-tema="escuro"] .ed-card,html[data-tema="escuro"] .mat.capa-mat{background:linear-gradient(160deg,#2b2b2b 0%,#202020 100%);border:1px solid #404040;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 26px rgba(0,0,0,.32);color:#ececec}
+html[data-tema="escuro"] .hx-dev{border:1px solid #444;background:none;box-shadow:0 14px 34px rgba(0,0,0,.35)}
+html[data-tema="escuro"] .explore-item:hover{background:linear-gradient(145deg,#4a4a4a,#262626);border-color:#5a5a5a}
+/* blocos escuros da home: mais claros que a pagina, com borda */
+html[data-tema="escuro"] .hx-escuro,html[data-tema="escuro"] .hx-dev-b{background:linear-gradient(135deg,#444 0%,#2b2b2b 55%,#1f1f1f 100%);border:1px solid #4a4a4a;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 14px 34px rgba(0,0,0,.4)}
+html[data-tema="escuro"] .hx-dev-b{border:0;border-left:1px solid #4a4a4a;box-shadow:none}
+html[data-tema="escuro"] .editorial-capa{background:linear-gradient(145deg,#4a4a4a,#1f1f1f);border:1px solid #585858;box-shadow:0 12px 28px rgba(0,0,0,.45)}
+/* botoes, abas e opcoes */
+html[data-tema="escuro"] .pill:not(.ativa),html[data-tema="escuro"] .hx-aba,html[data-tema="escuro"] .hx-opt{background:#262626;border-color:#4e4e4e;color:#ececec}
+html[data-tema="escuro"] .hx-aba:hover,html[data-tema="escuro"] .hx-opt:hover:not(:disabled){background:#313131;border-color:#777}
+html[data-tema="escuro"] .hx-aba.on,html[data-tema="escuro"] .hx-opt.certa,html[data-tema="escuro"] .pill.ativa,html[data-tema="escuro"] .chip.on{background:#f1f1f1;color:#111;border-color:#f1f1f1}
+html[data-tema="escuro"] .hx-opt.errada{border-color:#bbb}
+html[data-tema="escuro"] .btn-outline{border-color:#8a8a8a;color:#f2f2f2}
+html[data-tema="escuro"] .btn-outline:hover{background:#f1f1f1;color:#111;border-color:#f1f1f1}
+html[data-tema="escuro"] #hx-email{background:#f1f1f1;border-color:#f1f1f1}
+html[data-tema="escuro"] .hx-chip{border-color:#8a8a8a}
+html[data-tema="escuro"] .hx-chip.on{background:#f1f1f1;border-color:#f1f1f1;color:#111}
+/* textos mais confortaveis (menos contraste duro) */
+html[data-tema="escuro"] main section h2,html[data-tema="escuro"] .hero h1,html[data-tema="escuro"] .faixa h1,html[data-tema="escuro"] .editorial-info h3,html[data-tema="escuro"] .explore-item h4{color:#f4f4f4}
+html[data-tema="escuro"] main section .sub,html[data-tema="escuro"] .editorial-info p,html[data-tema="escuro"] .explore-item p,html[data-tema="escuro"] .hx-peq,html[data-tema="escuro"] .hx-ref{color:#b4b4b4}
+html[data-tema="escuro"] .explore-icone{color:#9a9a9a}
+html[data-tema="escuro"] .tema-toggle{border-color:#5a5a5a}
+html[data-tema="escuro"] hr,html[data-tema="escuro"] .divisor{border-color:#3a3a3a}

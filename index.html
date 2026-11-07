@@ -113,6 +113,7 @@
 <link rel="stylesheet" href="css/editorial.css">
 <link rel="stylesheet" href="css/aster-visual.css">
 <link rel="stylesheet" href="css/home-extras.css">
+<link rel="stylesheet" href="css/home-ranking.css">
 <link rel="stylesheet" href="css/aster-tons.css">
 </head>
 <body>
@@ -228,6 +229,7 @@
     <h2>Pausa para jogar</h2>
     <p class="sub">Quiz bíblico · 10 perguntas por rodada.</p>
     <div class="hx-quiz" id="hx-quiz"></div>
+    <div class="hx-rank" id="hx-rank"></div>
   </section>
 
   <section class="hx-sec" id="newsletter">
@@ -270,6 +272,7 @@ aplicarConfigSite(); montarEmAlta();
 </script>
 <script type="module" src="js/editorial-carrossel.js"></script>
 <script type="module" src="js/home-extras.js"></script>
+<script type="module" src="js/home-ranking.js"></script>
 <script src="js/aster-imagem.js"></script>
 <script>document.getElementById('btnImgVers').onclick=function(){var t=document.getElementById('versiculoTexto').textContent,r=document.getElementById('versiculoRef').textContent;if(/^Abra a B/.test(t))return;AsterImagem.abrir({texto:t,ref:r,edicao:'Almeida Revista e Corrigida (ARC)'})}</script>
 </body>

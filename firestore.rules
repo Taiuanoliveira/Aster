@@ -135,5 +135,47 @@ service cloud.firestore {
     match /home_quiz/{id}        { allow read: if true; allow write: if ehEditor(); }
     match /home_devocionais/{id} { allow read: if true; allow write: if ehEditor(); }
     match /home_versiculos/{id}  { allow read: if true; allow write: if ehEditor(); }
+
+    // ranking do quiz: so o dono escreve o proprio placar, com limites
+    function placarCria(uid) {
+      return logado() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['nome', 'foto', 'pontos', 'rodadas', 'atualizado'])
+        && request.resource.data.nome is string && request.resource.data.nome.size() <= 40
+        && request.resource.data.foto is string && request.resource.data.foto.size() <= 500
+        && request.resource.data.pontos is int && request.resource.data.pontos >= 1 && request.resource.data.pontos <= 10
+        && request.resource.data.rodadas == 1
+        && request.resource.data.atualizado == request.time;
+    }
+    function placarSobe(uid) {
+      return logado() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['nome', 'foto', 'pontos', 'rodadas', 'atualizado'])
+        && request.resource.data.nome is string && request.resource.data.nome.size() <= 40
+        && request.resource.data.foto is string && request.resource.data.foto.size() <= 500
+        && request.resource.data.pontos is int
+        && request.resource.data.pontos - resource.data.pontos >= 1
+        && request.resource.data.pontos - resource.data.pontos <= 10
+        && request.resource.data.rodadas == resource.data.rodadas + 1
+        && request.resource.data.atualizado == request.time
+        && request.time > resource.data.atualizado + duration.value(20, 's');
+    }
+    match /ranking_geral/{uid} {
+      allow read: if true;
+      allow create: if placarCria(uid);
+      allow update: if placarSobe(uid);
+      allow delete: if logado() && (request.auth.uid == uid || ehEditor());
+    }
+    match /ranking_semanas/{semana}/jogadores/{uid} {
+      allow read: if true;
+      allow create: if semana.matches('^[0-9]{4}-W[0-9]{2}$') && placarCria(uid);
+      allow update: if semana.matches('^[0-9]{4}-W[0-9]{2}$') && placarSobe(uid);
+      allow delete: if logado() && (request.auth.uid == uid || ehEditor());
+    }
+    match /ranking_meses/{mes}/jogadores/{uid} {
+      allow read: if true;
+      allow create: if mes.matches('^[0-9]{4}-[0-9]{2}$') && placarCria(uid);
+      allow update: if mes.matches('^[0-9]{4}-[0-9]{2}$') && placarSobe(uid);
+      allow delete: if logado() && (request.auth.uid == uid || ehEditor());
+    }
+
   }
 }

@@ -74,7 +74,7 @@ const emb = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { con
   cx.addEventListener('click', (e) => {
     const o = e.target.closest('.hx-opt');
     if (o && marcada < 0) { marcada = +o.dataset.i; if (marcada === rodada[qi].a) pontos++; pinta(); return; }
-    if (e.target.id === 'hx-prox') { qi++; marcada = -1; pinta(); }
+    if (e.target.id === 'hx-prox') { qi++; marcada = -1; pinta(); if (qi >= 10) document.dispatchEvent(new CustomEvent('hx-fim-rodada', { detail: { pontos } })); }
     if (e.target.id === 'hx-de-novo') { nova(); pinta(); }
   });
   nova(); pinta();

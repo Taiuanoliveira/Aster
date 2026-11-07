@@ -1,0 +1,28 @@
+.hx-rank{max-width:560px;margin:28px auto 0;padding:22px 20px;border-radius:20px;border:1px solid rgba(0,0,0,.14);background:linear-gradient(180deg,#fff,#f1f1ef);text-align:left}
+.hx-rank h3{margin:0 0 4px;font:600 26px "Cormorant Garamond",Georgia,serif}
+.hx-rank .hr-topo p{margin:0 0 14px;font-size:14px;opacity:.7}
+.hr-abas{display:flex;gap:6px;margin-bottom:12px}
+.hr-aba{flex:1;padding:9px 0;border-radius:999px;border:1px solid rgba(0,0,0,.35);background:transparent;color:inherit;font:600 13px inherit;cursor:pointer}
+.hr-aba.on{background:#000;color:#fff;border-color:#000}
+.hr-lista{list-style:none;margin:0;padding:0}
+.hr-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px}
+.hr-item:nth-child(odd){background:rgba(0,0,0,.04)}
+.hr-eu{outline:2px solid rgba(0,0,0,.55)}
+.hr-pos{width:22px;text-align:center;font-weight:800}
+.hr-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex:none;background:#ddd}
+.hr-ini{display:flex;align-items:center;justify-content:center;font-weight:800;background:#000;color:#fff}
+.hr-nome{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.hr-nome em{font-weight:400;opacity:.65;font-style:normal}
+.hr-pts{font-weight:800;white-space:nowrap}
+.hr-vazio,.hr-corpo{font-size:15px}
+.hr-nota,.hr-aviso{margin:14px 0 0;font-size:14px;line-height:1.5}
+.hr-aviso{font-weight:700}
+.hr-entrar{margin-top:10px;padding:11px 20px}
+.hr-link{background:none;border:0;padding:0;color:inherit;font:inherit;text-decoration:underline;cursor:pointer}
+.hx-rank a{color:inherit;font-weight:700}
+html[data-tema="escuro"] .hx-rank{border-color:rgba(255,255,255,.16);background:linear-gradient(180deg,#2c2c2c,#202020)}
+html[data-tema="escuro"] .hr-aba{border-color:rgba(255,255,255,.4)}
+html[data-tema="escuro"] .hr-aba.on{background:#fff;color:#000;border-color:#fff}
+html[data-tema="escuro"] .hr-item:nth-child(odd){background:rgba(255,255,255,.06)}
+html[data-tema="escuro"] .hr-eu{outline-color:rgba(255,255,255,.65)}
+html[data-tema="escuro"] .hr-ini{background:#fff;color:#000}

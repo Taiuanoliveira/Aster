@@ -114,6 +114,7 @@
 <link rel="stylesheet" href="css/aster-visual.css">
 <link rel="stylesheet" href="css/home-extras.css">
 <link rel="stylesheet" href="css/home-ranking.css">
+<link rel="stylesheet" href="css/home-votacao.css">
 <link rel="stylesheet" href="css/aster-tons.css">
 </head>
 <body>
@@ -253,6 +254,12 @@
     <p style="margin-top:14px"><a href="artigos.html" class="abrir">Ver todos os artigos →</a></p>
   </section>
 
+  <section class="hx-sec" id="melhor-semana" style="display:none">
+    <h2>Melhor texto da semana</h2>
+    <p>Leu algum texto que marcou você? Vote no seu favorito.</p>
+    <div id="mv-corpo"></div>
+  </section>
+
   <section id="em-alta-secao" style="display:none">
     <h2>Em alta</h2>
     <ol id="emAltaLista" style="padding-left:22px;line-height:1.9"></ol>
@@ -273,6 +280,7 @@ aplicarConfigSite(); montarEmAlta();
 <script type="module" src="js/editorial-carrossel.js"></script>
 <script type="module" src="js/home-extras.js"></script>
 <script type="module" src="js/home-ranking.js"></script>
+<script type="module" src="js/home-votacao.js"></script>
 <script src="js/aster-imagem.js"></script>
 <script>document.getElementById('btnImgVers').onclick=function(){var t=document.getElementById('versiculoTexto').textContent,r=document.getElementById('versiculoRef').textContent;if(/^Abra a B/.test(t))return;AsterImagem.abrir({texto:t,ref:r,edicao:'Almeida Revista e Corrigida (ARC)'})}</script>
 </body>

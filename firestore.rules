@@ -177,5 +177,27 @@ service cloud.firestore {
       allow delete: if logado() && (request.auth.uid == uid || ehEditor());
     }
 
+
+    // melhor texto da semana: um voto por leitor por semana, contagem presa ao voto
+    function votoFeito(semana, nid) {
+      let eleitor = /databases/$(database)/documents/votos_semana/$(semana)/eleitores/$(request.auth.uid);
+      return logado() && semana.matches('^[0-9]{4}-W[0-9]{2}$')
+        && !exists(eleitor) && getAfter(eleitor).data.noticiaId == nid;
+    }
+    match /votos_semana/{semana}/eleitores/{uid} {
+      allow read: if logado() && request.auth.uid == uid;
+      allow create: if logado() && request.auth.uid == uid && semana.matches('^[0-9]{4}-W[0-9]{2}$')
+        && request.resource.data.keys().hasOnly(['noticiaId', 'em'])
+        && request.resource.data.noticiaId is string && request.resource.data.noticiaId.size() <= 60
+        && request.resource.data.em == request.time;
+      allow delete: if ehAdmin();
+    }
+    match /votos_semana/{semana}/artigos/{nid} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['votos']) && request.resource.data.votos == 1 && votoFeito(semana, nid);
+      allow update: if request.resource.data.keys().hasOnly(['votos']) && request.resource.data.votos == resource.data.votos + 1 && votoFeito(semana, nid);
+      allow delete: if ehAdmin();
+    }
+
   }
 }

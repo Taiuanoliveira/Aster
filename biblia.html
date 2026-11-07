@@ -76,8 +76,10 @@ html[data-tema="escuro"] .ver .trad,html[data-tema="escuro"] .ctl2{color:#b4b4b4
 <span class="cor" style="background:#e2e2e2" onclick="colorir('#e2e2e2')"></span>
 <button onclick="colorir('')">Limpar cor</button>
 <button onclick="anotar()">Anotar</button>
+<button onclick="imagem()">Imagem</button>
 <button onclick="compartilhar()">Compartilhar</button>
 </div>
+<script src="js/aster-imagem.js"></script>
 <script src="js/biblia-local.js"></script>
 <script>
 const $=id=>document.getElementById(id),L=AsterBiblia.livros;
@@ -144,6 +146,11 @@ function compartilhar(){
   const msg='“'+vs.map(p=>p.dataset.t).join(' ')+'”\n'+ref+' ('+cur.t+')\nProjeto Aster';
   if(navigator.share)navigator.share({text:msg}).catch(()=>{});
   else navigator.clipboard.writeText(msg).then(()=>alert('Copiado!'));
+}
+function imagem(){
+  const vs=[...sel].sort((a,b)=>a.dataset.v-b.dataset.v);if(!vs.length)return;
+  const ref=cur.b+' '+cur.c+':'+vs[0].dataset.v+(vs.length>1?'-'+vs[vs.length-1].dataset.v:'');
+  AsterImagem.abrir({texto:vs.map(p=>p.dataset.t).join(' '),ref:ref,edicao:cur.t});
 }
 function mover(d){
   const v=ver(P.v);let l=P.l,c=P.c;

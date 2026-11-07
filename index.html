@@ -143,6 +143,7 @@
   <div class="hero-botoes">
     <a href="biblia.html" class="btn btn-amar">Abrir a Bíblia</a>
     <a href="edicoes.html" class="btn btn-outline">Ler o editorial</a>
+    <button type="button" class="btn btn-outline" id="btnImgVers">Compartilhar</button>
   </div>
 </section>
 
@@ -269,5 +270,7 @@ aplicarConfigSite(); montarEmAlta();
 </script>
 <script type="module" src="js/editorial-carrossel.js"></script>
 <script type="module" src="js/home-extras.js"></script>
+<script src="js/aster-imagem.js"></script>
+<script>document.getElementById('btnImgVers').onclick=function(){var t=document.getElementById('versiculoTexto').textContent,r=document.getElementById('versiculoRef').textContent;if(/^Abra a B/.test(t))return;AsterImagem.abrir({texto:t,ref:r,edicao:'Almeida Revista e Corrigida (ARC)'})}</script>
 </body>
 </html>

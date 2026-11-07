@@ -81,7 +81,7 @@ html[data-tema="escuro"] .ver .trad,html[data-tema="escuro"] .ctl2{color:#b4b4b4
 <script src="js/biblia-local.js"></script>
 <script>
 const $=id=>document.getElementById(id),L=AsterBiblia.livros;
-let S={},P={v:'pt-livre',l:42,c:3,cmp:'',fs:19},X=null,sel=new Set(),cur={},tk=0;
+let S={},P={v:'pt-arc',l:42,c:3,cmp:'',fs:19},X=null,sel=new Set(),cur={},tk=0;
 try{S=JSON.parse(localStorage.getItem('aster_bib')||'{}')}catch(e){}
 try{Object.assign(P,JSON.parse(localStorage.getItem('aster_bib_pref')||'{}'))}catch(e){}
 const ver=id=>X.versoes.find(v=>v.id===id),tem=(v,i)=>v.livros[i]!=null;
@@ -154,7 +154,7 @@ function mover(d){
 function tam(d){P.fs=Math.min(30,Math.max(14,P.fs+d*2));sync()}
 function trocaVersao(){
   P.v=$('ver').value;if(P.cmp===P.v)P.cmp='';
-  if(['Latim','Hebraico','Grego'].includes(ver(P.v).idioma)&&!P.cmp)P.cmp='pt-livre';
+  if(['Latim','Hebraico','Grego'].includes(ver(P.v).idioma)&&!P.cmp)P.cmp='pt-arc';
   ajustar();fillLivros();sync();carregar();
 }
 AsterBiblia.indice().then(d=>{

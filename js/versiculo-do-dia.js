@@ -1,7 +1,7 @@
 // Projeto Aster – Versículo do dia automático.
 // Todo dia, às 6h (horário do leitor), o site passa a mostrar o versículo daquele dia.
 // Cada mês tem um tema e cada dia do ano tem um versículo próprio (366, sem repetir).
-// O texto vem da Bíblia Livre (arquivos do próprio site, em data/biblia) e fica guardado no aparelho.
+// O texto vem da Almeida ARC (arquivos do próprio site, em data/biblia) e fica guardado no aparelho.
 (function () {
   var HORA_TROCA = 6;
   var TRADUCAO = 'almeida';
@@ -69,16 +69,16 @@ function biblia() {
   function atualizar() {
     var h = referenciaDe();
     var cache = lerCache();
-    if (cache && cache.chave === h.chave && cache.texto && cache.v === 2) { mostrar(h.ref, cache.texto); return; }
+    if (cache && cache.chave === h.chave && cache.texto && cache.v === 3) { mostrar(h.ref, cache.texto); return; }
     mostrar(h.ref, '');
     var t = document.getElementById('versiculoTexto');
     if (t) t.textContent = 'Carregando o versículo de hoje…';
     var m = /^(.+) (\d+):(\d+)(?:-(\d+))?$/.exec(h.ref);
     if (!m) { mostrar(h.ref, ''); return; }
-    biblia().then(function (B) { return B.versiculos('pt-livre', m[1], +m[2], +m[3], m[4] ? +m[4] : +m[3]); }).then(function (vs) {
+    biblia().then(function (B) { return B.versiculos('pt-arc', m[1], +m[2], +m[3], m[4] ? +m[4] : +m[3]); }).then(function (vs) {
       var texto = vs.map(function (v) { return v.t; }).join(' ').replace(/\s+/g, ' ').trim();
       if (!texto) throw 0;
-      salvarCache({ chave: h.chave, ref: h.ref, texto: texto, v: 2 });
+      salvarCache({ chave: h.chave, ref: h.ref, texto: texto, v: 3 });
       mostrar(h.ref, texto);
     }).catch(function () { mostrar(h.ref, ''); });
   }

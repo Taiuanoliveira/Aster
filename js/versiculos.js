@@ -81,12 +81,12 @@ function biblia() {
 async function abrir(ref) {
   if (!caixa) criarCaixa();
   const t = caixa.querySelector('.ref-texto');
-  caixa.querySelector('.ref-titulo').textContent = ref.bonito + ' (Bíblia Livre)';
+  caixa.querySelector('.ref-titulo').textContent = ref.bonito + ' (Almeida ARC)';
   t.textContent = 'Carregando…'; caixa.classList.add('aberta');
   try {
     const B = await biblia();
     const m = /^(.+) (\d+)(?::(\d+)(?:-(\d+))?)?$/.exec(ref.consulta);
-    const vs = await B.versiculos('pt-livre', m[1], +m[2], m[3] ? +m[3] : 0, m[4] ? +m[4] : 0);
+    const vs = await B.versiculos('pt-arc', m[1], +m[2], m[3] ? +m[3] : 0, m[4] ? +m[4] : 0);
     t.textContent = '';
     vs.forEach(v => {
       const p = document.createElement('p'), s = document.createElement('sup');

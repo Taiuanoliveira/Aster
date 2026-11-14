@@ -47,6 +47,7 @@ export default function Raiz() {
         <Stack.Screen name="equipe" options={{ title: 'Nossa Equipe' }} />
         <Stack.Screen name="estudos" options={{ title: 'Estudos' }} />
         <Stack.Screen name="plano" options={{ title: 'Plano de leitura' }} />
+        <Stack.Screen name="conta" options={{ title: 'Minha conta' }} />
         <Stack.Screen name="apoie" options={{ title: 'Apoie o Aster' }} />
       </Stack>
     </>

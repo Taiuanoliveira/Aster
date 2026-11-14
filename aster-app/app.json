@@ -3,20 +3,41 @@
     "name": "Projeto Aster",
     "slug": "projeto-aster",
     "scheme": "aster",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "ios": { "supportsTablet": true, "bundleIdentifier": "br.com.projetoaster.app" },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "br.com.projetoaster.app"
+    },
     "android": {
       "package": "br.com.projetoaster.app",
-      "versionCode": 1,
-      "adaptiveIcon": { "foregroundImage": "./assets/adaptive-icon.png", "backgroundColor": "#3255FF" }
+      "versionCode": 2,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#3255FF"
+      },
+      "permissions": [
+        "POST_NOTIFICATIONS"
+      ]
     },
     "plugins": [
       "expo-router",
-      ["expo-notifications", { "color": "#3056FF" }],
-      ["expo-splash-screen", { "image": "./assets/splash-icon.png", "backgroundColor": "#3255FF", "imageWidth": 160 }]
+      [
+        "expo-notifications",
+        {
+          "color": "#3056FF"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "backgroundColor": "#3255FF",
+          "imageWidth": 160
+        }
+      ]
     ]
   }
 }

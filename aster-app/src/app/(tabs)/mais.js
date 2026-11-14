@@ -9,6 +9,7 @@ import { pedirPermissao, reagendar, avisoDeTeste, notificacoesDisponiveis } from
 import { hhmm } from '../../lib/datas';
 import { redesDoSite, abrirLink } from '../../lib/redes';
 import { Cartao, Titulo, Botao, Redes, estilos } from '../../components/ui';
+import { useConta } from '../../lib/conta';
 
 function Passo({ rotulo, onMais, onMenos }) {
   const t = useTema();
@@ -49,6 +50,7 @@ export default function Mais() {
   const cfg = useDados('config', lerConfig);
   const inst = useDados('institucional', () => listarColecao('institucional'));
   const prefTema = usePrefTema();
+  const { conta } = useConta();
 
   useEffect(() => { lerPrefs().then(setPrefs); }, []);
 
@@ -73,7 +75,13 @@ export default function Mais() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: t.bg }} contentContainerStyle={estilos.pagina}>
-      <Titulo style={{ marginTop: 4 }}>Aparência</Titulo>
+      <Titulo style={{ marginTop: 4 }}>Conta</Titulo>
+      <Cartao onPress={() => router.push('/conta')}>
+        <Text style={{ color: t.texto, fontSize: 16, fontWeight: '700' }}>{conta ? (conta.nome || 'Minha conta') : 'Entrar ou criar conta'}</Text>
+        <Text style={{ color: t.cinza, fontSize: 14, marginTop: 4 }}>{conta ? conta.email : 'Use a mesma conta do site'}</Text>
+      </Cartao>
+
+      <Titulo>Aparência</Titulo>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {[['auto', 'Automático'], ['claro', 'Claro'], ['escuro', 'Escuro']].map(([id, nome]) => (
           <Pressable key={id} onPress={() => definirTema(id)} accessibilityRole="button"

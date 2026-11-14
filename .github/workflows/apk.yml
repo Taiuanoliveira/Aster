@@ -1,0 +1,67 @@
+name: Gerar APK do app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'aster-app/**'
+      - '.github/workflows/apk.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: aster-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Instalar dependencias
+        run: npm install --no-audit --no-fund
+      - name: Numero da versao
+        run: |
+          echo "VERSAO_N=${{ github.run_number }}" >> $GITHUB_ENV
+          node -e "const f='app.json',j=require('./'+f);j.expo.android.versionCode=${{ github.run_number }};require('fs').writeFileSync(f,JSON.stringify(j,null,2))"
+      - name: Criar projeto Android
+        run: npx expo prebuild --platform android --no-install
+      - name: Chave de assinatura fixa
+        run: |
+          cp chave/aster.jks android/app/aster.jks
+          python3 - <<'PY'
+          p='android/app/build.gradle'
+          s=open(p).read()
+          s=s.replace("signingConfigs {","signingConfigs {\n        release {\n            storeFile file('aster.jks')\n            storePassword 'asterapp123'\n            keyAlias 'aster'\n            keyPassword 'asterapp123'\n        }",1)
+          i=s.index("buildTypes {")
+          j=s.index("release {",i)
+          k=s.index("signingConfig",j)
+          e=s.index("\n",k)
+          s=s[:k]+"signingConfig signingConfigs.release"+s[e:]
+          open(p,'w').write(s)
+          PY
+      - name: Compilar APK
+        working-directory: aster-app/android
+        run: ./gradlew assembleRelease --no-daemon
+      - name: Renomear
+        run: cp android/app/build/outputs/apk/release/app-release.apk ../Projeto-Aster.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Projeto-Aster-APK
+          path: Projeto-Aster.apk
+      - name: Publicar para baixar
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app-v${{ github.run_number }}
+          name: Aplicativo Projeto Aster (versao ${{ github.run_number }})
+          files: Projeto-Aster.apk
+          body: Baixe o arquivo Projeto-Aster.apk no celular e instale.

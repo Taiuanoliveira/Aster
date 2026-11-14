@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.webmanifest">
 <script src="js/pwa.js" defer></script>
+<script type="module" src="js/auth-menu.js"></script>
 <meta name="description" content="Leia a Bíblia online em português, inglês, espanhol, latim, hebraico e grego. Só edições livres, com o original ao lado da tradução.">
 <meta property="og:site_name" content="Projeto Aster">
 <meta property="og:type" content="website">
@@ -180,6 +181,7 @@ AsterBiblia.indice().then(d=>{
 }).catch(()=>{$('tr').textContent='Não foi possível carregar a lista de edições. Atualize a página.'});
 </script>
 <script src="js/biblia-busca.js"></script>
+<script src="js/biblia-ir.js"></script>
 <script src="js/biblia-offline.js"></script>
 <footer>
   <img class="logo-rodape" src="img/logo.svg" alt="" width="18" height="18" style="vertical-align:middle;margin-right:6px"> Projeto Aster · <a href="equipe.html">Nossa Equipe</a> · <a href="termos.html">Termos de uso</a> · <a href="privacidade.html">Privacidade</a>

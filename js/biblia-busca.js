@@ -23,24 +23,25 @@
     return -1;
   }
   function referencia(txt) {
-    var m = /^\s*((?:[1-3]\s*)?[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ. ]*?)\s*(\d{1,3})(?:\s*[:.,]\s*(\d{1,3}))?\s*$/.exec(txt);
+    var m = /^\s*((?:[1-3]\s*)?[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ. ]*?)\s*(\d{1,3})(?:\s*[:.,]\s*(\d{1,3})(?:\s*[-–]\s*(\d{1,3}))?)?\s*$/.exec(txt);
     if (!m) return null;
     var l = achaLivro(m[1].replace(/^([1-3])\s*/, '$1 '), m[1]);
-    return l < 0 ? null : { l: l, c: +m[2], v: m[3] ? +m[3] : 0 };
+    return l < 0 ? null : { l: l, c: +m[2], v: m[3] ? +m[3] : 0, v2: m[4] ? +m[4] : 0 };
   }
 
   function mostrar(html) { res.hidden = false; res.innerHTML = html; }
   function fechar() { res.hidden = true; res.innerHTML = ''; }
   function texto(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-  async function ir(l, c, v) {
+  async function ir(l, c, v, v2) {
     var ed = ver(P.v);
     if (!tem(ed, l)) { mostrar('<p class="rs-vazio">Este livro não existe na edição escolhida.</p>'); return; }
     c = Math.min(Math.max(1, c), ed.livros[l]);
     P.l = l; P.c = c; sync(); fechar();
     await carregar();
-    var el = v && document.querySelector('#txt .ver[data-v="' + v + '"]');
-    if (el) { el.scrollIntoView({ block: 'center' }); el.classList.add('rs-flash'); setTimeout(function () { el.classList.remove('rs-flash'); }, 2200); }
+    var els = [];
+    for (var k = v; v && k <= Math.max(v, v2 || v); k++) { var e1 = document.querySelector('#txt .ver[data-v="' + k + '"]'); if (e1) els.push(e1); }
+    if (els.length) { els[0].scrollIntoView({ block: 'center' }); els.forEach(function (e2) { e2.classList.add('rs-flash'); }); setTimeout(function () { els.forEach(function (e2) { e2.classList.remove('rs-flash'); }); }, 2600); }
     else window.scrollTo(0, 0);
   }
 
@@ -93,7 +94,7 @@
     var txt = q.value.trim();
     if (!txt) { fechar(); return; }
     var r = referencia(txt);
-    if (r) { tarefa++; ir(r.l, r.c, r.v); return; }
+    if (r) { tarefa++; ir(r.l, r.c, r.v, r.v2); return; }
     palavra(txt);
   }
   bt.onclick = buscar;

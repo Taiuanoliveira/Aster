@@ -9,6 +9,7 @@
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.webmanifest">
 <script src="js/pwa.js" defer></script>
+<script type="module" src="js/auth-menu.js"></script>
 <meta property="og:site_name" content="Projeto Aster">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_BR">
@@ -147,6 +148,7 @@
   <div class="hero-botoes">
     <a href="biblia.html" class="btn btn-amar">Abrir a Bíblia</a>
     <a href="edicoes.html" class="btn btn-outline">Ler o editorial</a>
+    <a href="biblia.html" class="btn btn-outline" id="btnLerVers">Ler na Bíblia</a>
     <button type="button" class="btn btn-outline" id="btnImgVers">Compartilhar</button>
   </div>
 </section>
@@ -282,6 +284,7 @@ aplicarConfigSite(); montarEmAlta();
 <script type="module" src="js/editorial-carrossel.js"></script>
 <script type="module" src="js/home-extras.js"></script>
 <script type="module" src="js/home-ranking.js"></script>
+<script src="js/versiculo-link.js" defer></script>
 <script type="module" src="js/home-votacao.js"></script>
 <script src="js/aster-imagem.js"></script>
 <script>document.getElementById('btnImgVers').onclick=function(){var t=document.getElementById('versiculoTexto').textContent,r=document.getElementById('versiculoRef').textContent;if(/^Abra a B/.test(t))return;AsterImagem.abrir({texto:t,ref:r,edicao:'Almeida Revista e Corrigida (ARC)'})}</script>

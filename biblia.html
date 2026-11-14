@@ -4,6 +4,8 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" href="img/logo-192.png">
 <meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<script src="js/pwa.js" defer></script>
 <meta name="description" content="Leia a Bíblia online em português, inglês, espanhol, latim, hebraico e grego. Só edições livres, com o original ao lado da tradução.">
 <meta property="og:site_name" content="Projeto Aster">
 <meta property="og:type" content="website">
@@ -55,6 +57,7 @@ html[data-tema="escuro"] .ver .trad,html[data-tema="escuro"] .ctl2{color:#b4b4b4
 <script src="js/tema.js"></script>
 <link rel="stylesheet" href="css/aster-visual.css">
 <link rel="stylesheet" href="css/aster-tons.css">
+<link rel="stylesheet" href="css/biblia-offline.css">
 <link rel="stylesheet" href="css/biblia-busca.css">
 </head>
 <body class="biblia-pag">
@@ -177,6 +180,7 @@ AsterBiblia.indice().then(d=>{
 }).catch(()=>{$('tr').textContent='Não foi possível carregar a lista de edições. Atualize a página.'});
 </script>
 <script src="js/biblia-busca.js"></script>
+<script src="js/biblia-offline.js"></script>
 <footer>
   <img class="logo-rodape" src="img/logo.svg" alt="" width="18" height="18" style="vertical-align:middle;margin-right:6px"> Projeto Aster · <a href="equipe.html">Nossa Equipe</a> · <a href="termos.html">Termos de uso</a> · <a href="privacidade.html">Privacidade</a>
 </footer>
